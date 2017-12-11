@@ -1,52 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include "common_math.h"
 #include "RNN.h"
 #include "file_process.h"
 
 #define FILE_NAME_LENGTH 255
-
-void file_prepare(
-    char train_file[],
-    char test_file[],
-    char loss_file[],
-    char result_file[],
-    char train_file_name[],
-    char test_file_name[],
-    char loss_file_name[],
-    char result_file_name[]
-) {
-	char file_postfix[] = ".txt";
-	char output_file_prefix[] = "./test_data/output/";
-	char input_file_prefix[] = "./test_data/input/";
-
-	char train_file_prefix[] = "exp_";
-	char test_file_prefix[] = "exp_";
-	char loss_file_prefix[] = "loss_";
-	char result_file_prefix[] = "res_";
-
-	strcat(train_file, input_file_prefix);
-	strcat(test_file, input_file_prefix);
-	strcat(loss_file, output_file_prefix);
-	strcat(result_file, output_file_prefix);
-
-	strcat(train_file, train_file_prefix);
-	strcat(test_file, test_file_prefix);
-	strcat(loss_file, loss_file_prefix);
-	strcat(result_file, result_file_prefix);
-
-	strcat(train_file, train_file_name);
-	strcat(test_file, test_file_name);
-	strcat(loss_file, loss_file_name);
-	strcat(result_file, result_file_name);
-
-	strcat(train_file, file_postfix);
-	strcat(test_file, file_postfix);
-	strcat(loss_file, file_postfix);
-	strcat(result_file, file_postfix);
-}
 
 void uniform_random_with_seed_test() {
 	int round = 1000000;
@@ -316,7 +275,7 @@ void RNN_Train_test() {
 	internel_weight_gradient = matrix_create(H, H);
 
 	// Prepare test
-	TrainSet_t *train_set = (TrainSet_t *) malloc(sizeof(TrainSet_t));
+	DataSet_t *train_set = (DataSet_t *) malloc(sizeof(DataSet_t));
 	TrainSet_init(train_set, 1);
 	train_set->input_matrix_list[0] = input_matrix;
 	train_set->output_matrix_list[0] = expected_output_matrix;
@@ -369,7 +328,7 @@ void read_set_from_file_test() {
 	int max_epoch = 100000;
 	int print_loss_interval = 100;
 
-	TrainSet_t *train_set = read_set_from_file(train_file);
+	DataSet_t *train_set = read_set_from_file(train_file);
 
 	RNN_t *RNN_storage
 	    = (RNN_t *) malloc(sizeof(RNN_t));
@@ -432,8 +391,8 @@ void read_set_from_file_test() {
 		           train_set->output_matrix_list[i]);
 		fprintf(pLoss, "%lf\n", loss);
 		total_loss += loss;
-		write_matrix_to_file(result_file, train_set->input_matrix_list[i]);
-		write_matrix_to_file(result_file, predicted_output_matrix);
+		write_matrix_to_file(result_file, train_set->input_matrix_list[i], "a");
+		write_matrix_to_file(result_file, predicted_output_matrix, "a");
 	}
 	printf("average loss: %lf\n", total_loss / train_set->num_matrix);
 
@@ -449,15 +408,22 @@ void read_set_from_file_test() {
 
 
 void RNN_cross_valid() {
+	int H = 3;
+	int bptt_truncate_len = 4;
+
+	math_t initial_learning_rate = 0.001;
+	int max_epoch = 200000;
+	int print_loss_interval = 1000;
+
+	char train_file_name[] = "exp_SEMG_2_CT5_0";
+	char test_file_name[] = "exp_SEMG_2_CT5_0";
+	char loss_file_name[] = "loss_SEMG_2_CT5_0";
+	char result_file_name[] = "res_SEMG_2_CT5_0";
+
 	char train_file[FILE_NAME_LENGTH];
 	char test_file[FILE_NAME_LENGTH];
 	char loss_file[FILE_NAME_LENGTH];
 	char result_file[FILE_NAME_LENGTH];
-
-	char train_file_name[] = "2_1_CT5";
-	char test_file_name[] = "10_2";
-	char loss_file_name[] = "10_2";
-	char result_file_name[] = "10_2";
 
 	file_prepare(
 	    train_file,
@@ -470,14 +436,7 @@ void RNN_cross_valid() {
 	    result_file_name
 	);
 
-	int H = 3;
-	int bptt_truncate_len = 4;
-
-	math_t initial_learning_rate = 0.001;
-	int max_epoch = 500000;
-	int print_loss_interval = 1000;
-
-	TrainSet_t *train_set = read_set_from_file(train_file);
+	DataSet_t *train_set = read_set_from_file(train_file);
 
 	RNN_t *RNN_storage
 	    = (RNN_t *) malloc(sizeof(RNN_t));
@@ -540,8 +499,8 @@ void RNN_cross_valid() {
 		           train_set->output_matrix_list[i]);
 		fprintf(pLoss, "%lf\n", loss);
 		total_loss += loss;
-		write_matrix_to_file(result_file, train_set->input_matrix_list[i]);
-		write_matrix_to_file(result_file, predicted_output_matrix);
+		write_matrix_to_file(result_file, train_set->input_matrix_list[i], "a");
+		write_matrix_to_file(result_file, predicted_output_matrix, "a");
 	}
 	printf("average loss: %lf\n", total_loss / train_set->num_matrix);
 

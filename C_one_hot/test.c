@@ -262,7 +262,7 @@ void RNN_Train_test() {
 	internel_weight_gradient = matrix_create(H, H);
 
 	// Prepare test
-	TrainSet_t *train_set = (TrainSet_t *) malloc(sizeof(TrainSet_t));
+	DataSet_t *train_set = (DataSet_t *) malloc(sizeof(DataSet_t));
 	TrainSet_init(train_set, 1);
 	train_set->input_matrix_list[0] = input_matrix;
 	train_set->output_matrix_list[0] = expected_output_matrix;

@@ -29,10 +29,10 @@ typedef struct {
     int output_n;      // This should be the same accoross all output matrix
 
 	int num_matrix;
-} TrainSet_t;
+} DataSet_t;
 
-void TrainSet_init(TrainSet_t *train_set, int num_matrix);
-void TrainSet_destroy(TrainSet_t *train_set);
+void TrainSet_init(DataSet_t *train_set, int num_matrix);
+void TrainSet_destroy(DataSet_t *train_set);
 
 void RNN_init(RNN_t *RNN_storage);
 void RNN_destroy(RNN_t *RNN_storage);
@@ -72,7 +72,7 @@ void RNN_SGD(
 
 void RNN_train(
     RNN_t *RNN_storage,
-    TrainSet_t *train_set,
+    DataSet_t *train_set,
     Matrix_t *predicted_output_matrix,
     Matrix_t *input_weight_gradient,
     Matrix_t *output_weight_gradient,
@@ -84,7 +84,7 @@ void RNN_train(
 
 void Gradient_check(
     RNN_t *RNN_storage,
-    TrainSet_t *train_set,
+    DataSet_t *train_set,
     Matrix_t *predicted_output_matrix,
     Matrix_t *input_weight_gradient,
     Matrix_t *output_weight_gradient,

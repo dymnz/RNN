@@ -1,7 +1,51 @@
 #include "file_process.h"
 
+void file_prepare(
+    char train_file[],
+    char test_file[],
+    char loss_file[],
+    char result_file[],
+    char train_file_name[],
+    char test_file_name[],
+    char loss_file_name[],
+    char result_file_name[]
+) {
+	char file_postfix[] = ".txt";
+	char output_file_prefix[] = "./data/output/";
+	char input_file_prefix[] = "./data/input/";
 
-TrainSet_t *read_set_from_file(char *file_name) {
+	char train_file_prefix[] = "";
+	char test_file_prefix[] = "";
+	char loss_file_prefix[] = "";
+	char result_file_prefix[] = "";
+
+	strcat(train_file, input_file_prefix);
+	strcat(test_file, input_file_prefix);
+	strcat(loss_file, output_file_prefix);
+	strcat(result_file, output_file_prefix);
+
+	strcat(train_file, train_file_prefix);
+	strcat(test_file, test_file_prefix);
+	strcat(loss_file, loss_file_prefix);
+	strcat(result_file, result_file_prefix);
+
+	strcat(train_file, train_file_name);
+	strcat(test_file, test_file_name);
+	strcat(loss_file, loss_file_name);
+	strcat(result_file, result_file_name);
+
+	strcat(train_file, file_postfix);
+	strcat(test_file, file_postfix);
+	strcat(loss_file, file_postfix);
+	strcat(result_file, file_postfix);
+
+	printf("%s\n", train_file);
+	printf("%s\n", test_file);
+	printf("%s\n", loss_file);
+	printf("%s\n", result_file);
+}
+
+DataSet_t *read_set_from_file(char *file_name) {
 	FILE *pFile = fopen (file_name, "r");
 	if (!pFile) {
 		printf("%s read error\n", file_name);
@@ -12,7 +56,7 @@ TrainSet_t *read_set_from_file(char *file_name) {
 	fscanf(pFile, "%d", &num_matrix);
 	printf("Reading %d matrix from %s\n", num_matrix, file_name);
 
-	TrainSet_t *train_set = (TrainSet_t *) malloc(sizeof(TrainSet_t));
+	DataSet_t *train_set = (DataSet_t *) malloc(sizeof(DataSet_t));
 	TrainSet_init(train_set, num_matrix);
 
 	int i, r, j, i_m, i_n, o_m, o_n;
@@ -59,8 +103,8 @@ TrainSet_t *read_set_from_file(char *file_name) {
 	return train_set;
 }
 
-void write_matrix_to_file(char *file_name, Matrix_t *matrix) {
-	FILE *pFile = fopen (file_name, "a");
+void write_matrix_to_file(char *file_name, Matrix_t *matrix, char *file_modifier) {
+	FILE *pFile = fopen (file_name, file_modifier);
 	if (!pFile) {
 		printf("%s write error\n", file_name);
 		exit(69);

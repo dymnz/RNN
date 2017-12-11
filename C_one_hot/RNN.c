@@ -1,6 +1,6 @@
 #include "RNN.h"
 
-void TrainSet_init(TrainSet_t *train_set, int num_matrix) {
+void TrainSet_init(DataSet_t *train_set, int num_matrix) {
 	train_set->num_matrix = num_matrix;
 	train_set->input_matrix_list =
 	    (Matrix_t **) malloc(num_matrix * sizeof(Matrix_t *));
@@ -8,7 +8,7 @@ void TrainSet_init(TrainSet_t *train_set, int num_matrix) {
 	    (Matrix_t **) malloc(num_matrix * sizeof(Matrix_t *));
 }
 
-void TrainSet_destroy(TrainSet_t *train_set) {
+void TrainSet_destroy(DataSet_t *train_set) {
 	int i;
 	for (i = 0; i < train_set->num_matrix; ++i) {
 		matrix_free(train_set->input_matrix_list[i]);
@@ -389,7 +389,7 @@ void RNN_SGD(
 
 void RNN_train(
     RNN_t *RNN_storage,
-    TrainSet_t *train_set,
+    DataSet_t *train_set,
     Matrix_t *predicted_output_matrix,
     Matrix_t *input_weight_gradient,
     Matrix_t *output_weight_gradient,
@@ -506,7 +506,7 @@ void RNN_train(
 
 void Gradient_check(
     RNN_t *RNN_storage,
-    TrainSet_t *train_set,
+    DataSet_t *train_set,
     Matrix_t *predicted_output_matrix,
     Matrix_t *input_weight_gradient,
     Matrix_t *output_weight_gradient,

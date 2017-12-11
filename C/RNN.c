@@ -1,6 +1,8 @@
 #include "RNN.h"
 
-void TrainSet_init(TrainSet_t *train_set, int num_matrix) {
+#define RNN_RAND_SEED 1
+
+void TrainSet_init(DataSet_t *train_set, int num_matrix) {
 	train_set->num_matrix = num_matrix;
 	train_set->input_matrix_list =
 	    (Matrix_t **) malloc(num_matrix * sizeof(Matrix_t *));
@@ -8,7 +10,7 @@ void TrainSet_init(TrainSet_t *train_set, int num_matrix) {
 	    (Matrix_t **) malloc(num_matrix * sizeof(Matrix_t *));
 }
 
-void TrainSet_destroy(TrainSet_t *train_set) {
+void TrainSet_destroy(DataSet_t *train_set) {
 	int i;
 	for (i = 0; i < train_set->num_matrix; ++i) {
 		matrix_free(train_set->input_matrix_list[i]);
@@ -16,35 +18,37 @@ void TrainSet_destroy(TrainSet_t *train_set) {
 	}
 	free(train_set->input_matrix_list);
 	free(train_set->output_matrix_list);
+	free(train_set);
 }
 
-void RNN_init(RNN_t *RNN_storage) {
-	int input_vector_len = RNN_storage->input_vector_len;
-	int output_vector_len = RNN_storage->output_vector_len;
-	int hidden_layer_vector_len = RNN_storage->hidden_layer_vector_len;
+void RNN_init(
+	RNN_t *RNN_storage, 
+	int input_vector_len, 
+	int output_vector_len,
+	int hidden_layer_vector_len,
+	int bptt_truncate_len
+) {
+	RNN_storage->input_vector_len = input_vector_len;
+	RNN_storage->output_vector_len = output_vector_len;
+	RNN_storage->hidden_layer_vector_len = hidden_layer_vector_len;
+	RNN_storage->bptt_truncate_len = bptt_truncate_len;
 
 	RNN_storage->input_weight_matrix
 	    = matrix_create(input_vector_len, hidden_layer_vector_len);
-	if (!RNN_storage->input_weight_matrix) {
-		printf("input_weight_matrix init error\n");
-		exit(69);
-	}
-
 	RNN_storage->output_weight_matrix
 	    = matrix_create(hidden_layer_vector_len, output_vector_len);
-	if (!RNN_storage->output_weight_matrix) {
-		printf("output_weight_matrix init error\n");
-		exit(69);
-	}
-
 	RNN_storage->internal_weight_matrix
 	    = matrix_create(hidden_layer_vector_len, hidden_layer_vector_len);
-	if (!RNN_storage->internal_weight_matrix) {
-		printf("internal_weight_matrix init error\n");
-		exit(69);
-	}
+	RNN_storage->input_weight_gradient 
+		= matrix_create(input_vector_len, hidden_layer_vector_len);
+	RNN_storage->output_weight_gradient 
+		= matrix_create(hidden_layer_vector_len, output_vector_len);
+	RNN_storage->internel_weight_gradient 
+		= matrix_create(hidden_layer_vector_len, hidden_layer_vector_len);
+	RNN_storage->internal_state_matrix 
+		= matrix_create(0, 0);
 
-	unsigned int seed = 1;
+	unsigned int seed = RNN_RAND_SEED;
 	matrix_random_with_seed(
 	    RNN_storage->input_weight_matrix,
 	    -sqrt(1 / input_vector_len),
@@ -60,8 +64,6 @@ void RNN_init(RNN_t *RNN_storage) {
 	    -sqrt(1 / hidden_layer_vector_len),
 	    sqrt(1 / hidden_layer_vector_len),
 	    &seed);
-
-	RNN_storage->internal_state_matrix = matrix_create(0, 0);
 }
 
 void RNN_destroy(RNN_t *RNN_storage) {
@@ -69,6 +71,9 @@ void RNN_destroy(RNN_t *RNN_storage) {
 	matrix_free(RNN_storage->output_weight_matrix);
 	matrix_free(RNN_storage->internal_weight_matrix);
 	matrix_free(RNN_storage->internal_state_matrix);
+	matrix_free(RNN_storage->input_weight_gradient);
+	matrix_free(RNN_storage->output_weight_gradient);
+	matrix_free(RNN_storage->internel_weight_gradient);
 	free(RNN_storage);
 }
 
@@ -159,9 +164,6 @@ math_t RNN_loss_calculation(
 	int t_dim = predicted_output_matrix->m;
 	int o_dim = RNN_storage->output_vector_len;
 
-	// printf("----------------\n");
-	// matrix_print(predicted_output_matrix);
-
 	int t, o;
 	for (t = 0; t < t_dim; ++t) {
 		// expected_output_matrix is an one-hot vector
@@ -182,10 +184,7 @@ void RNN_BPTT(
     RNN_t *RNN_storage,
     Matrix_t *input_matrix,				// TxI
     Matrix_t *predicted_output_matrix,	// TxO
-    Matrix_t *expected_output_matrix,	// TxO
-    Matrix_t *input_weight_gradient,	// dLdU IxH
-    Matrix_t *output_weight_gradient,	// dLdV HxO
-    Matrix_t *internel_weight_gradient	// dLdW HxH
+    Matrix_t *expected_output_matrix	// TxO
 ) {
 	int t_dim = input_matrix->m;
 	int i_dim = RNN_storage->input_vector_len;
@@ -205,9 +204,9 @@ void RNN_BPTT(
 	math_t **V = RNN_storage->output_weight_matrix->data;	// HxO
 	math_t **W = RNN_storage->internal_weight_matrix->data;	// HxH
 
-	math_t **dLdU = input_weight_gradient->data;	// IxH
-	math_t **dLdV = output_weight_gradient->data;	// HxO
-	math_t **dLdW = internel_weight_gradient->data; // HxH
+	math_t **dLdU = RNN_storage->input_weight_gradient->data;	// IxH
+	math_t **dLdV = RNN_storage->output_weight_gradient->data;	// HxO
+	math_t **dLdW = RNN_storage->internel_weight_gradient->data; // HxH
 
 	math_t **X = input_matrix->data;
 	math_t **O = predicted_output_matrix->data;
@@ -270,12 +269,6 @@ void RNN_BPTT(
 
 			// Update dLdU[x[bptt_step]] += delta_t
 			for (m = 0; m < i_dim; ++m) {
-				// if (X[bptt_t][m] == 1) {
-				// 	for (n = 0; n < h_dim; ++n) {
-				// 		dLdU[m][n] += delta_t[n];
-				// 	}
-				// 	break;
-				// }
 				for (n = 0; n < h_dim; ++n) {
 					dLdU[m][n] += X[bptt_t][m] * delta_t[n];
 				}
@@ -307,9 +300,6 @@ void RNN_SGD(
     Matrix_t *input_matrix,
     Matrix_t *expected_output_matrix,
     Matrix_t *predicted_output_matrix,
-    Matrix_t *input_weight_gradient,
-    Matrix_t *output_weight_gradient,
-    Matrix_t *internel_weight_gradient,
     math_t learning_rate
 ) {
 
@@ -317,9 +307,9 @@ void RNN_SGD(
 	math_t **V = RNN_storage->output_weight_matrix->data;	// HxO
 	math_t **W = RNN_storage->internal_weight_matrix->data;	// HxH
 
-	math_t **dLdU = input_weight_gradient->data;	// IxH
-	math_t **dLdV = output_weight_gradient->data;	// HxO
-	math_t **dLdW = internel_weight_gradient->data; // HxH
+	math_t **dLdU = RNN_storage->input_weight_gradient->data;	// IxH
+	math_t **dLdV = RNN_storage->output_weight_gradient->data;	// HxO
+	math_t **dLdW = RNN_storage->internel_weight_gradient->data; // HxH
 
 	int i_dim = RNN_storage->input_vector_len;
 	int o_dim = RNN_storage->output_vector_len;
@@ -335,10 +325,7 @@ void RNN_SGD(
 	    RNN_storage,
 	    input_matrix,				// TxI
 	    predicted_output_matrix,	// TxO
-	    expected_output_matrix,		// TxO
-	    input_weight_gradient,		// dLdU IxH
-	    output_weight_gradient,		// dLdV HxO
-	    internel_weight_gradient	// dLdW HxH
+	    expected_output_matrix		// TxO
 	);
 
 	int m, n;
@@ -361,11 +348,8 @@ void RNN_SGD(
 
 void RNN_train(
     RNN_t *RNN_storage,
-    TrainSet_t *train_set,
+    DataSet_t *train_set,
     Matrix_t *predicted_output_matrix,
-    Matrix_t *input_weight_gradient,
-    Matrix_t *output_weight_gradient,
-    Matrix_t *internel_weight_gradient,
     math_t initial_learning_rate,
     int max_epoch,
     int print_loss_interval
@@ -409,20 +393,23 @@ void RNN_train(
 
 			int old_bptt_truncate_len = RNN_storage->bptt_truncate_len;
 			RNN_storage->bptt_truncate_len = 10000;
-			RNN_Gradient_check(
-			    RNN_storage,
-			    train_set,
-			    predicted_output_matrix,
-			    input_weight_gradient,
-			    output_weight_gradient,
-			    internel_weight_gradient,
-			    1e-3,
-			    1e-2,
-			    0
-			);
+			int gradient_check_result =
+			    RNN_Gradient_check(
+			        RNN_storage,
+			        train_set,
+			        predicted_output_matrix,
+			        1e-3,
+			        1e-2,
+			        0
+			    );
 			RNN_storage->bptt_truncate_len = old_bptt_truncate_len;
 			printf("average loss at epoch: %10d = %10.10lf LR: %lf\n",
 			       e, current_total_loss / num_train, learning_rate);
+
+			// Terminate the training process if the gradient check did not pass
+			if (gradient_check_result != 0) {
+				return;
+			}
 		}
 
 		for (t = 0; t < num_train; ++t) {
@@ -434,24 +421,16 @@ void RNN_train(
 			    input_matrix,
 			    expected_output_matrix,
 			    predicted_output_matrix,
-			    input_weight_gradient,
-			    output_weight_gradient,
-			    internel_weight_gradient,
 			    learning_rate
 			);
-
 		}
-
 	}
 }
 
-void RNN_Gradient_check(
+int RNN_Gradient_check(
     RNN_t *RNN_storage,
-    TrainSet_t *train_set,
+    DataSet_t *train_set,
     Matrix_t *predicted_output_matrix,
-    Matrix_t *input_weight_gradient,
-    Matrix_t *output_weight_gradient,
-    Matrix_t *internel_weight_gradient,
     math_t h,
     math_t error_threshold,
     int index_to_check
@@ -464,9 +443,9 @@ void RNN_Gradient_check(
 	math_t **V = RNN_storage->output_weight_matrix->data;	// HxO
 	math_t **W = RNN_storage->internal_weight_matrix->data;	// HxH
 
-	math_t **dLdU = input_weight_gradient->data;	// IxH
-	math_t **dLdV = output_weight_gradient->data;	// HxO
-	math_t **dLdW = internel_weight_gradient->data; // HxH
+	math_t **dLdU = RNN_storage->input_weight_gradient->data;	// IxH
+	math_t **dLdV = RNN_storage->output_weight_gradient->data;	// HxO
+	math_t **dLdW = RNN_storage->internel_weight_gradient->data; // HxH
 
 	RNN_forward_propagation(
 	    RNN_storage,
@@ -478,10 +457,7 @@ void RNN_Gradient_check(
 	    RNN_storage,
 	    input_matrix,				// TxI
 	    predicted_output_matrix,	// TxO
-	    expected_output_matrix,		// TxO
-	    input_weight_gradient,		// dLdU IxH
-	    output_weight_gradient,		// dLdV HxO
-	    internel_weight_gradient	// dLdW HxH
+	    expected_output_matrix		// TxO
 	);
 
 	int i, m, n;
@@ -491,9 +467,9 @@ void RNN_Gradient_check(
 	math_t relative_gradient_error;
 
 	Matrix_t *testing_model_list[] = {
-		input_weight_gradient,		// U
-		output_weight_gradient,		// V
-		internel_weight_gradient	// W
+		RNN_storage->input_weight_gradient,		// U
+		RNN_storage->output_weight_gradient,		// V
+		RNN_storage->internel_weight_gradient	// W
 	};
 	math_t **UVW[] = {U, V, W};
 	math_t **dLdUVW[] = {dLdU, dLdV, dLdW};
@@ -550,11 +526,13 @@ void RNN_Gradient_check(
 					printf("estimated_gradient: %lf\n", estimated_gradient);
 					printf("calculated_gradient: %lf\n", calculated_gradient);
 					printf("relative_gradient_error: %lf\n", relative_gradient_error);
-					exit(1);
+					printf("---------------------------------------\n");
+					return 1;
 				}
 			}
 		}
 	}
+	return 0;
 }
 
 void RNN_Predict(
@@ -567,7 +545,6 @@ void RNN_Predict(
 	    input_matrix,
 	    predicted_output_matrix
 	);
-	//matrix_print(predicted_output_matrix);
 }
 
 math_t internal_squash_func(math_t value) {

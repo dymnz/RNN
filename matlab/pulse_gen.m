@@ -11,8 +11,8 @@ P = 1;     % Peak force
 CT = 5;    % Time to peak
 
 % File
-file_location = '../C/test_data/';
-file_name = 'exp2_1_CT5.txt';
+file_location = '../C/data/input/';
+file_name = 'exp_SEMG_10_CT5_1.txt';
 fileID = fopen(strcat(file_location, file_name),'w');
 fprintf(fileID, '%d\n', NUM_TEST);
 

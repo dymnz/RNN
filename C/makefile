@@ -2,14 +2,21 @@ CC=gcc
 CFLAGS=-Wall
 LFLAGS=-lm
 DEPS = common_math.h RNN.h file_process.h
-TEST_OBJ = test.o common_math.o RNN.o file_process.o
+TEST_OBJ = test.o
+DEPS_OBJ = common_math.o RNN.o file_process.o
+RNN_OBJ = main.o
 
+all: $(DEPS_OBJ) $(RNN_OBJ)
+	$(CC) $(CFLAGS) -o rnn $^ $(LFLAGS)
 
 %.o: %.c $(DEPS)
 	$(CC) $(CFLAGS) -c -o $@ $< $(LFLAGS)
 
-test: $(TEST_OBJ)
-	gcc $(CFLAGS) -o $@ $^ $(LFLAGS)
+rnn: $(DEPS_OBJ) $(RNN_OBJ)
+	$(CC) $(CFLAGS) -o rnn $^ $(LFLAGS)
+
+test: $(TEST_OBJ) $(DEPS_OBJ)
+	$(CC) $(CFLAGS) -o $@ $^ $(LFLAGS)
 
 clean:
-	rm $(TEST_OBJ)
+	rm $(TEST_OBJ) $(RNN_OBJ) $(DEPS_OBJ)

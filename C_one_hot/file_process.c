@@ -1,7 +1,7 @@
 #include "file_process.h"
 
 
-TrainSet_t *read_set_from_file(char *file_name) {
+DataSet_t *read_set_from_file(char *file_name) {
 	FILE *pFile = fopen (file_name, "r");
 	if (!pFile) {
 		printf("%s read error\n", file_name);
@@ -12,7 +12,7 @@ TrainSet_t *read_set_from_file(char *file_name) {
 	fscanf(pFile, "%d", &num_matrix);
 	printf("Reading %d matrix from %s\n", num_matrix, file_name);
 
-	TrainSet_t *train_set = (TrainSet_t *) malloc(sizeof(TrainSet_t));
+	DataSet_t *train_set = (DataSet_t *) malloc(sizeof(DataSet_t));
 	TrainSet_init(train_set, num_matrix);
 
 	int i, r, j, i_m, i_n, o_m, o_n;
