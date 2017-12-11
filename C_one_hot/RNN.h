@@ -32,7 +32,7 @@ typedef struct {
 } DataSet_t;
 
 void TrainSet_init(DataSet_t *train_set, int num_matrix);
-void TrainSet_destroy(DataSet_t *train_set);
+void DataSet_destroy(DataSet_t *train_set);
 
 void RNN_init(RNN_t *RNN_storage);
 void RNN_destroy(RNN_t *RNN_storage);

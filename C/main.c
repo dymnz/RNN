@@ -8,8 +8,8 @@
 
 #define FILE_NAME_LENGTH 255
 
-void k() {
-		/*
+int main() {
+	/*
 		RNN model param
 	*/
 	int H = 3;
@@ -18,7 +18,6 @@ void k() {
 	math_t initial_learning_rate = 0.001;
 	int max_epoch = 200000;
 	int print_loss_interval = 1000;
-
 
 	/*
 		File I/O param
@@ -59,6 +58,7 @@ void k() {
 	    H,
 	    bptt_truncate_len
 	);
+	printf("--------------- RNN paramerter\n");
 	printf("Input vector length: %d\n", train_set->input_n);
 	printf("Output vector length: %d\n", train_set->output_n);
 	printf("Hidden vector length: %d\n", H);
@@ -66,13 +66,15 @@ void k() {
 
 	// Storage for RNN_train()
 	Matrix_t *predicted_output_matrix;
-
 	predicted_output_matrix = matrix_create(
 	                              train_set->output_max_m,
 	                              train_set->output_n);
+
 	/*
 		Start training with training file
 	*/
+	printf("Start training. Max epoch: %d Initital learning rate: %lf\n", 
+		max_epoch, initial_learning_rate);
 	RNN_train(
 	    RNN_storage,
 	    train_set,
@@ -85,7 +87,7 @@ void k() {
 	/*
 		Testing file forward propagation
 	 */
-	TrainSet_destroy(train_set);
+	DataSet_destroy(train_set);
 
 	printf("--------------Working on testing file\n");
 	train_set = read_set_from_file(test_file);
@@ -116,18 +118,19 @@ void k() {
 	}
 	printf("average loss: %lf\n", total_loss / train_set->num_matrix);
 	fclose(pLoss);
+
+	/*
+		Dump model
+	 */
+	
+
+
 	/*
 		Clean up
 	 */
-	TrainSet_destroy(train_set);
+	DataSet_destroy(train_set);
 	RNN_destroy(RNN_storage);
 	matrix_free(predicted_output_matrix);
-}
-
-int main() {
-	int i;
-	for (i = 0; i < 100000; ++i)
-		k();
 
 	return 0;
 }

@@ -10,7 +10,7 @@ void TrainSet_init(DataSet_t *train_set, int num_matrix) {
 	    (Matrix_t **) malloc(num_matrix * sizeof(Matrix_t *));
 }
 
-void TrainSet_destroy(DataSet_t *train_set) {
+void DataSet_destroy(DataSet_t *train_set) {
 	int i;
 	for (i = 0; i < train_set->num_matrix; ++i) {
 		matrix_free(train_set->input_matrix_list[i]);

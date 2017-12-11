@@ -297,7 +297,7 @@ void RNN_Train_test() {
 	matrix_print(predicted_output_matrix);
 
 
-	TrainSet_destroy(train_set);
+	DataSet_destroy(train_set);
 	RNN_destroy(RNN_storage);
 	matrix_free(predicted_output_matrix);
 	matrix_free(input_weight_gradient);

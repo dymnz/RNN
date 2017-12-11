@@ -308,7 +308,7 @@ void RNN_Train_test() {
 	);
 
 
-	TrainSet_destroy(train_set);
+	DataSet_destroy(train_set);
 	RNN_destroy(RNN_storage);
 	matrix_free(predicted_output_matrix);
 	matrix_free(input_weight_gradient);
@@ -397,7 +397,7 @@ void read_set_from_file_test() {
 	printf("average loss: %lf\n", total_loss / train_set->num_matrix);
 
 
-	TrainSet_destroy(train_set);
+	DataSet_destroy(train_set);
 	RNN_destroy(RNN_storage);
 	matrix_free(predicted_output_matrix);
 	matrix_free(input_weight_gradient);
@@ -475,7 +475,7 @@ void RNN_cross_valid() {
 	    print_loss_interval
 	);
 
-	TrainSet_destroy(train_set);
+	DataSet_destroy(train_set);
 	train_set = read_set_from_file(test_file);
 
 	FILE *pRes = fopen(result_file, "w");
@@ -505,7 +505,7 @@ void RNN_cross_valid() {
 	printf("average loss: %lf\n", total_loss / train_set->num_matrix);
 
 
-	TrainSet_destroy(train_set);
+	DataSet_destroy(train_set);
 	RNN_destroy(RNN_storage);
 	matrix_free(predicted_output_matrix);
 	matrix_free(input_weight_gradient);
