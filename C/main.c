@@ -7,6 +7,7 @@
 #include "file_process.h"
 
 int RNN_model_training_example() {
+	printf("RNN_model_training_example\n");
 	/*
 		RNN model param
 	*/
@@ -44,7 +45,7 @@ int RNN_model_training_example() {
 	/*
 		Storage prepare
 	 */
-	printf("--------------Working on training file\n");
+	printf("Working on training file...\n");
 	DataSet_t *train_set = read_set_from_file(train_file);
 
 	RNN_t *RNN_storage
@@ -56,11 +57,12 @@ int RNN_model_training_example() {
 	    H,
 	    bptt_truncate_len
 	);
-	printf("--------------- RNN paramerter\n");
+	printf("-RNN paramerter-\n");
 	printf("Input vector length: %d\n", train_set->input_n);
 	printf("Output vector length: %d\n", train_set->output_n);
 	printf("Hidden vector length: %d\n", H);
 	printf("BPTT truncate length: %d\n", bptt_truncate_len);
+	printf("----------------\n");
 
 	// Storage for RNN_train()
 	Matrix_t *predicted_output_matrix;
@@ -88,7 +90,7 @@ int RNN_model_training_example() {
 	 */
 	DataSet_destroy(train_set);
 
-	printf("--------------Working on testing file\n");
+	printf("Working on testing file...\n");
 	train_set = read_set_from_file(test_file);
 
 	FILE *pRes = fopen(result_file, "w");
@@ -124,17 +126,17 @@ int RNN_model_training_example() {
 	char model_file_prefix[] = "./data/model/";
 	printf("Model dump...\n");
 	Matrix_dump(
-	    "InputWeight_SEMG_2_CT5_0",
+	    "InputWeight_SEMG_2_CT5_0_BPTT4",
 	    model_file_prefix,
 	    RNN_storage->input_weight_matrix
 	);
 	Matrix_dump(
-	    "InternalWeight_SEMG_2_CT5_0",
+	    "InternalWeight_SEMG_2_CT5_0_BPTT4",
 	    model_file_prefix,
 	    RNN_storage->internal_weight_matrix
 	);
 	Matrix_dump(
-	    "OutputWeight_SEMG_2_CT5_0",
+	    "OutputWeight_SEMG_2_CT5_0_BPTT4",
 	    model_file_prefix,
 	    RNN_storage->output_weight_matrix
 	);
@@ -151,6 +153,7 @@ int RNN_model_training_example() {
 
 
 int RNN_model_import_example() {
+	printf("RNN_model_import_example\n");
 	/*
 		RNN model param
 	*/
@@ -184,8 +187,8 @@ int RNN_model_import_example() {
 	/*
 		Storage prepare
 	 */
-	printf("--------------Working on training file\n");
-	DataSet_t *train_set = read_set_from_file(train_file);
+	printf("Working on testing file...\n");
+	DataSet_t *train_set = read_set_from_file(test_file);
 
 	RNN_t *RNN_storage
 	    = (RNN_t *) malloc(sizeof(RNN_t));
@@ -196,11 +199,12 @@ int RNN_model_import_example() {
 	    H,
 	    bptt_truncate_len
 	);
-	printf("--------------- RNN paramerter\n");
+	printf("-RNN paramerter-\n");
 	printf("Input vector length: %d\n", train_set->input_n);
 	printf("Output vector length: %d\n", train_set->output_n);
 	printf("Hidden vector length: %d\n", H);
 	printf("BPTT truncate length: %d\n", bptt_truncate_len);
+	printf("----------------\n");
 
 	// Storage for RNN_train()
 	Matrix_t *predicted_output_matrix;
@@ -213,26 +217,21 @@ int RNN_model_import_example() {
 	*/
 	printf("Import model...\n");
 	read_matrix_from_file(
-		"./data/model/InputWeight_SEMG_2_CT5_0.txt", 
+		"./data/model/InputWeight_SEMG_2_CT5_0_BPTT4.txt", 
 		RNN_storage->input_weight_matrix
 	);
 	read_matrix_from_file(
-		"./data/model/InternalWeight_SEMG_2_CT5_0.txt", 
+		"./data/model/InternalWeight_SEMG_2_CT5_0_BPTT4.txt", 
 		RNN_storage->internal_weight_matrix
 	);
 	read_matrix_from_file(
-		"./data/model/OutputWeight_SEMG_2_CT5_0.txt", 
+		"./data/model/OutputWeight_SEMG_2_CT5_0_BPTT4.txt", 
 		RNN_storage->output_weight_matrix
 	);
 
 	/*
 		Testing file forward propagation
 	 */
-	DataSet_destroy(train_set);
-
-	printf("--------------Working on testing file\n");
-	train_set = read_set_from_file(test_file);
-
 	FILE *pRes = fopen(result_file, "w");
 	fprintf(pRes, "%d\n", train_set->num_matrix);
 	fclose(pRes);
@@ -271,7 +270,7 @@ int RNN_model_import_example() {
 }
 
 int main() {
-	//return RNN_model_import_example();
 	return RNN_model_training_example();
+	//return RNN_model_import_example();
 }
 

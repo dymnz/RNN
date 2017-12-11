@@ -38,11 +38,6 @@ void IO_file_prepare(
 	strcat(test_file, file_postfix);
 	strcat(loss_file, file_postfix);
 	strcat(result_file, file_postfix);
-
-	printf("%s\n", train_file);
-	printf("%s\n", test_file);
-	printf("%s\n", loss_file);
-	printf("%s\n", result_file);
 }
 
 void Matrix_dump(
