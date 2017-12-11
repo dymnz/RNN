@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-Wall
+CFLAGS=-Wall -DFILE_NAME_LENGTH=255
 LFLAGS=-lm
 DEPS = common_math.h RNN.h file_process.h
 TEST_OBJ = test.o

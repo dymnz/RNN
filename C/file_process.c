@@ -1,6 +1,6 @@
 #include "file_process.h"
 
-void file_prepare(
+void IO_file_prepare(
     char train_file[],
     char test_file[],
     char loss_file[],
@@ -10,14 +10,14 @@ void file_prepare(
     char loss_file_name[],
     char result_file_name[]
 ) {
-	char file_postfix[] = ".txt";
-	char output_file_prefix[] = "./data/output/";
-	char input_file_prefix[] = "./data/input/";
+	const char file_postfix[] = ".txt";
+	const char output_file_prefix[] = "./data/output/";
+	const char input_file_prefix[] = "./data/input/";
 
-	char train_file_prefix[] = "";
-	char test_file_prefix[] = "";
-	char loss_file_prefix[] = "";
-	char result_file_prefix[] = "";
+	const char train_file_prefix[] = "";
+	const char test_file_prefix[] = "";
+	const char loss_file_prefix[] = "";
+	const char result_file_prefix[] = "";
 
 	strcat(train_file, input_file_prefix);
 	strcat(test_file, input_file_prefix);
@@ -43,6 +43,21 @@ void file_prepare(
 	printf("%s\n", test_file);
 	printf("%s\n", loss_file);
 	printf("%s\n", result_file);
+}
+
+void Matrix_dump(
+    char model_file_name[],
+    char file_directory[],
+    Matrix_t *matrix
+) {
+	char model_file[FILE_NAME_LENGTH] = {0};
+	char file_postfix[] = ".txt";
+
+	strcat(model_file, file_directory);
+	strcat(model_file, model_file_name);
+	strcat(model_file, file_postfix);
+
+	write_matrix_to_file(model_file, matrix, "w");
 }
 
 DataSet_t *read_set_from_file(char *file_name) {
@@ -101,6 +116,29 @@ DataSet_t *read_set_from_file(char *file_name) {
 	fclose(pFile);
 
 	return train_set;
+}
+
+// Matrix should be allocated already
+void read_matrix_from_file(char file[], Matrix_t *matrix) {
+	int m, n, r, j;
+
+	FILE *pFile = fopen (file, "r");
+	if (!pFile) {
+		printf("%s read error\n", file);
+		exit(69);
+	}
+	fscanf(pFile, "%d %d", &m, &n);
+
+	if (matrix->m != m || matrix->n != n) {
+		printf("matrix size mismatch\n");
+		exit(77);
+	} 
+
+	for (r = 0; r < m; ++r) {
+		for (j = 0; j < n; ++j) {
+			fscanf(pFile, "%lf", &(matrix->data[r][j]));
+		}
+	}
 }
 
 void write_matrix_to_file(char *file_name, Matrix_t *matrix, char *file_modifier) {
