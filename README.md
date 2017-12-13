@@ -22,4 +22,10 @@ C implementation of [WildML RNN](http://www.wildml.com/2015/09/recurrent-neural-
     6. Repeat 2~5 until EOF
 
 
+#### Parallel Programming Term Project
+* Parallelize Matrix operation
+    * Dimension of input/hidden/output layer should be big
+* LSTM not required if the outcome does not matter
+
+
 
