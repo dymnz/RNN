@@ -10,7 +10,7 @@
 * Clean up the code
 * Abstract matrix operation
 * Abstract squash function derivative for gradeint descent calculation
-* Model parameter import/export
+* ~~Model parameter import/export~~
 * LSTM!
 
 #### Reference

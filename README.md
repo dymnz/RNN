@@ -14,7 +14,7 @@ C implementation of [WildML RNN](http://www.wildml.com/2015/09/recurrent-neural-
 * Input/Output sample format
     - Input file name: "exp_{dataset_identifier}_{#_of_sample}_{param_N_name}{param_N}_..._{iteration}.txt"
     - Output file name: "res_{dataset_identifier}_{#_of_sample}_{param_N_name}{param_N}_..._{iteration}.txt"
-    1. # of sample
+    1. \# of sample
     2. Dimension of input 0 (m/row, n/col)
     3. Row major serialized input matrix 0
     4. Dimension of output 0 (m/row, n/col)
