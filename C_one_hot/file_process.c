@@ -1,5 +1,59 @@
 #include "file_process.h"
 
+void IO_file_prepare(
+    char train_file[],
+    char test_file[],
+    char loss_file[],
+    char result_file[],
+    char train_file_name[],
+    char test_file_name[],
+    char loss_file_name[],
+    char result_file_name[]
+) {
+	const char file_postfix[] = ".txt";
+	const char output_file_prefix[] = "./data/output/";
+	const char input_file_prefix[] = "./data/input/";
+
+	const char train_file_prefix[] = "";
+	const char test_file_prefix[] = "";
+	const char loss_file_prefix[] = "";
+	const char result_file_prefix[] = "";
+
+	strcat(train_file, input_file_prefix);
+	strcat(test_file, input_file_prefix);
+	strcat(loss_file, output_file_prefix);
+	strcat(result_file, output_file_prefix);
+
+	strcat(train_file, train_file_prefix);
+	strcat(test_file, test_file_prefix);
+	strcat(loss_file, loss_file_prefix);
+	strcat(result_file, result_file_prefix);
+
+	strcat(train_file, train_file_name);
+	strcat(test_file, test_file_name);
+	strcat(loss_file, loss_file_name);
+	strcat(result_file, result_file_name);
+
+	strcat(train_file, file_postfix);
+	strcat(test_file, file_postfix);
+	strcat(loss_file, file_postfix);
+	strcat(result_file, file_postfix);
+}
+
+void Matrix_dump(
+    char model_file_name[],
+    char file_directory[],
+    Matrix_t *matrix
+) {
+	char model_file[FILE_NAME_LENGTH] = {0};
+	char file_postfix[] = ".txt";
+
+	strcat(model_file, file_directory);
+	strcat(model_file, model_file_name);
+	strcat(model_file, file_postfix);
+
+	write_matrix_to_file(model_file, matrix, "w");
+}
 
 DataSet_t *read_set_from_file(char *file_name) {
 	FILE *pFile = fopen (file_name, "r");
@@ -59,8 +113,31 @@ DataSet_t *read_set_from_file(char *file_name) {
 	return train_set;
 }
 
-void write_matrix_to_file(char *file_name, Matrix_t *matrix) {
-	FILE *pFile = fopen (file_name, "w+");
+// Matrix should be allocated already
+void read_matrix_from_file(char file[], Matrix_t *matrix) {
+	int m, n, r, j;
+
+	FILE *pFile = fopen (file, "r");
+	if (!pFile) {
+		printf("%s read error\n", file);
+		exit(69);
+	}
+	fscanf(pFile, "%d %d", &m, &n);
+
+	if (matrix->m != m || matrix->n != n) {
+		printf("matrix size mismatch\n");
+		exit(77);
+	} 
+
+	for (r = 0; r < m; ++r) {
+		for (j = 0; j < n; ++j) {
+			fscanf(pFile, "%lf", &(matrix->data[r][j]));
+		}
+	}
+}
+
+void write_matrix_to_file(char *file_name, Matrix_t *matrix, char *file_modifier) {
+	FILE *pFile = fopen (file_name, file_modifier);
 	if (!pFile) {
 		printf("%s write error\n", file_name);
 		exit(69);
@@ -74,6 +151,7 @@ void write_matrix_to_file(char *file_name, Matrix_t *matrix) {
 			fprintf(pFile, "%lf\t", matrix->data[i][r]);
 		}
 	}
+	fprintf(pFile, "\n");
 
 	fclose(pFile);
 }
