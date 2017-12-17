@@ -125,5 +125,5 @@ math_t output_squash_derivative(
     math_t predicted_output,
     math_t expected_output
 );
-void output_squash_func(math_t *vector, math_t *result, int dim);
+math_t output_squash_func(math_t value);
 math_t sigmoid(math_t value);

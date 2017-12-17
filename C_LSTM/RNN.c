@@ -120,6 +120,7 @@ void RNN_forward_propagation(
 	clear_2d(G, t_dim, h_dim);
 	clear_2d(C, t_dim, h_dim);
 	clear_2d(S, t_dim, h_dim);
+	clear_2d(O, t_dim, o_dim);
 
 	clear_1d(Ig, h_dim);
 	clear_1d(Fg, h_dim);
@@ -145,8 +146,6 @@ void RNN_forward_propagation(
 		S[0][n] = internal_squash_func(C[0][n]) * Og[n];
 	}
 
-	// S[t] = X[t]*U + S[t-1]*W
-	// 1xH =  1xI*IxH + 1xH*HxH
 	for (t = 1; t < t_dim; ++t) {
 		clear_1d(Ig, h_dim);
 		clear_1d(Fg, h_dim);
@@ -177,22 +176,15 @@ void RNN_forward_propagation(
 		}
 	}
 
-
-	// O[t] = S[t] * V
-	// 1xO = 1xH * HxO
-	math_t *temp_vector = (math_t *) malloc(o_dim * sizeof(math_t));
-	clear_1d(temp_vector, o_dim);
+	
 	for (t = 0; t < t_dim; ++t) {
 		for (n = 0; n < o_dim; ++n) {
 			for (r = 0; r < h_dim; ++r) {
-				// O[t] = S[t] * V
-				temp_vector[n] += S[t][r] * V[r][n];
+				O[t][n] += S[t][r] * V[r][n];
 			}
 		}
-		output_squash_func(temp_vector, O[t], o_dim);
+		O[t][n] = output_squash_func(O[t][n]);
 	}
-
-	free(temp_vector);
 }
 
 // Cross entropy loss
@@ -605,11 +597,8 @@ math_t gate_squash_func(math_t value) {
 	return sigmoid(value);
 }
 
-void output_squash_func(math_t *vector, math_t *result, int dim) {
-	int i;
-	for (i = 0; i < dim; ++i) {
-		result[i] = vector[i];
-	}
+math_t output_squash_func(math_t value) {
+	return value;
 }
 
 math_t sigmoid(math_t value) {
