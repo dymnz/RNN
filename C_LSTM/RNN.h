@@ -6,20 +6,14 @@
 
 
 typedef struct {
-	int input_vector_len;
-
-	int output_vector_len;
-
-	int hidden_layer_vector_len;
+	int i_dim;
+	int o_dim;
+	int h_dim;
 	int bptt_truncate_len;
-
-    Matrix_t *Ig;    // 1xH
-    Matrix_t *Fg;    // 1xH
-    Matrix_t *Og;    // 1xH
-	Matrix_t *G;	// 1xH
 
     Matrix_t *C;    // TxH
     Matrix_t *S;    // TxH
+    Matrix_t *V;   // HxO
 
     Matrix_t *Ui;   // IxH
     Matrix_t *Wi;   // HxH
@@ -40,8 +34,6 @@ typedef struct {
     Matrix_t *Wg;   // HxH      
     Matrix_t *dUg;  // IxH
     Matrix_t *dWg;  // HxH
-
-    Matrix_t *V;   // HxO
 } RNN_t;
 
 typedef struct {

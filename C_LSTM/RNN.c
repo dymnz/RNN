@@ -28,52 +28,108 @@ void RNN_init(
     int hidden_layer_vector_len,
     int bptt_truncate_len
 ) {
-	RNN_storage->input_vector_len = input_vector_len;
-	RNN_storage->output_vector_len = output_vector_len;
-	RNN_storage->hidden_layer_vector_len = hidden_layer_vector_len;
+	RNN_storage->i_dim = input_vector_len;
+	RNN_storage->o_dim = output_vector_len;
+	RNN_storage->h_dim = hidden_layer_vector_len;
 	RNN_storage->bptt_truncate_len = bptt_truncate_len;
 
-	RNN_storage->input_weight_matrix
-	    = matrix_create(input_vector_len, hidden_layer_vector_len);
-	RNN_storage->output_weight_matrix
+	RNN_storage->C = matrix_create(0, 0);
+	RNN_storage->S = matrix_create(0, 0);
+	RNN_storage->V
 	    = matrix_create(hidden_layer_vector_len, output_vector_len);
-	RNN_storage->internal_weight_matrix
-	    = matrix_create(hidden_layer_vector_len, hidden_layer_vector_len);
-	RNN_storage->input_weight_gradient
+
+	RNN_storage->Ui
 	    = matrix_create(input_vector_len, hidden_layer_vector_len);
-	RNN_storage->output_weight_gradient
-	    = matrix_create(hidden_layer_vector_len, output_vector_len);
-	RNN_storage->internel_weight_gradient
+	RNN_storage->Wi
 	    = matrix_create(hidden_layer_vector_len, hidden_layer_vector_len);
-	RNN_storage->internal_state_matrix
-	    = matrix_create(0, 0);
+	RNN_storage->Uf
+	    = matrix_create(input_vector_len, hidden_layer_vector_len);
+	RNN_storage->Wf
+	    = matrix_create(hidden_layer_vector_len, hidden_layer_vector_len);
+	RNN_storage->Uo
+	    = matrix_create(input_vector_len, hidden_layer_vector_len);
+	RNN_storage->Wo
+	    = matrix_create(hidden_layer_vector_len, hidden_layer_vector_len);
+	RNN_storage->Ug
+	    = matrix_create(input_vector_len, hidden_layer_vector_len);
+	RNN_storage->Wg
+	    = matrix_create(hidden_layer_vector_len, hidden_layer_vector_len);
+
 
 	unsigned int seed = RNN_RAND_SEED;
+	
 	matrix_random_with_seed(
-	    RNN_storage->input_weight_matrix,
-	    -sqrt(1 / input_vector_len),
-	    sqrt(1 / input_vector_len),
-	    &seed);
-	matrix_random_with_seed(
-	    RNN_storage->output_weight_matrix,
+	    RNN_storage->V,
 	    -sqrt(1 / hidden_layer_vector_len),
 	    sqrt(1 / hidden_layer_vector_len),
 	    &seed);
 	matrix_random_with_seed(
-	    RNN_storage->internal_weight_matrix,
+	    RNN_storage->Ui,
+	    -sqrt(1 / input_vector_len),
+	    sqrt(1 / input_vector_len),
+	    &seed);
+	matrix_random_with_seed(
+	    RNN_storage->Uf,
+	    -sqrt(1 / input_vector_len),
+	    sqrt(1 / input_vector_len),
+	    &seed);
+	matrix_random_with_seed(
+	    RNN_storage->Uo,
+	    -sqrt(1 / input_vector_len),
+	    sqrt(1 / input_vector_len),
+	    &seed);
+	matrix_random_with_seed(
+	    RNN_storage->Ug,
+	    -sqrt(1 / input_vector_len),
+	    sqrt(1 / input_vector_len),
+	    &seed);
+
+	matrix_random_with_seed(
+	    RNN_storage->Wi,
+	    -sqrt(1 / hidden_layer_vector_len),
+	    sqrt(1 / hidden_layer_vector_len),
+	    &seed);
+	matrix_random_with_seed(
+	    RNN_storage->Wf,
+	    -sqrt(1 / hidden_layer_vector_len),
+	    sqrt(1 / hidden_layer_vector_len),
+	    &seed);
+	matrix_random_with_seed(
+	    RNN_storage->Wo,
+	    -sqrt(1 / hidden_layer_vector_len),
+	    sqrt(1 / hidden_layer_vector_len),
+	    &seed);
+	matrix_random_with_seed(
+	    RNN_storage->Wg,
 	    -sqrt(1 / hidden_layer_vector_len),
 	    sqrt(1 / hidden_layer_vector_len),
 	    &seed);
 }
 
 void RNN_destroy(RNN_t *RNN_storage) {
-	matrix_free(RNN_storage->input_weight_matrix);
-	matrix_free(RNN_storage->output_weight_matrix);
-	matrix_free(RNN_storage->internal_weight_matrix);
-	matrix_free(RNN_storage->internal_state_matrix);
-	matrix_free(RNN_storage->input_weight_gradient);
-	matrix_free(RNN_storage->output_weight_gradient);
-	matrix_free(RNN_storage->internel_weight_gradient);
+	matrix_free(RNN_storage->C);
+	matrix_free(RNN_storage->S);
+	matrix_free(RNN_storage->V);
+
+	matrix_free(RNN_storage->Ui);
+	matrix_free(RNN_storage->Wi);
+	matrix_free(RNN_storage->dUi);
+	matrix_free(RNN_storage->dWi);
+
+	matrix_free(RNN_storage->Uf);
+	matrix_free(RNN_storage->Wf);
+	matrix_free(RNN_storage->dUf);
+	matrix_free(RNN_storage->dWf);
+
+	matrix_free(RNN_storage->Uo);
+	matrix_free(RNN_storage->Wo);
+	matrix_free(RNN_storage->dUo);
+	matrix_free(RNN_storage->dWo);
+
+	matrix_free(RNN_storage->Ug);
+	matrix_free(RNN_storage->Wg);
+	matrix_free(RNN_storage->dUg);
+	matrix_free(RNN_storage->dWg);
 	free(RNN_storage);
 }
 
@@ -82,23 +138,16 @@ void RNN_forward_propagation(
     Matrix_t *input_matrix,	// TxI
     Matrix_t *output_matrix	// TxO
 ) {
-	int i_dim = RNN_storage->input_vector_len;
-	int o_dim = RNN_storage->output_vector_len;
+	int i_dim = RNN_storage->i_dim;
+	int o_dim = RNN_storage->o_dim;
 	int t_dim = input_matrix->m;
-	int h_dim = RNN_storage->hidden_layer_vector_len;
+	int h_dim = RNN_storage->h_dim;
 
-	matrix_resize(
-	    RNN_storage->internal_state_matrix,
-	    t_dim,
-	    RNN_storage->hidden_layer_vector_len);
+	matrix_resize(RNN_storage->C, t_dim, h_dim);
+	matrix_resize(RNN_storage->S, t_dim, h_dim);
 
 	math_t **X = input_matrix->data;
 	math_t **O = output_matrix->data;
-
-	math_t *Ig = RNN_storage->Ig->data[0];    // 1xH
-	math_t *Fg = RNN_storage->Fg->data[0];    // 1xH
-	math_t *Og = RNN_storage->Og->data[0];    // 1xH
-	math_t *G = RNN_storage->G->data[0];    // 1xH
 
 	math_t **C = RNN_storage->C->data;    // TxH
 	math_t **S = RNN_storage->S->data;    // TxH
@@ -114,6 +163,11 @@ void RNN_forward_propagation(
 
 	math_t **Ug = RNN_storage->Ug->data;   // IxH
 	math_t **Wg = RNN_storage->Wg->data;   // HxH
+
+	math_t *Ig = (math_t *) malloc(h_dim * sizeof(math_t));    // 1xH
+	math_t *Fg = (math_t *) malloc(h_dim * sizeof(math_t));    // 1xH
+	math_t *Og = (math_t *) malloc(h_dim * sizeof(math_t));    // 1xH
+	math_t *G = (math_t *) malloc(h_dim * sizeof(math_t));    // 1xH
 
 	int m, n, r, t;
 
@@ -176,7 +230,6 @@ void RNN_forward_propagation(
 		}
 	}
 
-	
 	for (t = 0; t < t_dim; ++t) {
 		for (n = 0; n < o_dim; ++n) {
 			for (r = 0; r < h_dim; ++r) {
@@ -185,6 +238,11 @@ void RNN_forward_propagation(
 		}
 		O[t][n] = output_squash_func(O[t][n]);
 	}
+
+	free(Ig);
+	free(Fg);
+	free(Og);
+	free(G);
 }
 
 // Cross entropy loss
@@ -196,7 +254,7 @@ math_t RNN_loss_calculation(
 	math_t total_loss = 0.0, log_term = 0.0, delta;
 
 	int t_dim = predicted_output_matrix->m;
-	int o_dim = RNN_storage->output_vector_len;
+	int o_dim = RNN_storage->o_dim;
 
 	int t, o;
 	for (t = 0; t < t_dim; ++t) {
@@ -221,11 +279,29 @@ void RNN_BPTT(
     Matrix_t *expected_output_matrix	// TxO
 ) {
 	int t_dim = input_matrix->m;
-	int i_dim = RNN_storage->input_vector_len;
-	int o_dim = RNN_storage->output_vector_len;
-	int h_dim = RNN_storage->hidden_layer_vector_len;
+	int i_dim = RNN_storage->i_dim;
+	int o_dim = RNN_storage->o_dim;
+	int h_dim = RNN_storage->h_dim;
 
 	int bptt_truncate_len = RNN_storage->bptt_truncate_len;
+
+	math_t **X = input_matrix->data;
+	math_t **O = output_matrix->data;
+
+	math_t **C = RNN_storage->C->data;    // TxH
+	math_t **S = RNN_storage->S->data;    // TxH
+
+	math_t **Ui = RNN_storage->Ui->data;   // IxH
+	math_t **Wi = RNN_storage->Wi->data;   // HxH
+
+	math_t **Uf = RNN_storage->Uf->data;   // IxH
+	math_t **Wf = RNN_storage->Wf->data;   // HxH
+
+	math_t **Uo = RNN_storage->Uo->data;   // IxH
+	math_t **Wo = RNN_storage->Wo->data;   // HxH
+
+	math_t **Ug = RNN_storage->Ug->data;   // IxH
+	math_t **Wg = RNN_storage->Wg->data;   // HxH
 
 	math_t **delta_o
 	    = create_2d(t_dim, o_dim);
@@ -234,13 +310,6 @@ void RNN_BPTT(
 	math_t *temp_delta_t
 	    = (math_t *) malloc(h_dim * sizeof(math_t));
 
-	math_t **S = RNN_storage->internal_state_matrix->data;	// TxH
-	math_t **V = RNN_storage->output_weight_matrix->data;	// HxO
-	math_t **W = RNN_storage->internal_weight_matrix->data;	// HxH
-
-	math_t **dLdU = RNN_storage->input_weight_gradient->data;	// IxH
-	math_t **dLdV = RNN_storage->output_weight_gradient->data;	// HxO
-	math_t **dLdW = RNN_storage->internel_weight_gradient->data; // HxH
 
 	math_t **X = input_matrix->data;
 	math_t **O = predicted_output_matrix->data;
@@ -345,9 +414,9 @@ void RNN_SGD(
 	math_t **dLdV = RNN_storage->output_weight_gradient->data;	// HxO
 	math_t **dLdW = RNN_storage->internel_weight_gradient->data; // HxH
 
-	int i_dim = RNN_storage->input_vector_len;
-	int o_dim = RNN_storage->output_vector_len;
-	int h_dim = RNN_storage->hidden_layer_vector_len;
+	int i_dim = RNN_storage->i_dim;
+	int o_dim = RNN_storage->o_dim;
+	int h_dim = RNN_storage->h_dim;
 
 	RNN_forward_propagation(
 	    RNN_storage,
