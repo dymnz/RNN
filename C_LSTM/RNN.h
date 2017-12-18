@@ -13,6 +13,11 @@ typedef struct {
 
     Matrix_t *C;    // TxH
     Matrix_t *S;    // TxH
+    Matrix_t *G;    // TxH
+
+    Matrix_t *Ig;    // TxH
+    Matrix_t *Fg;    // TxH
+    Matrix_t *Og;    // TxH
     Matrix_t *V;   // HxO
 
     Matrix_t *Ui;   // IxH

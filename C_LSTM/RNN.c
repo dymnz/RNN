@@ -35,6 +35,10 @@ void RNN_init(
 
 	RNN_storage->C = matrix_create(0, 0);
 	RNN_storage->S = matrix_create(0, 0);
+	RNN_storage->G = matrix_create(0, 0);
+	RNN_storage->Ig = matrix_create(0, 0);
+	RNN_storage->Fg = matrix_create(0, 0);
+	RNN_storage->Og = matrix_create(0, 0);
 	RNN_storage->V
 	    = matrix_create(hidden_layer_vector_len, output_vector_len);
 
@@ -145,6 +149,10 @@ void RNN_forward_propagation(
 
 	matrix_resize(RNN_storage->C, t_dim, h_dim);
 	matrix_resize(RNN_storage->S, t_dim, h_dim);
+	matrix_resize(RNN_storage->G, t_dim, h_dim);
+	matrix_resize(RNN_storage->Ig, t_dim, h_dim);
+	matrix_resize(RNN_storage->Fg, t_dim, h_dim);
+	matrix_resize(RNN_storage->Og, t_dim, h_dim);
 
 	math_t **X = input_matrix->data;
 	math_t **O = output_matrix->data;
@@ -164,10 +172,10 @@ void RNN_forward_propagation(
 	math_t **Ug = RNN_storage->Ug->data;   // IxH
 	math_t **Wg = RNN_storage->Wg->data;   // HxH
 
-	math_t *Ig = (math_t *) malloc(h_dim * sizeof(math_t));    // 1xH
-	math_t *Fg = (math_t *) malloc(h_dim * sizeof(math_t));    // 1xH
-	math_t *Og = (math_t *) malloc(h_dim * sizeof(math_t));    // 1xH
-	math_t *G = (math_t *) malloc(h_dim * sizeof(math_t));    // 1xH
+	math_t **Ig = RNN_storage->Ig->data;	// TxH
+	math_t **Fg = RNN_storage->Fg->data;	// TxH
+	math_t **Og = RNN_storage->Og->data;	// TxH
+	math_t **G = RNN_storage->G->data;		// TxH
 
 	int m, n, r, t;
 
@@ -176,57 +184,53 @@ void RNN_forward_propagation(
 	clear_2d(S, t_dim, h_dim);
 	clear_2d(O, t_dim, o_dim);
 
-	clear_1d(Ig, h_dim);
-	clear_1d(Fg, h_dim);
-	clear_1d(Og, h_dim);
-	clear_1d(G, h_dim);
+	clear_2d(Ig, t_dim, h_dim);
+	clear_2d(Fg, t_dim, h_dim);
+	clear_2d(Og, t_dim, h_dim);
+	clear_2d(G, t_dim, h_dim);
 
 	// For t = 0
 	for (n = 0; n < h_dim; ++n) {
 		for (r = 0; r < i_dim; ++r) {
-			Ig[n] += X[0][r] * Ui[r][n];
-			Fg[n] += X[0][r] * Uf[r][n];
-			Og[n] += X[0][r] * Uo[r][n];
-			G[n] += X[0][r] * Ug[r][n];
+			Ig[0][n] += X[0][r] * Ui[r][n];
+			Fg[0][n] += X[0][r] * Uf[r][n];
+			Og[0][n] += X[0][r] * Uo[r][n];
+			G[0][n] += X[0][r] * Ug[r][n];
 		}
 	}
 	for (n = 0; n < h_dim; ++n) {
-		Ig[n] = gate_squash_func(Ig[n]);
-		Fg[n] = gate_squash_func(Fg[n]);
-		Og[n] = gate_squash_func(Og[n]);
-		G[n] = internal_squash_func(G[n]);
+		Ig[0][n] = gate_squash_func(Ig[0][n]);
+		Fg[0][n] = gate_squash_func(Fg[0][n]);
+		Og[0][n] = gate_squash_func(Og[0][n]);
+		G[0][n] = internal_squash_func(G[0][n]);
 
-		C[0][n] = G[n] * Ig[n];
-		S[0][n] = internal_squash_func(C[0][n]) * Og[n];
+		C[0][n] = G[0][n] * Ig[0][n];
+		S[0][n] = internal_squash_func(C[0][n]) * Og[0][n];
 	}
 
 	for (t = 1; t < t_dim; ++t) {
-		clear_1d(Ig, h_dim);
-		clear_1d(Fg, h_dim);
-		clear_1d(Og, h_dim);
-		clear_1d(G, h_dim);
 		for (n = 0; n < h_dim; ++n) {
 			for (r = 0; r < i_dim; ++r) {
 				// S[t] = X[t]*U
-				Ig[n] += X[t][r] * Ui[r][n];
-				Fg[n] += X[t][r] * Uf[r][n];
-				Og[n] += X[t][r] * Uo[r][n];
-				G[n] += X[t][r] * Ug[r][n];
+				Ig[t][n] += X[t][r] * Ui[r][n];
+				Fg[t][n] += X[t][r] * Uf[r][n];
+				Og[t][n] += X[t][r] * Uo[r][n];
+				G[t][n] += X[t][r] * Ug[r][n];
 			}
 			for (r = 0; r < h_dim; ++r) {
 				// S[t] = X[t]*U + S[t-1]*W
-				Ig[n] += S[t - 1][r] * Wi[r][n];
-				Fg[n] += S[t - 1][r] * Wf[r][n];
-				Og[n] += S[t - 1][r] * Wo[r][n];
-				G[n] += S[t - 1][r] * Wg[r][n];
+				Ig[t][n] += S[t - 1][r] * Wi[r][n];
+				Fg[t][n] += S[t - 1][r] * Wf[r][n];
+				Og[t][n] += S[t - 1][r] * Wo[r][n];
+				G[t][n] += S[t - 1][r] * Wg[r][n];
 			}
-			Ig[n] = gate_squash_func(Ig[n]);
-			Fg[n] = gate_squash_func(Fg[n]);
-			Og[n] = gate_squash_func(Og[n]);
-			G[n] = internal_squash_func(G[n]);
+			Ig[t][n] = gate_squash_func(Ig[t][n]);
+			Fg[t][n] = gate_squash_func(Fg[t][n]);
+			Og[t][n] = gate_squash_func(Og[t][n]);
+			G[t][n] = internal_squash_func(G[t][n]);
 
-			C[t][n] = C[t - 1][n] * Fg[n] + G[n] * Ig[n];
-			S[t][n] = internal_squash_func(C[0][n]) * Og[n];
+			C[t][n] = C[t - 1][n] * Fg[t][n] + G[t][n] * Ig[t][n];
+			S[t][n] = internal_squash_func(C[t][n]) * Og[t][n];
 		}
 	}
 
@@ -238,11 +242,6 @@ void RNN_forward_propagation(
 		}
 		O[t][n] = output_squash_func(O[t][n]);
 	}
-
-	free(Ig);
-	free(Fg);
-	free(Og);
-	free(G);
 }
 
 // Cross entropy loss
@@ -290,6 +289,10 @@ void RNN_BPTT(
 
 	math_t **C = RNN_storage->C->data;    // TxH
 	math_t **S = RNN_storage->S->data;    // TxH
+	math_t **Ig = RNN_storage->S->data;    // TxH
+	math_t **Gg = RNN_storage->S->data;    // TxH
+	math_t **Og = RNN_storage->S->data;    // TxH
+	math_t **Fg = RNN_storage->S->data;    // TxH
 
 	math_t **Ui = RNN_storage->Ui->data;   // IxH
 	math_t **Wi = RNN_storage->Wi->data;   // HxH
