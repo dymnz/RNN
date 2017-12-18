@@ -113,7 +113,11 @@ void RNN_init(
 void RNN_destroy(RNN_t *RNN_storage) {
 	matrix_free(RNN_storage->C);
 	matrix_free(RNN_storage->S);
+	matrix_free(RNN_storage->G);
 	matrix_free(RNN_storage->V);
+	matrix_free(RNN_storage->Ig);
+	matrix_free(RNN_storage->Fg);
+	matrix_free(RNN_storage->Og);
 
 	matrix_free(RNN_storage->Ui);
 	matrix_free(RNN_storage->Wi);
@@ -133,6 +137,11 @@ void RNN_destroy(RNN_t *RNN_storage) {
 	matrix_free(RNN_storage->Ug);
 	matrix_free(RNN_storage->Wg);
 	matrix_free(RNN_storage->dUg);
+	matrix_free(RNN_storage->dWg);
+
+	matrix_free(RNN_storage->dWg);
+	matrix_free(RNN_storage->dWg);
+	matrix_free(RNN_storage->dWg);
 	matrix_free(RNN_storage->dWg);
 	free(RNN_storage);
 }
@@ -187,7 +196,6 @@ void RNN_forward_propagation(
 	clear_2d(Ig, t_dim, h_dim);
 	clear_2d(Fg, t_dim, h_dim);
 	clear_2d(Og, t_dim, h_dim);
-	clear_2d(G, t_dim, h_dim);
 
 	// For t = 0
 	for (n = 0; n < h_dim; ++n) {
