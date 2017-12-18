@@ -168,6 +168,11 @@ void RNN_forward_propagation(
 
 	math_t **C = RNN_storage->C->data;    // TxH
 	math_t **S = RNN_storage->S->data;    // TxH
+	math_t **G = RNN_storage->G->data;		// TxH
+
+	math_t **Ig = RNN_storage->Ig->data;	// TxH
+	math_t **Fg = RNN_storage->Fg->data;	// TxH
+	math_t **Og = RNN_storage->Og->data;	// TxH
 
 	math_t **Ui = RNN_storage->Ui->data;   // IxH
 	math_t **Wi = RNN_storage->Wi->data;   // HxH
@@ -180,12 +185,7 @@ void RNN_forward_propagation(
 
 	math_t **Ug = RNN_storage->Ug->data;   // IxH
 	math_t **Wg = RNN_storage->Wg->data;   // HxH
-
-	math_t **Ig = RNN_storage->Ig->data;	// TxH
-	math_t **Fg = RNN_storage->Fg->data;	// TxH
-	math_t **Og = RNN_storage->Og->data;	// TxH
-	math_t **G = RNN_storage->G->data;		// TxH
-
+	
 	int m, n, r, t;
 
 	clear_2d(G, t_dim, h_dim);
@@ -297,10 +297,11 @@ void RNN_BPTT(
 
 	math_t **C = RNN_storage->C->data;    // TxH
 	math_t **S = RNN_storage->S->data;    // TxH
-	math_t **Ig = RNN_storage->S->data;    // TxH
-	math_t **Gg = RNN_storage->S->data;    // TxH
-	math_t **Og = RNN_storage->S->data;    // TxH
-	math_t **Fg = RNN_storage->S->data;    // TxH
+	math_t **G = RNN_storage->G->data;		// TxH
+
+	math_t **Ig = RNN_storage->Ig->data;	// TxH
+	math_t **Fg = RNN_storage->Fg->data;	// TxH
+	math_t **Og = RNN_storage->Og->data;	// TxH
 
 	math_t **Ui = RNN_storage->Ui->data;   // IxH
 	math_t **Wi = RNN_storage->Wi->data;   // HxH
