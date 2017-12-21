@@ -13,12 +13,14 @@ typedef struct {
 
     Matrix_t *C;    // TxH
     Matrix_t *S;    // TxH
-    Matrix_t *G;    // TxH
+    Matrix_t *aS;    // TxH
 
     Matrix_t *Ig;    // TxH
     Matrix_t *Fg;    // TxH
     Matrix_t *Og;    // TxH
+
     Matrix_t *V;   // HxO
+    Matrix_t *dV;   // HxO
 
     Matrix_t *Ui;   // IxH
     Matrix_t *Wi;   // HxH
@@ -35,10 +37,10 @@ typedef struct {
     Matrix_t *dUo;  // IxH
     Matrix_t *dWo;  // HxH    
 
-    Matrix_t *Ug;   // IxH
-    Matrix_t *Wg;   // HxH      
-    Matrix_t *dUg;  // IxH
-    Matrix_t *dWg;  // HxH
+    Matrix_t *Us;   // IxH
+    Matrix_t *Ws;   // HxH      
+    Matrix_t *dUs;  // IxH
+    Matrix_t *dWs;  // HxH
 } RNN_t;
 
 typedef struct {
@@ -117,10 +119,9 @@ int RNN_Gradient_check(
     int index_to_check
 );
 
-math_t internal_squash_func(math_t value);
-math_t output_squash_derivative(
-    math_t predicted_output,
-    math_t expected_output
-);
-math_t output_squash_func(math_t value);
+math_t gate_squash_func(math_t value);
+math_t cell_state_squash_func(math_t value);
+math_t cell_output_squash_func(math_t value);
+math_t network_output_squash_func(math_t value);
+
 math_t sigmoid(math_t value);

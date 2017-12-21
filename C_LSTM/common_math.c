@@ -70,12 +70,14 @@ Matrix_t *matrix_create(int m, int n) {
 	return matrix;
 }
 
-void matrix_resize(Matrix_t *matrix, int m, int n) {
-	if (matrix != NULL && matrix->m == m && matrix->n == n)
-		return;
 
+/* TODO: If m > _m && n > _n, return ? */
+void matrix_resize(Matrix_t *matrix, int m, int n) {
 	if (matrix == NULL)
 		exit(77);
+
+	if (matrix->m == m && matrix->n == n)
+		return;
 	
 	free_2d(matrix->data, matrix->m);	
 
