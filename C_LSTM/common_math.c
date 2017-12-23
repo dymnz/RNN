@@ -76,7 +76,7 @@ void matrix_resize(Matrix_t *matrix, int m, int n) {
 	if (matrix == NULL)
 		exit(77);
 
-	if (matrix->m == m && matrix->n == n)
+	if (matrix->m >= m && matrix->n >= n)
 		return;
 	
 	free_2d(matrix->data, matrix->m);	

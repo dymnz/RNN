@@ -22,9 +22,18 @@ typedef struct {
     Matrix_t *Pi, *Pf, *Po;         // 1xH
     Matrix_t *Bz, *Bi, *Bf, *Bo;    // 1xH
 
+    Matrix_t *dWz, *dWi, *dWf, *dWo;    // HxI
+    Matrix_t *dRz, *dRi, *dRf, *dRo;    // HxH
+    Matrix_t *dPi, *dPf, *dPo;          // 1xH
+    Matrix_t *dBz, *dBi, *dBf, *dBo;    // 1xH  
+
     /* Output model */
     Matrix_t *V;                    // OxH
     Matrix_t *Bpo;                  // 1xO
+
+    Matrix_t *dV;                    // OxH
+    Matrix_t *dBpo;                  // 1xO
+
 } RNN_t;
 
 typedef struct {
@@ -104,8 +113,11 @@ int RNN_Gradient_check(
 );
 
 math_t gate_squash_func(math_t value);
+math_t gate_squash_derivative(math_t value);
 math_t cell_state_squash_func(math_t value);
+math_t cell_state_squash_derivative(math_t value);
 math_t cell_output_squash_func(math_t value);
+math_t cell_output_squash_derivative(math_t value);
 math_t network_output_squash_func(math_t value);
 
 math_t sigmoid(math_t value);

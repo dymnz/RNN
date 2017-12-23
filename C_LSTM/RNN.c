@@ -49,43 +49,43 @@ void RNN_init(
 	RNN_storage->Y = matrix_create(0, 0);
 
 	/* LSTM model */
-	RNN_storage->Wz = matrix_create(h_dim, i_dim);
-	RNN_storage->Wi = matrix_create(h_dim, i_dim);
-	RNN_storage->Wf = matrix_create(h_dim, i_dim);
-	RNN_storage->Wo = matrix_create(h_dim, i_dim);
+	RNN_storage->Wz = matrix_create(h_dim, i_dim); RNN_storage->dWz = matrix_create(h_dim, i_dim);
+	RNN_storage->Wi = matrix_create(h_dim, i_dim); RNN_storage->dWi = matrix_create(h_dim, i_dim);
+	RNN_storage->Wf = matrix_create(h_dim, i_dim); RNN_storage->dWf = matrix_create(h_dim, i_dim);
+	RNN_storage->Wo = matrix_create(h_dim, i_dim); RNN_storage->dWo = matrix_create(h_dim, i_dim);
 	matrix_random_with_seed(RNN_storage->Wz, -sqrt(1 / h_dim), sqrt(1 / h_dim), &seed);
 	matrix_random_with_seed(RNN_storage->Wi, -sqrt(1 / h_dim), sqrt(1 / h_dim), &seed);
 	matrix_random_with_seed(RNN_storage->Wf, -sqrt(1 / h_dim), sqrt(1 / h_dim), &seed);
 	matrix_random_with_seed(RNN_storage->Wo, -sqrt(1 / h_dim), sqrt(1 / h_dim), &seed);
 
-	RNN_storage->Rz = matrix_create(h_dim, h_dim);
-	RNN_storage->Ri = matrix_create(h_dim, h_dim);
-	RNN_storage->Rf = matrix_create(h_dim, h_dim);
-	RNN_storage->Ro = matrix_create(h_dim, h_dim);
+	RNN_storage->Rz = matrix_create(h_dim, h_dim); RNN_storage->dRz = matrix_create(h_dim, h_dim);
+	RNN_storage->Ri = matrix_create(h_dim, h_dim); RNN_storage->dRi = matrix_create(h_dim, h_dim);
+	RNN_storage->Rf = matrix_create(h_dim, h_dim); RNN_storage->dRf = matrix_create(h_dim, h_dim);
+	RNN_storage->Ro = matrix_create(h_dim, h_dim); RNN_storage->dRo = matrix_create(h_dim, h_dim);
 	matrix_random_with_seed(RNN_storage->Rz, -sqrt(1 / i_dim), sqrt(1 / i_dim), &seed);
 	matrix_random_with_seed(RNN_storage->Ri, -sqrt(1 / i_dim), sqrt(1 / i_dim), &seed);
 	matrix_random_with_seed(RNN_storage->Rf, -sqrt(1 / i_dim), sqrt(1 / i_dim), &seed);
 	matrix_random_with_seed(RNN_storage->Ro, -sqrt(1 / i_dim), sqrt(1 / i_dim), &seed);
 
-	RNN_storage->Pi = matrix_create(1, h_dim);
-	RNN_storage->Pf = matrix_create(1, h_dim);
-	RNN_storage->Po = matrix_create(1, h_dim);
+	RNN_storage->Pi = matrix_create(1, h_dim); RNN_storage->dPi = matrix_create(1, h_dim);
+	RNN_storage->Pf = matrix_create(1, h_dim); RNN_storage->dPf = matrix_create(1, h_dim);
+	RNN_storage->Po = matrix_create(1, h_dim); RNN_storage->dPo = matrix_create(1, h_dim);
 	matrix_random_with_seed(RNN_storage->Pi, -sqrt(1 / h_dim), sqrt(1 / h_dim), &seed);
 	matrix_random_with_seed(RNN_storage->Pf, -sqrt(1 / h_dim), sqrt(1 / h_dim), &seed);
 	matrix_random_with_seed(RNN_storage->Po, -sqrt(1 / h_dim), sqrt(1 / h_dim), &seed);
 
-	RNN_storage->Bz = matrix_create(1, h_dim);
-	RNN_storage->Bi = matrix_create(1, h_dim);
-	RNN_storage->Bf = matrix_create(1, h_dim);
-	RNN_storage->Bo = matrix_create(1, h_dim);
+	RNN_storage->Bz = matrix_create(1, h_dim); RNN_storage->dBz = matrix_create(1, h_dim);
+	RNN_storage->Bi = matrix_create(1, h_dim); RNN_storage->dBi = matrix_create(1, h_dim);
+	RNN_storage->Bf = matrix_create(1, h_dim); RNN_storage->dBf = matrix_create(1, h_dim);
+	RNN_storage->Bo = matrix_create(1, h_dim); RNN_storage->dBo = matrix_create(1, h_dim);
 	matrix_random_with_seed(RNN_storage->Bz, -sqrt(1 / h_dim), sqrt(1 / h_dim), &seed);
 	matrix_random_with_seed(RNN_storage->Bi, -sqrt(1 / h_dim), sqrt(1 / h_dim), &seed);
 	matrix_random_with_seed(RNN_storage->Bf, -sqrt(1 / h_dim), sqrt(1 / h_dim), &seed);
 	matrix_random_with_seed(RNN_storage->Bo, -sqrt(1 / h_dim), sqrt(1 / h_dim), &seed);
 
 	/* Output model */
-	RNN_storage->V = matrix_create(o_dim, h_dim);
-	RNN_storage->Bpo = matrix_create(1, o_dim);
+	RNN_storage->V = matrix_create(o_dim, h_dim); RNN_storage->dV = matrix_create(o_dim, h_dim);
+	RNN_storage->Bpo = matrix_create(1, o_dim); RNN_storage->dBpo = matrix_create(1, o_dim);
 	matrix_random_with_seed(RNN_storage->V, -sqrt(1 / h_dim), sqrt(1 / h_dim), &seed);
 	matrix_random_with_seed(RNN_storage->Bpo, -sqrt(1 / h_dim), sqrt(1 / h_dim), &seed);
 }
@@ -140,7 +140,6 @@ void RNN_forward_propagation(
 	matrix_resize(RNN_storage->C, t_dim, h_dim);
 	matrix_resize(RNN_storage->Y, t_dim, h_dim);
 
-
 	math_t **X = input_matrix->data;
 	math_t **P_O = predicted_output_matrix->data;
 
@@ -168,8 +167,6 @@ void RNN_forward_propagation(
 	clear_2d(I_, t_dim, h_dim);
 	clear_2d(F_, t_dim, h_dim);
 	clear_2d(O_, t_dim, h_dim);
-	clear_2d(C, t_dim, h_dim);
-	clear_2d(Y, t_dim, h_dim);
 	clear_2d(P_O, t_dim, o_dim);
 
 	int h, i, o, r, t;
@@ -257,46 +254,129 @@ void RNN_forward_propagation(
 	}
 }
 
-// Cross entropy loss
-math_t RNN_loss_calculation(
-    RNN_t * RNN_storage,
-    Matrix_t *predicted_output_matrix,	// TxO
-    Matrix_t *expected_output_matrix	// TxO
-) {
-	math_t total_loss = 0.0, log_term = 0.0, delta;
-
-	int t_dim = predicted_output_matrix->m;
-	int o_dim = RNN_storage->o_dim;
-
-	int t, o;
-	for (t = 0; t < t_dim; ++t) {
-		// expected_output_matrix is an one-hot vector
-		log_term = 0;
-		for (o = 0; o < o_dim; ++o) {
-			delta =
-			    expected_output_matrix->data[t][o] -
-			    predicted_output_matrix->data[t][o];
-			log_term += delta * delta;
-		}
-		total_loss += log_term;
-	}
-
-	return total_loss;
-}
-
 void RNN_BPTT(
     RNN_t * RNN_storage,
     Matrix_t *input_matrix,				// TxI
     Matrix_t *predicted_output_matrix,	// TxO
     Matrix_t *expected_output_matrix	// TxO
 ) {
-	int t_dim = input_matrix->m;
 	int i_dim = RNN_storage->i_dim;
 	int o_dim = RNN_storage->o_dim;
+	int t_dim = input_matrix->m;
 	int h_dim = RNN_storage->h_dim;
+
+	math_t **X = input_matrix->data;
+	math_t **P_O = predicted_output_matrix->data;
+	math_t **E_O = expected_output_matrix->data;
+
+	math_t **Z_ = RNN_storage->Z_->data; 	math_t **Z = RNN_storage->Z->data;
+	math_t **I_ = RNN_storage->I_->data; 	math_t **I = RNN_storage->I->data;
+	math_t **F_ = RNN_storage->F_->data; 	math_t **F = RNN_storage->F->data;
+	math_t **O_ = RNN_storage->O_->data; 	math_t **O = RNN_storage->O->data;
+	math_t **C = RNN_storage->C->data;
+	math_t **Y = RNN_storage->Y->data;
+
+	math_t **Wz = RNN_storage->Wz->data; math_t **Rz = RNN_storage->Rz->data;
+	math_t **Wi = RNN_storage->Wi->data; math_t **Ri = RNN_storage->Ri->data;
+	math_t **Wf = RNN_storage->Wf->data; math_t **Rf = RNN_storage->Rf->data;
+	math_t **Wo = RNN_storage->Wo->data; math_t **Ro = RNN_storage->Ro->data;
+
+	math_t **dWz = RNN_storage->dWz->data; math_t **dRz = RNN_storage->dRz->data;
+	math_t **dWi = RNN_storage->dWi->data; math_t **dRi = RNN_storage->dRi->data;
+	math_t **dWf = RNN_storage->dWf->data; math_t **dRf = RNN_storage->dRf->data;
+	math_t **dWo = RNN_storage->dWo->data; math_t **dRo = RNN_storage->dRo->data;
+
+	math_t *Bz = RNN_storage->Bz->data[0];
+	math_t *Bi = RNN_storage->Bi->data[0]; math_t *Pi = RNN_storage->Pi->data[0];
+	math_t *Bf = RNN_storage->Bf->data[0]; math_t *Pf = RNN_storage->Pf->data[0];
+	math_t *Bo = RNN_storage->Bo->data[0]; math_t *Po = RNN_storage->Po->data[0];
+
+	math_t *dBz = RNN_storage->dBz->data[0];
+	math_t *dBi = RNN_storage->dBi->data[0]; math_t *dPi = RNN_storage->dPi->data[0];
+	math_t *dBf = RNN_storage->dBf->data[0]; math_t *dPf = RNN_storage->dPf->data[0];
+	math_t *dBo = RNN_storage->dBo->data[0]; math_t *dPo = RNN_storage->dPo->data[0];
+
+	math_t **V = RNN_storage->V->data; 
+	math_t **dV = RNN_storage->dV->data;
+	math_t *Bpo = RNN_storage->Bpo->data[0]; 
+	math_t *dBpo = RNN_storage->dBpo->data[0];
 
 	int bptt_truncate_len = RNN_storage->bptt_truncate_len;
 
+	clear_2d(dRz, h_dim, h_dim);
+	clear_2d(dRi, h_dim, h_dim); clear_1d(dPi, h_dim);
+	clear_2d(dRf, h_dim, h_dim); clear_1d(dPf, h_dim);
+	clear_2d(dRo, h_dim, h_dim); clear_1d(dPo, h_dim);
+
+	math_t *dP_O = (math_t *) malloc(o_dim * sizeof(math_t));
+	math_t *dY = (math_t *) malloc(h_dim * sizeof(math_t));	clear_1d(dY, h_dim);
+	math_t *dO = (math_t *) malloc(h_dim * sizeof(math_t)); clear_1d(dO, h_dim);
+	math_t *dC = (math_t *) malloc(h_dim * sizeof(math_t)); clear_1d(dC, h_dim);
+	math_t *dF = (math_t *) malloc(h_dim * sizeof(math_t)); clear_1d(dF, h_dim);
+	math_t *dI = (math_t *) malloc(h_dim * sizeof(math_t)); clear_1d(dI, h_dim);
+	math_t *dZ = (math_t *) malloc(h_dim * sizeof(math_t)); clear_1d(dZ, h_dim);
+
+
+	int i, o, h;
+
+	/* For t = t_dim - 1 */	
+	for (o = 0; o < o_dim; ++o) {
+		dP_O[o] = 2 * (P_O[t_dim - 1][o] - E_O[t_dim - 1][o]);
+	}
+	for (h = 0; h < h_dim; ++h) {
+		for (o = 0; o < o_dim; ++o) {
+			dY[h] += V[o][h] * dP_O[o];
+		}
+
+		dO[h] = 
+			dY[h] * 
+			cell_output_squash_func(C[t_dim - 1][h]) * 
+			gate_squash_derivative(O_[t_dim - 1][h]);
+		dC[h] = 
+			dY[h] * 
+			O[t_dim - 1][h] * 
+			cell_output_squash_derivative(C[t_dim - 1][h])
+			+
+			Po[h] * dO[h];
+		dF[h] = 
+			dC[h] * 
+			C[t_dim - 1 - 1][h] * 
+			gate_squash_derivative(F_[t_dim - 1][h]);
+		dI[h] = 
+			dC[h] * 
+			Z[t_dim - 1][h] *
+			gate_squash_derivative(I_[t_dim - 1][h]);
+		dZ[h] =
+			dC[h] * 
+			I[t_dim - 1][h] *
+			gate_squash_derivative(Z_[t_dim - 1][h]);						
+	}
+
+	for (o = 0; o < o_dim; ++o) {
+		for (h = 0; h < h_dim; ++h) {
+			dV[o][h] = Y[t_dim - 1][h] * dP_O[o];
+		}
+		dBpo[o] = dP_O[o];
+	}
+	for (i = 0; i < i_dim; ++i) {
+		for (h = 0; h < h_dim; ++h) {
+			dWz[i][h] = X[t_dim - 1][i] * dZ[h];
+			dWi[i][h] = X[t_dim - 1][i] * dI[h];
+			dWf[i][h] = X[t_dim - 1][i] * dF[h];
+			dWo[i][h] = X[t_dim - 1][i] * dO[h];
+		}
+	}
+	for (h = 0; h < h_dim; ++h) {
+		dBz[h] = dZ[h];
+		dBi[h] = dI[h];
+		dBf[h] = dF[h];
+		dBo[h] = dO[h];
+	}
+	
+	/* For t = t_dim - 2 ... 0 */
+	for (t = t_dim - 2; t >= 0; --t) {
+
+	}
 }
 
 void RNN_SGD(
@@ -337,12 +417,12 @@ void RNN_SGD(
 	    predicted_output_matrix
 	);
 
-	// RNN_BPTT(
-	//     RNN_storage,
-	//     input_matrix,				// TxI
-	//     predicted_output_matrix,	// TxO
-	//     expected_output_matrix		// TxO
-	// );
+	RNN_BPTT(
+	    RNN_storage,
+	    input_matrix,				// TxI
+	    predicted_output_matrix,	// TxO
+	    expected_output_matrix		// TxO
+	);
 
 	// int m, n;
 
@@ -441,6 +521,33 @@ void RNN_train(
 			);
 		}
 	}
+}
+
+// Cross entropy loss
+math_t RNN_loss_calculation(
+    RNN_t * RNN_storage,
+    Matrix_t *predicted_output_matrix,	// TxO
+    Matrix_t *expected_output_matrix	// TxO
+) {
+	math_t total_loss = 0.0, log_term = 0.0, delta;
+
+	int t_dim = predicted_output_matrix->m;
+	int o_dim = RNN_storage->o_dim;
+
+	int t, o;
+	for (t = 0; t < t_dim; ++t) {
+		// expected_output_matrix is an one-hot vector
+		log_term = 0;
+		for (o = 0; o < o_dim; ++o) {
+			delta =
+			    expected_output_matrix->data[t][o] -
+			    predicted_output_matrix->data[t][o];
+			log_term += delta * delta;
+		}
+		total_loss += log_term;
+	}
+
+	return total_loss;
 }
 
 int RNN_Gradient_check(
@@ -567,25 +674,24 @@ math_t gate_squash_func(math_t value) {
 	return sigmoid(value);
 }
 math_t gate_squash_derivative(math_t value) {
-	return value * (1 - value);
+	math_t temp_v =  sigmoid(value);
+	return temp_v * (1 - temp_v);
 }
-
 
 math_t cell_state_squash_func(math_t value) {
 	return tanh(value);
 }
 math_t cell_state_squash_derivative(math_t value) {
-	return 1 - value * value;
+	math_t temp_v =  tanh(value);
+	return 1 - temp_v * temp_v;
 }
+
 math_t cell_output_squash_func(math_t value) {
 	return tanh(value);
 }
 math_t cell_output_squash_derivative(math_t value) {
-	return 1 - value * value;
-}
-
-math_t network_output_squash_func(math_t value) {
-	return value;
+	math_t temp_v =  tanh(value);
+	return 1 - temp_v * temp_v;
 }
 
 
