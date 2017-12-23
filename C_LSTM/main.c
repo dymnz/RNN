@@ -16,7 +16,7 @@ int RNN_model_training_example() {
 
 	math_t initial_learning_rate = 0.001;
 	int max_epoch = 200000;
-	int print_loss_interval = 1000;
+	int print_loss_interval = 1;
 
 	/*
 		File I/O param
