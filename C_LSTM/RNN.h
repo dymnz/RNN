@@ -11,36 +11,20 @@ typedef struct {
 	int h_dim;
 	int bptt_truncate_len;
 
-    Matrix_t *C;    // TxH
-    Matrix_t *S;    // TxH
-    Matrix_t *aS;    // TxH
+    /* LSTM state */
+    Matrix_t *Z_, *I_, *F_, *O_;        // TxH
+    Matrix_t *Z, *I, *F, *O;            // TxH
+    Matrix_t *C, *Y;                    // TxH
 
-    Matrix_t *Ig;    // TxH
-    Matrix_t *Fg;    // TxH
-    Matrix_t *Og;    // TxH
+    /* LSTM model */    
+    Matrix_t *Wz, *Wi, *Wf, *Wo;    // HxI
+    Matrix_t *Rz, *Ri, *Rf, *Ro;    // HxH
+    Matrix_t *Pi, *Pf, *Po;         // 1xH
+    Matrix_t *Bz, *Bi, *Bf, *Bo;    // 1xH
 
-    Matrix_t *V;   // HxO
-    Matrix_t *dV;   // HxO
-
-    Matrix_t *Ui;   // IxH
-    Matrix_t *Wi;   // HxH
-    Matrix_t *dUi;  // IxH
-    Matrix_t *dWi;  // HxH
-
-    Matrix_t *Uf;   // IxH
-    Matrix_t *Wf;   // HxH
-    Matrix_t *dUf;  // IxH
-    Matrix_t *dWf;  // HxH    
-
-    Matrix_t *Uo;   // IxH
-    Matrix_t *Wo;   // HxH
-    Matrix_t *dUo;  // IxH
-    Matrix_t *dWo;  // HxH    
-
-    Matrix_t *Us;   // IxH
-    Matrix_t *Ws;   // HxH      
-    Matrix_t *dUs;  // IxH
-    Matrix_t *dWs;  // HxH
+    /* Output model */
+    Matrix_t *V;                    // OxH
+    Matrix_t *Bpo;                  // 1xO
 } RNN_t;
 
 typedef struct {

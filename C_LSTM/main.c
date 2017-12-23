@@ -123,23 +123,23 @@ int RNN_model_training_example() {
 	/*
 		Dump model
 	 */
-	char model_file_prefix[] = "./data/model/";
-	printf("Model dump...\n");
-	Matrix_dump(
-	    "InputWeight_SEMG_2_CT5_0_BPTT4",
-	    model_file_prefix,
-	    RNN_storage->input_weight_matrix
-	);
-	Matrix_dump(
-	    "InternalWeight_SEMG_2_CT5_0_BPTT4",
-	    model_file_prefix,
-	    RNN_storage->internal_weight_matrix
-	);
-	Matrix_dump(
-	    "OutputWeight_SEMG_2_CT5_0_BPTT4",
-	    model_file_prefix,
-	    RNN_storage->output_weight_matrix
-	);
+	// char model_file_prefix[] = "./data/model/";
+	// printf("Model dump...\n");
+	// Matrix_dump(
+	//     "InputWeight_SEMG_2_CT5_0_BPTT4",
+	//     model_file_prefix,
+	//     RNN_storage->input_weight_matrix
+	// );
+	// Matrix_dump(
+	//     "InternalWeight_SEMG_2_CT5_0_BPTT4",
+	//     model_file_prefix,
+	//     RNN_storage->internal_weight_matrix
+	// );
+	// Matrix_dump(
+	//     "OutputWeight_SEMG_2_CT5_0_BPTT4",
+	//     model_file_prefix,
+	//     RNN_storage->output_weight_matrix
+	// );
 
 	/*
 		Clean up
@@ -215,19 +215,19 @@ int RNN_model_import_example() {
 	/*
 		Import trained model
 	*/
-	printf("Import model...\n");
-	read_matrix_from_file(
-		"./data/model/InputWeight_SEMG_2_CT5_0_BPTT4.txt", 
-		RNN_storage->input_weight_matrix
-	);
-	read_matrix_from_file(
-		"./data/model/InternalWeight_SEMG_2_CT5_0_BPTT4.txt", 
-		RNN_storage->internal_weight_matrix
-	);
-	read_matrix_from_file(
-		"./data/model/OutputWeight_SEMG_2_CT5_0_BPTT4.txt", 
-		RNN_storage->output_weight_matrix
-	);
+	// printf("Import model...\n");
+	// read_matrix_from_file(
+	// 	"./data/model/InputWeight_SEMG_2_CT5_0_BPTT4.txt", 
+	// 	RNN_storage->input_weight_matrix
+	// );
+	// read_matrix_from_file(
+	// 	"./data/model/InternalWeight_SEMG_2_CT5_0_BPTT4.txt", 
+	// 	RNN_storage->internal_weight_matrix
+	// );
+	// read_matrix_from_file(
+	// 	"./data/model/OutputWeight_SEMG_2_CT5_0_BPTT4.txt", 
+	// 	RNN_storage->output_weight_matrix
+	// );
 
 	/*
 		Testing file forward propagation
