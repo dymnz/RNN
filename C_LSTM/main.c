@@ -16,15 +16,19 @@ int RNN_model_training_example() {
 
 	math_t initial_learning_rate = 0.001;
 	int max_epoch = 200000;
-	int print_loss_interval = 1;
+	int print_loss_interval = 1000;
 
 	/*
 		File I/O param
 	 */
-	char train_file_name[] = "exp_SEMG_2_CT5_0";
-	char test_file_name[] = "exp_SEMG_2_CT5_0";
-	char loss_file_name[] = "loss_SEMG_2_CT5_0";
-	char result_file_name[] = "res_SEMG_2_CT5_0";
+	char train_file_name[] = "exp_SEMG_10_CT5_0";
+	char test_file_name[] = "exp_SEMG_10_CT5_0";
+	char loss_file_name[] = "loss_SEMG_10_CT5_0";
+	char result_file_name[] = "res_SEMG_10_CT5_0";
+	// char train_file_name[] = "exp_debug";
+	// char test_file_name[] = "exp_debug";
+	// char loss_file_name[] = "loss_debug";
+	// char result_file_name[] = "res_debug";
 
 	char train_file[FILE_NAME_LENGTH] = {0};
 	char test_file[FILE_NAME_LENGTH] = {0};

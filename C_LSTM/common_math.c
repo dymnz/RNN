@@ -48,6 +48,12 @@ void clear_1d(math_t *data, int m) {
 	for (i = 0; i < m; ++i)
 		data[i] = 0.0;
 }
+void print_1d(math_t *data, int m) {
+	int i;
+	for (i = 0; i < m; ++i)
+		printf("%3.15lf  ", data[i]);
+	printf("\n");
+}
 
 void clear_2d(math_t **data, int m, int n) {
 	int i, r;
@@ -106,7 +112,7 @@ void matrix_print(Matrix_t *matrix) {
 	int m, n;
 	for (m = 0; m < matrix->m; ++m) {
 		for (n = 0; n < matrix->n; ++n) {
-			printf("%3.5lf  ", matrix->data[m][n]);
+			printf("%3.15lf  ", matrix->data[m][n]);
 		}
 		printf("\n");
 	}

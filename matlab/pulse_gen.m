@@ -2,7 +2,7 @@
 clear; close all;
 
 % Data length %
-NUM_TEST = 2;
+NUM_TEST = 10;
 DATA_LENGTH = 100;
 RAND_THRESHOLD = 1;
 
@@ -12,7 +12,7 @@ CT = 5;    % Time to peak
 
 % File
 file_location = '../C/data/input/';
-file_name = 'exp_SEMG_10_CT5_1.txt';
+file_name = 'exp_SEMG_10_CT5_0.txt';
 fileID = fopen(strcat(file_location, file_name),'w');
 fprintf(fileID, '%d\n', NUM_TEST);
 

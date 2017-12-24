@@ -1,17 +1,17 @@
-#### RNN regression
+#### RNN LSTM regression
 * 1 hidden layer
     * Adjusable hidden cell count
-* tanh() hidden node
 * Unbounded output node
 
 #### TODO
 * ~~Dynamic learning rate~~
 * ~~Gradient check~~
-* Clean up the code
-* Abstract matrix operation
-* Abstract squash function derivative for gradeint descent calculation
+* ~~Abstract squash function derivative for gradeint descent calculation~~
 * ~~Model parameter import/export~~
-* LSTM!
+* ~~LSTM!~~
+
+#### Note
+* Change `RNN_RAND_SEED` in RNN.c for difference initial model parameter 
 
 #### Reference
 * http://www.wildml.com/2015/09/recurrent-neural-networks-tutorial-part-2-implementing-a-language-model-rnn-with-python-numpy-and-theano/

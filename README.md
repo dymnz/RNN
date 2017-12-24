@@ -20,6 +20,8 @@ C implementation of [WildML RNN](http://www.wildml.com/2015/09/recurrent-neural-
     4. Dimension of output 0 (m/row, n/col)
     5. Row major serialized outputput matrix 0
     6. Repeat 2~5 until EOF
+* Change `RNN_RAND_SEED` in RNN.c for difference initial model parameter
+    - *This may be more important then model structure*
 
 
 #### Parallel Programming Term Project

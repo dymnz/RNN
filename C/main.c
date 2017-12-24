@@ -21,10 +21,10 @@ int RNN_model_training_example() {
 	/*
 		File I/O param
 	 */
-	char train_file_name[] = "exp_SEMG_2_CT5_0";
-	char test_file_name[] = "exp_SEMG_2_CT5_0";
-	char loss_file_name[] = "loss_SEMG_2_CT5_0";
-	char result_file_name[] = "res_SEMG_2_CT5_0";
+	char train_file_name[] = "exp_SEMG_10_CT5_0";
+	char test_file_name[] = "exp_SEMG_10_CT5_0";
+	char loss_file_name[] = "loss_SEMG_10_CT5_0";
+	char result_file_name[] = "res_SEMG_10_CT5_0";
 
 	char train_file[FILE_NAME_LENGTH] = {0};
 	char test_file[FILE_NAME_LENGTH] = {0};

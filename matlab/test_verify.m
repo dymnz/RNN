@@ -5,7 +5,7 @@ P = 1;     % Peak force
 CT = 5;    % Time to peak
 
 file_location = '../C/data/output/';
-file_name = 'res_SEMG_2_CT5_0.txt';
+file_name = 'res_SEMG_10_CT5_0.txt';
 %% 
 
 [num_matrix, input_matrix_list, output_matrix_list] = ...

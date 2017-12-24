@@ -1,6 +1,6 @@
 #include "RNN.h"
 
-#define RNN_RAND_SEED 1
+#define RNN_RAND_SEED 21
 
 void TrainSet_init(DataSet_t *train_set, int num_matrix) {
 	train_set->num_matrix = num_matrix;

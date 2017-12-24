@@ -33,6 +33,7 @@ void matrix_resize(Matrix_t *matrix, int m, int n);
 
 void free_2d(math_t **data, int m);
 void clear_2d(math_t **data, int m, int n);
+void print_1d(math_t *data, int m);
 void clear_1d(math_t *data, int m);
 math_t **create_2d(int m, int n);
 
