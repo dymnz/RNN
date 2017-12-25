@@ -350,7 +350,8 @@ void RNN_train(
     Matrix_t *predicted_output_matrix,
     math_t initial_learning_rate,
     int max_epoch,
-    int print_loss_interval
+    int print_loss_interval,
+    int gradient_check_interval
 ) {
 	int num_train = train_set->num_matrix;
 
