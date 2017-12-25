@@ -2,6 +2,7 @@
 * 1 hidden layer
     * Adjusable hidden cell count
 * Unbounded output node
+* Xavier initialization
 
 #### TODO
 * ~~Dynamic learning rate~~

@@ -1,6 +1,6 @@
 #include "RNN.h"
 
-#define RNN_RAND_SEED 21
+#define RNN_RAND_SEED 221
 
 void TrainSet_init(DataSet_t *train_set, int num_matrix) {
 	train_set->num_matrix = num_matrix;
@@ -383,8 +383,10 @@ void RNN_train(
 
 			// Adjust learning rate if the loss increases
 			if (last_total_loss < current_total_loss) {
-				if (learning_rate / 2 > 1e-5)
+				if (learning_rate / 2 > 1e-6)
 					learning_rate /= 2;
+				else 
+					return;
 			} else if (learning_rate * 1.1 < initial_learning_rate) {
 				learning_rate *= 1.1;
 			}
@@ -399,12 +401,12 @@ void RNN_train(
 			        train_set,
 			        predicted_output_matrix,
 			        1e-3,
-			        1e-2,
+			        2e-2,
 			        0
 			    );
 			RNN_storage->bptt_truncate_len = old_bptt_truncate_len;
-			printf("average loss at epoch: %10d = %10.10lf LR: %lf\n",
-			       e, current_total_loss / num_train, learning_rate);
+			// printf("average loss at epoch: %10d = %10.10lf LR: %lf\n",
+			//        e, current_total_loss / num_train, learning_rate);
 
 			// Terminate the training process if the gradient check did not pass
 			if (gradient_check_result != 0) {
