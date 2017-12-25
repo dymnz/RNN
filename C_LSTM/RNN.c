@@ -366,41 +366,6 @@ void RNN_BPTT(
 
 	int i, o, h, t, r;
 
-	// printf("V:\n");
-	// matrix_print(RNN_storage->V);
-	// printf("O:\n");
-	// matrix_print(RNN_storage->O);
-	// printf("Z:\n");
-	// matrix_print(RNN_storage->Z);
-	// printf("Z_:\n");
-	// matrix_print(RNN_storage->Z_);
-	// printf("F:\n");
-	// matrix_print(RNN_storage->F);
-	// printf("F_:\n");
-	// matrix_print(RNN_storage->F_);
-	// printf("I:\n");
-	// matrix_print(RNN_storage->I);
-	// printf("I_:\n");
-	// matrix_print(RNN_storage->I_);
-	// printf("Po:\n");
-	// matrix_print(RNN_storage->Po);
-	// printf("Pi:\n");
-	// matrix_print(RNN_storage->Pi);
-	// printf("Pf:\n");
-	// matrix_print(RNN_storage->Pf);
-	// printf("C:\n");
-	// matrix_print(RNN_storage->C);
-	// printf("_O:\n");
-	// matrix_print(RNN_storage->O_);
-
-	// printf("Rz:\n");
-	// matrix_print(RNN_storage->Rz);
-	// printf("Ri:\n");
-	// matrix_print(RNN_storage->Ri);
-	// printf("Rf:\n");
-	// matrix_print(RNN_storage->Rf);
-	// printf("Ro:\n");
-	// matrix_print(RNN_storage->Ro);
 	/* For t = t_dim - 1 */
 	for (o = 0; o < o_dim; ++o) {
 		dP_O[o] = 2 * (P_O[t_dim - 1][o] - E_O[t_dim - 1][o]);
@@ -465,29 +430,6 @@ void RNN_BPTT(
 		dPf[h] = C[t_dim - 1 - 1][h] * dF[h];
 		dPo[h] = C[t_dim - 1][h] * dO[h];
 	}
-
-	// printf("-------  t = %3d  -------\n", t_dim - 1);
-	// printf("P_O:\n");
-	// matrix_print(predicted_output_matrix);
-	// printf("E_O:\n");
-	// matrix_print(expected_output_matrix);
-	// printf("dP_O:\n");
-	// print_1d(dP_O, o_dim);
-	// printf("dY:\n");
-	// print_1d(dY, h_dim);
-	// printf("dO:\n");
-	// print_1d(dO, h_dim);
-	// printf("dC:\n");
-	// print_1d(dC, h_dim);
-	// printf("dF:\n");
-	// print_1d(dF, h_dim);
-	// printf("dI:\n");
-	// print_1d(dI, h_dim);
-	// printf("dZ:\n");
-	// print_1d(dZ, h_dim);
-	// printf("------------\n");
-	// sleep(1);
-	// printf("----------\n");
 
 	/* For t = t_dim - 2 ... 1 */
 	for (t = t_dim - 2; t >= 1; --t) {
@@ -573,29 +515,6 @@ void RNN_BPTT(
 			dPf[h] += C[t - 1][h] * dF[h];
 			dPo[h] += C[t][h] * dO[h];
 		}
-
-		// printf("-------  t = %3d  -------\n", t);
-		// printf("P_O:\n");
-		// matrix_print(predicted_output_matrix);
-		// printf("E_O:\n");
-		// matrix_print(expected_output_matrix);
-		// printf("dP_O:\n");
-		// print_1d(dP_O, o_dim);
-		// printf("dY:\n");
-		// print_1d(dY, h_dim);
-		// printf("dO:\n");
-		// print_1d(dO, h_dim);
-		// printf("dC:\n");
-		// print_1d(dC, h_dim);
-		// printf("dF:\n");
-		// print_1d(dF, h_dim);
-		// printf("dI:\n");
-		// print_1d(dI, h_dim);
-		// printf("dZ:\n");
-		// print_1d(dZ, h_dim);
-		// printf("------------\n");
-		// sleep(1);
-		// printf("----------\n");
 	}
 
 	/* For t = 0 */
@@ -668,28 +587,6 @@ void RNN_BPTT(
 		dBo[h] += dO[h];
 		dPo[h] += C[0][h] * dO[h];
 	}
-	// printf("-------  t = %3d  -------\n", 0);
-	// printf("P_O:\n");
-	// matrix_print(predicted_output_matrix);
-	// printf("E_O:\n");
-	// matrix_print(expected_output_matrix);
-	// printf("dP_O:\n");
-	// print_1d(dP_O, o_dim);
-	// printf("dY:\n");
-	// print_1d(dY, h_dim);
-	// printf("dO:\n");
-	// print_1d(dO, h_dim);
-	// printf("dC:\n");
-	// print_1d(dC, h_dim);
-	// printf("dF:\n");
-	// print_1d(dF, h_dim);
-	// printf("dI:\n");
-	// print_1d(dI, h_dim);
-	// printf("dZ:\n");
-	// print_1d(dZ, h_dim);
-	// printf("------------\n");
-	// sleep(1);
-	// printf("----------\n");
 
 	free(dP_O);
 	free(dY);
@@ -976,8 +873,9 @@ int RNN_Gradient_check(
 	Matrix_t *testing_model;
 	math_t **testing_matrix;
 	math_t **testing_gradient_matrix;
-
-	for (i = 0; i < 17; ++i) {
+	
+	int num_parameter = sizeof(testing_model_list) / sizeof(Matrix_t *);
+	for (i = 0; i < num_parameter; ++i) {
 		testing_model = testing_model_list[i];
 		testing_matrix = UVW[i];
 		testing_gradient_matrix = dLdUVW[i];
