@@ -398,8 +398,8 @@ void RNN_train(
 			        RNN_storage,
 			        train_set,
 			        predicted_output_matrix,
-			        1e-3,
-			        2e-2,
+			        1e-5,
+			        1e-2,
 			        0
 			    );
 			RNN_storage->bptt_truncate_len = old_bptt_truncate_len;
@@ -408,6 +408,7 @@ void RNN_train(
 
 			// Terminate the training process if the gradient check did not pass
 			if (gradient_check_result != 0) {
+				printf("Gradient check error at epoch: %10d\n", e);
 				return;
 			}
 		}

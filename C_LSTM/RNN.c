@@ -384,6 +384,10 @@ void RNN_BPTT(
 	// matrix_print(RNN_storage->I_);
 	// printf("Po:\n");
 	// matrix_print(RNN_storage->Po);
+	// printf("Pi:\n");
+	// matrix_print(RNN_storage->Pi);
+	// printf("Pf:\n");
+	// matrix_print(RNN_storage->Pf);
 	// printf("C:\n");
 	// matrix_print(RNN_storage->C);
 	// printf("_O:\n");
@@ -462,6 +466,29 @@ void RNN_BPTT(
 		dPo[h] = C[t_dim - 1][h] * dO[h];
 	}
 
+	// printf("-------  t = %3d  -------\n", t_dim - 1);
+	// printf("P_O:\n");
+	// matrix_print(predicted_output_matrix);
+	// printf("E_O:\n");
+	// matrix_print(expected_output_matrix);
+	// printf("dP_O:\n");
+	// print_1d(dP_O, o_dim);
+	// printf("dY:\n");
+	// print_1d(dY, h_dim);
+	// printf("dO:\n");
+	// print_1d(dO, h_dim);
+	// printf("dC:\n");
+	// print_1d(dC, h_dim);
+	// printf("dF:\n");
+	// print_1d(dF, h_dim);
+	// printf("dI:\n");
+	// print_1d(dI, h_dim);
+	// printf("dZ:\n");
+	// print_1d(dZ, h_dim);
+	// printf("------------\n");
+	// sleep(1);
+	// printf("----------\n");
+
 	/* For t = t_dim - 2 ... 1 */
 	for (t = t_dim - 2; t >= 1; --t) {
 		clear_1d(dY, h_dim);
@@ -475,7 +502,7 @@ void RNN_BPTT(
 
 			for (r = 0; r < h_dim; ++r) {
 				dY[h] +=
-				    Rz[r][h] * dZ[r]				    
+				    Rz[r][h] * dZ[r]
 				    +
 				    Ri[r][h] * dI[r]
 				    +
@@ -489,6 +516,7 @@ void RNN_BPTT(
 			    dY[h] *
 			    cell_output_squash_func(C[t][h]) *
 			    cell_state_squash_derivative(O_[t][h]);
+
 			dC[h] =
 			    dY[h] *
 			    O[t][h] *
@@ -501,6 +529,7 @@ void RNN_BPTT(
 			    Pf[h] * dF[h]
 			    +
 			    dC[h] * F[t + 1][h];
+
 			dF[h] =
 			    dC[h] *
 			    C[t - 1][h] *
@@ -531,10 +560,10 @@ void RNN_BPTT(
 		}
 		for (h = 0; h < h_dim; ++h) {
 			for (r = 0; r < h_dim; ++r) {
-				dRz[h][r] = dZ[h] * Y[t - 1][r];
-				dRi[h][r] = dI[h] * Y[t - 1][r];
-				dRf[h][r] = dF[h] * Y[t - 1][r];
-				dRo[h][r] = dO[h] * Y[t - 1][r];
+				dRz[h][r] += dZ[h] * Y[t - 1][r];
+				dRi[h][r] += dI[h] * Y[t - 1][r];
+				dRf[h][r] += dF[h] * Y[t - 1][r];
+				dRo[h][r] += dO[h] * Y[t - 1][r];
 			}
 			dBz[h] += dZ[h];
 			dBi[h] += dI[h];
@@ -544,6 +573,29 @@ void RNN_BPTT(
 			dPf[h] += C[t - 1][h] * dF[h];
 			dPo[h] += C[t][h] * dO[h];
 		}
+
+		// printf("-------  t = %3d  -------\n", t);
+		// printf("P_O:\n");
+		// matrix_print(predicted_output_matrix);
+		// printf("E_O:\n");
+		// matrix_print(expected_output_matrix);
+		// printf("dP_O:\n");
+		// print_1d(dP_O, o_dim);
+		// printf("dY:\n");
+		// print_1d(dY, h_dim);
+		// printf("dO:\n");
+		// print_1d(dO, h_dim);
+		// printf("dC:\n");
+		// print_1d(dC, h_dim);
+		// printf("dF:\n");
+		// print_1d(dF, h_dim);
+		// printf("dI:\n");
+		// print_1d(dI, h_dim);
+		// printf("dZ:\n");
+		// print_1d(dZ, h_dim);
+		// printf("------------\n");
+		// sleep(1);
+		// printf("----------\n");
 	}
 
 	/* For t = 0 */
@@ -584,7 +636,7 @@ void RNN_BPTT(
 		    Pf[h] * dF[h]
 		    +
 		    dC[h] * F[1][h];
-
+		dF[h] = 0.0;
 		dI[h] =
 		    dC[h] *
 		    Z[0][h] *
@@ -625,6 +677,8 @@ void RNN_BPTT(
 	// print_1d(dP_O, o_dim);
 	// printf("dY:\n");
 	// print_1d(dY, h_dim);
+	// printf("dO:\n");
+	// print_1d(dO, h_dim);
 	// printf("dC:\n");
 	// print_1d(dC, h_dim);
 	// printf("dF:\n");
@@ -636,7 +690,7 @@ void RNN_BPTT(
 	// printf("------------\n");
 	// sleep(1);
 	// printf("----------\n");
-	
+
 	free(dP_O);
 	free(dY);
 	free(dO);
@@ -734,7 +788,8 @@ void RNN_train(
     Matrix_t *predicted_output_matrix,
     math_t initial_learning_rate,
     int max_epoch,
-    int print_loss_interval
+    int print_loss_interval,
+    int gradient_check_interval
 ) {
 	int num_train = train_set->num_matrix;
 
@@ -745,7 +800,10 @@ void RNN_train(
 	math_t learning_rate = initial_learning_rate;
 
 	for (e = 0; e < max_epoch; ++e) {
-		if (/*e > 0 &&*/ e % print_loss_interval == 0) {
+		if (e % print_loss_interval == 0)
+			printf("average loss at epoch: %10d = %10.10lf LR: %lf\n",
+			       e, current_total_loss / num_train, learning_rate);
+		if (e > 0 && e % gradient_check_interval == 0) {
 
 			current_total_loss = 0.0;
 			for (i = 0; i < num_train; ++i) {
@@ -782,16 +840,15 @@ void RNN_train(
 			        RNN_storage,
 			        train_set,
 			        predicted_output_matrix,
-			        1e-3,
-			        2e-2,
+			        1e-5,
+			        1e-2,
 			        0
 			    );
 			RNN_storage->bptt_truncate_len = old_bptt_truncate_len;
-			// printf("average loss at epoch: %10d = %10.10lf LR: %lf\n",
-			//        e, current_total_loss / num_train, learning_rate);
 
 			// Terminate the training process if the gradient check did not pass
 			if (gradient_check_result != 0) {
+				printf("Gradient check error at epoch: %10d\n", e);
 				return;
 			}
 		}
@@ -895,8 +952,6 @@ int RNN_Gradient_check(
 	math_t relative_gradient_error;
 
 	Matrix_t *testing_model_list[] = {
-		//RNN_storage->Wz,
-		RNN_storage->V, RNN_storage->Po,
 		RNN_storage->Wz, RNN_storage->Wi, RNN_storage->Wf, RNN_storage->Wo,
 		RNN_storage->Rz, RNN_storage->Ri, RNN_storage->Rf, RNN_storage->Ro,
 		RNN_storage->Pi, RNN_storage->Pf, RNN_storage->Po,
@@ -904,8 +959,6 @@ int RNN_Gradient_check(
 		RNN_storage->V,  RNN_storage->Bpo
 	};
 	math_t **UVW[] = {
-		//Wz,
-		V, Po,
 		Wz, Wi, Wf, Wo,
 		Rz, Ri, Rf, Ro,
 		Pi, Pf, Po,
@@ -913,8 +966,6 @@ int RNN_Gradient_check(
 		V,  Bpo
 	};
 	math_t **dLdUVW[] = {
-		//dWz,
-		dV, dPo,
 		dWz, dWi, dWf, dWo,
 		dRz, dRi, dRf, dRo,
 		dPi, dPf, dPo,
@@ -926,7 +977,7 @@ int RNN_Gradient_check(
 	math_t **testing_matrix;
 	math_t **testing_gradient_matrix;
 
-	for (i = 0; i < 2; ++i) {
+	for (i = 0; i < 17; ++i) {
 		testing_model = testing_model_list[i];
 		testing_matrix = UVW[i];
 		testing_gradient_matrix = dLdUVW[i];
