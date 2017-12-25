@@ -18,9 +18,9 @@ int RNN_model_training_example() {
 	int H = 3;
 	int bptt_truncate_len = 4;
 
-	math_t initial_learning_rate = 0.004;
-	int max_epoch = 300000;
-	int print_loss_interval = 100;
+	math_t initial_learning_rate = 0.001;
+	int max_epoch = 100000;
+	int print_loss_interval = 20000;
     int gradient_check_interval = 100;
 
 	/*

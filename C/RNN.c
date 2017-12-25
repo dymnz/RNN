@@ -386,8 +386,10 @@ void RNN_train(
 			if (last_total_loss < current_total_loss) {
 				if (learning_rate / 2 > 1e-6)
 					learning_rate /= 2;
-				else 
+				else {
+					printf("Super low learning rate error: %10d\n", e);
 					return;
+				}
 			} else if (learning_rate * 1.1 < initial_learning_rate) {
 				learning_rate *= 1.1;
 			}
