@@ -362,8 +362,10 @@ void RNN_train(
 	math_t learning_rate = initial_learning_rate;
 
 	for (e = 0; e < max_epoch; ++e) {
-		if (e > 0 && e % print_loss_interval == 0) {
-
+		if (e % print_loss_interval == 0)
+			printf("average loss at epoch: %10d = %10.10lf LR: %lf\n",
+			       e, current_total_loss / num_train, learning_rate);
+		if (e > 0 && e % gradient_check_interval == 0) {
 			current_total_loss = 0.0;
 			for (i = 0; i < num_train; ++i) {
 				input_matrix = train_set->input_matrix_list[i];
@@ -404,8 +406,6 @@ void RNN_train(
 			        0
 			    );
 			RNN_storage->bptt_truncate_len = old_bptt_truncate_len;
-			// printf("average loss at epoch: %10d = %10.10lf LR: %lf\n",
-			//        e, current_total_loss / num_train, learning_rate);
 
 			// Terminate the training process if the gradient check did not pass
 			if (gradient_check_result != 0) {
