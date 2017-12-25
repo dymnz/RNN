@@ -6,6 +6,10 @@
 #include "RNN.h"
 #include "file_process.h"
 
+#define RNN_RAND_SEED 5
+
+unsigned int seed = RNN_RAND_SEED;
+
 int RNN_model_training_example() {
 	printf("RNN_model_training_example\n");
 	/*
@@ -55,7 +59,8 @@ int RNN_model_training_example() {
 	    train_set->input_n,
 	    train_set->output_n,
 	    H,
-	    bptt_truncate_len
+	    bptt_truncate_len,
+	    seed
 	);
 	printf("-RNN paramerter-\n");
 	printf("Input vector length: %d\n", train_set->input_n);
@@ -197,7 +202,8 @@ int RNN_model_import_example() {
 	    train_set->input_n,
 	    train_set->output_n,
 	    H,
-	    bptt_truncate_len
+	    bptt_truncate_len,
+	    seed
 	);
 	printf("-RNN paramerter-\n");
 	printf("Input vector length: %d\n", train_set->input_n);
@@ -269,8 +275,12 @@ int RNN_model_import_example() {
 	return 0;
 }
 
-int main() {
+int main(int argc, char *argv[]) {
+	if (argc >= 2)
+		seed = atoi(argv[1]);
+	
 	return RNN_model_training_example();
 	//return RNN_model_import_example();
 }
+
 

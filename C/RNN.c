@@ -1,7 +1,5 @@
 #include "RNN.h"
 
-#define RNN_RAND_SEED 221
-
 void TrainSet_init(DataSet_t *train_set, int num_matrix) {
 	train_set->num_matrix = num_matrix;
 	train_set->input_matrix_list =
@@ -26,7 +24,8 @@ void RNN_init(
 	int input_vector_len, 
 	int output_vector_len,
 	int hidden_layer_vector_len,
-	int bptt_truncate_len
+	int bptt_truncate_len,
+	unsigned int seed
 ) {
 	RNN_storage->input_vector_len = input_vector_len;
 	RNN_storage->output_vector_len = output_vector_len;
@@ -48,7 +47,6 @@ void RNN_init(
 	RNN_storage->internal_state_matrix 
 		= matrix_create(0, 0);
 
-	unsigned int seed = RNN_RAND_SEED;
 	matrix_random_with_seed(
 	    RNN_storage->input_weight_matrix,
 	    -sqrt(1 / input_vector_len),
