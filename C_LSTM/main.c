@@ -15,7 +15,10 @@ int RNN_model_training_example() {
 	/*
 		RNN model param
 	*/
-	int H = 3;
+
+	// HHHH / SEED
+	//   11 /    8 : 0.208137
+	int H = 11;
 	int bptt_truncate_len = 4;
 
 	math_t initial_learning_rate = 0.001;
