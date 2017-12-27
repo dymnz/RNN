@@ -24,7 +24,6 @@ void RNN_init(
     int input_vector_len,
     int output_vector_len,
     int hidden_layer_vector_len,
-    int bptt_truncate_len,
     unsigned int seed
 ) {
 	int i_dim = input_vector_len;
@@ -34,7 +33,6 @@ void RNN_init(
 	RNN_storage->i_dim = i_dim;
 	RNN_storage->o_dim = o_dim;
 	RNN_storage->h_dim = h_dim;
-	RNN_storage->bptt_truncate_len = bptt_truncate_len;
 
 	/* LSTM state */
 	// Size to be adjusted for different test sample size
@@ -697,9 +695,26 @@ void RNN_train(
 	math_t learning_rate = initial_learning_rate;
 
 	for (e = 0; e < max_epoch; ++e) {
-		if (e % print_loss_interval == 0)
+		if (e % print_loss_interval == 0) {
+			current_total_loss = 0.0;
+			for (i = 0; i < num_train; ++i) {
+				input_matrix = train_set->input_matrix_list[i];
+				expected_output_matrix = train_set->output_matrix_list[i];
+				RNN_Predict(
+				    RNN_storage,
+				    input_matrix,
+				    predicted_output_matrix
+				);
+
+				current_total_loss += RNN_loss_calculation(
+				                          RNN_storage,
+				                          predicted_output_matrix,
+				                          expected_output_matrix);
+			}
+
 			printf("average loss at epoch: %10d = %10.10lf LR: %lf\n",
 			       e, current_total_loss / num_train, learning_rate);
+		}
 		if (e > 0 && e % gradient_check_interval == 0) {
 			current_total_loss = 0.0;
 			for (i = 0; i < num_train; ++i) {
@@ -731,18 +746,15 @@ void RNN_train(
 
 			last_total_loss = current_total_loss;
 
-			int old_bptt_truncate_len = RNN_storage->bptt_truncate_len;
-			RNN_storage->bptt_truncate_len = 10000;
 			int gradient_check_result =
 			    RNN_Gradient_check(
 			        RNN_storage,
 			        train_set,
 			        predicted_output_matrix,
 			        1e-5,
-			        1e-2,
+			        2e-2,
 			        0
 			    );
-			RNN_storage->bptt_truncate_len = old_bptt_truncate_len;
 
 			// Terminate the training process if the gradient check did not pass
 			if (gradient_check_result != 0) {
@@ -874,7 +886,7 @@ int RNN_Gradient_check(
 	Matrix_t *testing_model;
 	math_t **testing_matrix;
 	math_t **testing_gradient_matrix;
-	
+
 	int num_parameter = sizeof(testing_model_list) / sizeof(Matrix_t *);
 	for (i = 0; i < num_parameter; ++i) {
 		testing_model = testing_model_list[i];
@@ -916,14 +928,15 @@ int RNN_Gradient_check(
 				    fabs(estimated_gradient - calculated_gradient) /
 				    (fabs(estimated_gradient) + fabs(calculated_gradient));
 
-				if (relative_gradient_error > error_threshold) {
+				if (estimated_gradient > 1e-6 &&
+				        relative_gradient_error > error_threshold) {
 					printf("-------------Gradient check error\n");
 					printf("For matrix %d [%d][%d]\n", i, m, n);
-					printf("+h loss: %lf\n", total_loss_plus);
-					printf("-h loss: %lf\n", total_loss_minus);
-					printf("estimated_gradient: %lf\n", estimated_gradient);
-					printf("calculated_gradient: %lf\n", calculated_gradient);
-					printf("relative_gradient_error: %lf\n", relative_gradient_error);
+					printf("+h loss: %.13lf\n", total_loss_plus);
+					printf("-h loss: %.13lf\n", total_loss_minus);
+					printf("estimated_gradient: %.13lf\n", estimated_gradient);
+					printf("calculated_gradient: %.13lf\n", calculated_gradient);
+					printf("relative_gradient_error: %.13lf\n", relative_gradient_error);
 					printf("---------------------------------------\n");
 					return 1;
 				}

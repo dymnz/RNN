@@ -9,7 +9,6 @@ typedef struct {
 	int i_dim;
 	int o_dim;
 	int h_dim;
-	int bptt_truncate_len;
 
     /* LSTM state */
     Matrix_t *Z_, *I_, *F_, *O_;        // TxH
@@ -56,7 +55,6 @@ void RNN_init(
     int input_vector_len, 
     int output_vector_len,
     int hidden_layer_vector_len,
-    int bptt_truncate_len,
     unsigned int seed
 );
 
