@@ -677,7 +677,7 @@ void RNN_SGD(
 	}
 }
 
-void RNN_train(
+int RNN_train(
     RNN_t * RNN_storage,
     DataSet_t *train_set,
     Matrix_t *predicted_output_matrix,
@@ -738,7 +738,7 @@ void RNN_train(
 					learning_rate /= 2;
 				else {
 					printf("Super low learning rate error: %10d\n", e);
-					return;
+					return e;
 				}
 			} else if (learning_rate * 1.1 < 1 * initial_learning_rate) {
 				learning_rate *= 1.1;
@@ -759,7 +759,7 @@ void RNN_train(
 			// Terminate the training process if the gradient check did not pass
 			if (gradient_check_result != 0) {
 				printf("Gradient check error at epoch: %10d\n", e);
-				return;
+				return e;
 			}
 		}
 
@@ -776,6 +776,7 @@ void RNN_train(
 			);
 		}
 	}
+	return e;
 }
 
 // Cross entropy loss

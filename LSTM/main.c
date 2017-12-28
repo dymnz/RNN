@@ -5,6 +5,7 @@
 #include "common_math.h"
 #include "RNN.h"
 #include "file_process.h"
+#include "util.h"
 
 #define DEFAULT_RAND_SEED 5
 
@@ -98,8 +99,8 @@ int RNN_model_training_example() {
 	*/
 	printf("Start training. Max epoch: %d Initital learning rate: % lf\n",
 	       max_epoch, initial_learning_rate);
-
-	RNN_train(
+	int epoch;
+	epoch = RNN_train(
 	    RNN_storage,
 	    train_set,
 	    predicted_output_matrix,
@@ -172,9 +173,105 @@ int RNN_model_training_example() {
 	RNN_destroy(RNN_storage);
 	matrix_free(predicted_output_matrix);
 
-	return 0;
+	return epoch;
 }
 
+int RNN_model_train_timed() {
+	printf("RNN_model_training_example\n");
+
+	/*
+	File I/O param
+	*/
+	char train_file_name[FILE_NAME_LENGTH]  = {0};
+	char test_file_name[FILE_NAME_LENGTH] = {0};
+	char loss_file_name[FILE_NAME_LENGTH] = {0};
+	char result_file_name[FILE_NAME_LENGTH] = {0};
+
+	strcat(train_file_name, "exp_");
+	strcat(train_file_name, train_file_name_arg);
+
+	strcat(test_file_name, "exp_");
+	strcat(test_file_name, test_file_name_arg);
+
+	strcat(loss_file_name, "loss_");
+	strcat(loss_file_name, test_file_name_arg);
+
+	strcat(result_file_name, "res_");
+	strcat(result_file_name, test_file_name_arg);
+
+	char train_file[FILE_NAME_LENGTH] = {0};
+	char test_file[FILE_NAME_LENGTH] = {0};
+	char loss_file[FILE_NAME_LENGTH] = {0};
+	char result_file[FILE_NAME_LENGTH] = {0};
+
+	IO_file_prepare(
+	    train_file,
+	    test_file,
+	    loss_file,
+	    result_file,
+	    train_file_name,
+	    test_file_name,
+	    loss_file_name,
+	    result_file_name
+	);
+
+	/*
+	Storage prepare
+	*/
+	printf("Working on training file...\n");
+	DataSet_t *train_set = read_set_from_file(train_file);
+
+	RNN_t *RNN_storage
+	    = (RNN_t *) malloc(sizeof(RNN_t));
+	RNN_init(
+	    RNN_storage,
+	    train_set->input_n,
+	    train_set->output_n,
+	    hidden_cell_num,
+	    rand_seed
+	);
+	printf(" - RNN paramerter - \n");
+	printf("Input vector length: %d\n", train_set->input_n);
+	printf("Output vector length: %d\n", train_set->output_n);
+	printf("Hidden cell num: %d\n", hidden_cell_num);
+	printf("Rand seed : %u\n", rand_seed);
+	printf("----------------\n");
+
+	// Storage for RNN_train()
+	Matrix_t *predicted_output_matrix;
+	predicted_output_matrix = matrix_create(
+	                              train_set->output_max_m,
+	                              train_set->output_n);
+
+	/*
+	Start training with training file
+	*/
+	printf("Start training. Max epoch: %d Initital learning rate: % lf\n",
+	       max_epoch, initial_learning_rate);
+
+	mytspec start_time, end_time;
+	int epoch;
+	get_time(start_time);
+	epoch = RNN_train(
+	    RNN_storage,
+	    train_set,
+	    predicted_output_matrix,
+	    initial_learning_rate,
+	    max_epoch,
+	    print_loss_interval,
+	    gradient_check_interval
+	);
+	get_time(end_time);
+	printf("done!\nElapsed_time: %3.8lf\nepoch_per_second: %3.8lf\n",
+	       elapsed_time(end_time, start_time),
+	       (double) epoch / elapsed_time(end_time, start_time));
+
+	DataSet_destroy(train_set);
+	RNN_destroy(RNN_storage);
+	matrix_free(predicted_output_matrix);
+
+	return epoch;
+}
 
 int RNN_model_import_example() {
 	printf("RNN_model_import_example\n");
@@ -314,16 +411,16 @@ int main(int argc, char *argv[]) {
 		    "rand_seed"
 		    "\n");
 		printf(
-			"Example: ./rnn "
-			"SEMG_10_CT5_0 "
-			"SEMG_10_CT5_0 "
-			"4 "
-			"10000 "		
-			"0.001 "
-			"1000 "
-			"100 "
-			"4 "
-			"\n");
+		    "Example: ./rnn "
+		    "SEMG_10_CT5_0 "
+		    "SEMG_10_CT5_0 "
+		    "4 "
+		    "10000 "
+		    "0.001 "
+		    "1000 "
+		    "100 "
+		    "4 "
+		    "\n");
 		exit(60);
 	}
 
@@ -337,7 +434,8 @@ int main(int argc, char *argv[]) {
 	gradient_check_interval = atoi(argv[7]);
 	rand_seed = atoi(argv[8]);
 
-	return RNN_model_training_example();
+
+	return RNN_model_train_timed();
 	//return RNN_model_import_example();
 }
 
