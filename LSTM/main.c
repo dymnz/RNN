@@ -435,7 +435,8 @@ int main(int argc, char *argv[]) {
 	rand_seed = atoi(argv[8]);
 
 
-	return RNN_model_train_timed();
+	//return RNN_model_train_timed();
+	return RNN_model_training_example();
 	//return RNN_model_import_example();
 }
 
