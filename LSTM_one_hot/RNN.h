@@ -9,7 +9,6 @@ typedef struct {
 	int i_dim;
 	int o_dim;
 	int h_dim;
-	int bptt_truncate_len;
 
     /* LSTM state */
     Matrix_t *Z_, *I_, *F_, *O_;        // TxH
@@ -56,9 +55,9 @@ void RNN_init(
     int input_vector_len, 
     int output_vector_len,
     int hidden_layer_vector_len,
-    int bptt_truncate_len,
     unsigned int seed
 );
+
 
 void RNN_destroy(RNN_t *RNN_storage);
 
@@ -89,13 +88,14 @@ void RNN_SGD(
     math_t learning_rate    
 );
 
-void RNN_train(
-    RNN_t *RNN_storage,
+int RNN_train(
+    RNN_t * RNN_storage,
     DataSet_t *train_set,
     Matrix_t *predicted_output_matrix,
     math_t initial_learning_rate,
     int max_epoch,
     int print_loss_interval,
+    int learning_rate_adjust_interval,
     int gradient_check_interval
 );
 

@@ -5,34 +5,52 @@
 #include "common_math.h"
 #include "RNN.h"
 #include "file_process.h"
+#include "util.h"
 
-#define RNN_RAND_SEED 5
+#define DEFAULT_RAND_SEED 5
 
-unsigned int seed = RNN_RAND_SEED;
+#define DEFAULT_TRAIN_FILE_NAME "debug"
+#define DEFAULT_TEST_FILE_NAME "debug"
+
+unsigned int rand_seed = DEFAULT_RAND_SEED;
+char train_file_name_arg[FILE_NAME_LENGTH] =
+    DEFAULT_TRAIN_FILE_NAME;
+char test_file_name_arg[FILE_NAME_LENGTH] =
+    DEFAULT_TEST_FILE_NAME;
+
+// HHHH / SEED
+//   11 /    8 : 0.208137
+
+int hidden_cell_num = 4;
+math_t initial_learning_rate = 0.001;
+int max_epoch = 100;
+int print_loss_interval = 10;
+int learning_rate_adjust_interval = 10;
+int gradient_check_interval = 10;
+
 
 int RNN_model_training_example() {
 	printf("RNN_model_training_example\n");
+
 	/*
-		RNN model param
+	File I/O param
 	*/
+	char train_file_name[FILE_NAME_LENGTH]  = {0};
+	char test_file_name[FILE_NAME_LENGTH] = {0};
+	char loss_file_name[FILE_NAME_LENGTH] = {0};
+	char result_file_name[FILE_NAME_LENGTH] = {0};
 
-	// HHHH / SEED
-	//   11 /    8 : 0.208137
-	int H = 11;
-	int bptt_truncate_len = 4;
+	strcat(train_file_name, "exp_");
+	strcat(train_file_name, train_file_name_arg);
 
-	math_t initial_learning_rate = 0.001;
-	int max_epoch = 100000;
-	int print_loss_interval = 20000;
-    int gradient_check_interval = 100;
+	strcat(test_file_name, "exp_");
+	strcat(test_file_name, test_file_name_arg);
 
-	/*
-		File I/O param
-	 */
-	char train_file_name[] = "exp_SEMG_10_CT5_0";
-	char test_file_name[] = "exp_SEMG_10_CT5_0";
-	char loss_file_name[] = "loss_SEMG_10_CT5_0";
-	char result_file_name[] = "res_SEMG_10_CT5_0";
+	strcat(loss_file_name, "loss_");
+	strcat(loss_file_name, test_file_name_arg);
+
+	strcat(result_file_name, "res_");
+	strcat(result_file_name, test_file_name_arg);
 
 	char train_file[FILE_NAME_LENGTH] = {0};
 	char test_file[FILE_NAME_LENGTH] = {0};
@@ -51,10 +69,10 @@ int RNN_model_training_example() {
 	);
 
 	/*
-		Storage prepare
-	 */
+	Storage prepare
+	*/
 	printf("Working on training file...\n");
-	DataSet_t *train_set = read_set_from_file(train_file);
+	DataSet_t *train_set = read_compact_set_from_file(train_file);
 
 	RNN_t *RNN_storage
 	    = (RNN_t *) malloc(sizeof(RNN_t));
@@ -62,15 +80,14 @@ int RNN_model_training_example() {
 	    RNN_storage,
 	    train_set->input_n,
 	    train_set->output_n,
-	    H,
-	    bptt_truncate_len,
-	    seed
+	    hidden_cell_num,
+	    rand_seed
 	);
-	printf("-RNN paramerter-\n");
+	printf(" - RNN paramerter - \n");
 	printf("Input vector length: %d\n", train_set->input_n);
 	printf("Output vector length: %d\n", train_set->output_n);
-	printf("Hidden vector length: %d\n", H);
-	printf("BPTT truncate length: %d\n", bptt_truncate_len);
+	printf("Hidden cell num: %d\n", hidden_cell_num);
+	printf("Rand seed : %u\n", rand_seed);
 	printf("----------------\n");
 
 	// Storage for RNN_train()
@@ -80,31 +97,32 @@ int RNN_model_training_example() {
 	                              train_set->output_n);
 
 	/*
-		Start training with training file
+	Start training with training file
 	*/
-	printf("Start training. Max epoch: %d Initital learning rate: %lf\n",
+	printf("Start training. Max epoch: %d Initital learning rate: % lf\n",
 	       max_epoch, initial_learning_rate);
-
-	RNN_train(
+	int epoch;
+	epoch = RNN_train(
 	    RNN_storage,
 	    train_set,
 	    predicted_output_matrix,
 	    initial_learning_rate,
 	    max_epoch,
 	    print_loss_interval,
+	    learning_rate_adjust_interval,
 	    gradient_check_interval
 	);
 
 	/*
-		Testing file forward propagation
-	 */
+	Testing file forward propagation
+	*/
 	DataSet_destroy(train_set);
 
 	printf("Working on testing file...\n");
-	train_set = read_set_from_file(test_file);
+	train_set = read_compact_set_from_file(test_file);
 
 	FILE *pRes = fopen(result_file, "w");
-	fprintf(pRes, "%d\n", train_set->num_matrix);
+	fprintf(pRes, " %d\n", train_set->num_matrix);
 	fclose(pRes);
 
 	FILE *pLoss = fopen(loss_file, "w");
@@ -122,18 +140,18 @@ int RNN_model_training_example() {
 		           RNN_storage,
 		           predicted_output_matrix,
 		           train_set->output_matrix_list[i]);
-		fprintf(pLoss, "%lf\n", loss);
+		fprintf(pLoss, " % lf\n", loss);
 		total_loss += loss;
 		write_matrix_to_file(result_file, train_set->input_matrix_list[i], "a");
 		write_matrix_to_file(result_file, predicted_output_matrix, "a");
 	}
-	printf("average loss: %lf\n", total_loss / train_set->num_matrix);
+	printf("average loss: % lf\n", total_loss / train_set->num_matrix);
 	fclose(pLoss);
 
 	/*
-		Dump model
-	 */
-	// char model_file_prefix[] = "./data/model/";
+	Dump model
+	*/
+	// char model_file_prefix[] = ". / data / model / ";
 	// printf("Model dump...\n");
 	// Matrix_dump(
 	//     "InputWeight_SEMG_2_CT5_0_BPTT4",
@@ -152,31 +170,37 @@ int RNN_model_training_example() {
 	// );
 
 	/*
-		Clean up
-	 */
+	Clean up
+	*/
 	DataSet_destroy(train_set);
 	RNN_destroy(RNN_storage);
 	matrix_free(predicted_output_matrix);
 
-	return 0;
+	return epoch;
 }
 
+int RNN_model_train_timed() {
+	printf("RNN_model_training_example\n");
 
-int RNN_model_import_example() {
-	printf("RNN_model_import_example\n");
 	/*
-		RNN model param
+	File I/O param
 	*/
-	int H = 3;
-	int bptt_truncate_len = 4;
+	char train_file_name[FILE_NAME_LENGTH]  = {0};
+	char test_file_name[FILE_NAME_LENGTH] = {0};
+	char loss_file_name[FILE_NAME_LENGTH] = {0};
+	char result_file_name[FILE_NAME_LENGTH] = {0};
 
-	/*
-		File I/O param
-	 */
-	char train_file_name[] = "exp_SEMG_2_CT5_0";
-	char test_file_name[] = "exp_SEMG_2_CT5_0";
-	char loss_file_name[] = "loss_SEMG_2_CT5_0";
-	char result_file_name[] = "res_SEMG_2_CT5_0";
+	strcat(train_file_name, "exp_");
+	strcat(train_file_name, train_file_name_arg);
+
+	strcat(test_file_name, "exp_");
+	strcat(test_file_name, test_file_name_arg);
+
+	strcat(loss_file_name, "loss_");
+	strcat(loss_file_name, test_file_name_arg);
+
+	strcat(result_file_name, "res_");
+	strcat(result_file_name, test_file_name_arg);
 
 	char train_file[FILE_NAME_LENGTH] = {0};
 	char test_file[FILE_NAME_LENGTH] = {0};
@@ -195,10 +219,10 @@ int RNN_model_import_example() {
 	);
 
 	/*
-		Storage prepare
-	 */
-	printf("Working on testing file...\n");
-	DataSet_t *train_set = read_set_from_file(test_file);
+	Storage prepare
+	*/
+	printf("Working on training file...\n");
+	DataSet_t *train_set = read_compact_set_from_file(train_file);
 
 	RNN_t *RNN_storage
 	    = (RNN_t *) malloc(sizeof(RNN_t));
@@ -206,15 +230,14 @@ int RNN_model_import_example() {
 	    RNN_storage,
 	    train_set->input_n,
 	    train_set->output_n,
-	    H,
-	    bptt_truncate_len,
-	    seed
+	    hidden_cell_num,
+	    rand_seed
 	);
-	printf("-RNN paramerter-\n");
+	printf(" - RNN paramerter - \n");
 	printf("Input vector length: %d\n", train_set->input_n);
 	printf("Output vector length: %d\n", train_set->output_n);
-	printf("Hidden vector length: %d\n", H);
-	printf("BPTT truncate length: %d\n", bptt_truncate_len);
+	printf("Hidden cell num: %d\n", hidden_cell_num);
+	printf("Rand seed : %u\n", rand_seed);
 	printf("----------------\n");
 
 	// Storage for RNN_train()
@@ -224,27 +247,125 @@ int RNN_model_import_example() {
 	                              train_set->output_n);
 
 	/*
-		Import trained model
+	Start training with training file
+	*/
+	printf("Start training. Max epoch: %d Initital learning rate: % lf\n",
+	       max_epoch, initial_learning_rate);
+
+	mytspec start_time, end_time;
+	int epoch;
+	get_time(start_time);
+	epoch = RNN_train(
+	    RNN_storage,
+	    train_set,
+	    predicted_output_matrix,
+	    initial_learning_rate,
+	    max_epoch,
+	    print_loss_interval,
+	    learning_rate_adjust_interval,
+	    gradient_check_interval
+	);
+	get_time(end_time);
+	printf("done!\nElapsed_time: %3.8lf\nseconds_per_epoch: %3.8lf\nepoch_per_second: %3.8lf\n",
+	       elapsed_time(end_time, start_time),
+	       elapsed_time(end_time, start_time) / (double) epoch,
+	       (double) epoch / elapsed_time(end_time, start_time));
+
+	DataSet_destroy(train_set);
+	RNN_destroy(RNN_storage);
+	matrix_free(predicted_output_matrix);
+
+	return epoch;
+}
+
+int RNN_model_import_example() {
+	printf("RNN_model_import_example\n");
+
+	/*
+	File I/O param
+	*/
+	char train_file_name[FILE_NAME_LENGTH]  = {0};
+	char test_file_name[FILE_NAME_LENGTH] = {0};
+	char loss_file_name[FILE_NAME_LENGTH] = {0};
+	char result_file_name[FILE_NAME_LENGTH] = {0};
+
+	strcat(train_file_name, "exp_");
+	strcat(train_file_name, train_file_name_arg);
+
+	strcat(test_file_name, "exp_");
+	strcat(test_file_name, test_file_name_arg);
+
+	strcat(loss_file_name, "loss_");
+	strcat(loss_file_name, test_file_name_arg);
+
+	strcat(result_file_name, "res_");
+	strcat(result_file_name, test_file_name_arg);
+
+	char train_file[FILE_NAME_LENGTH] = {0};
+	char test_file[FILE_NAME_LENGTH] = {0};
+	char loss_file[FILE_NAME_LENGTH] = {0};
+	char result_file[FILE_NAME_LENGTH] = {0};
+
+	IO_file_prepare(
+	    train_file,
+	    test_file,
+	    loss_file,
+	    result_file,
+	    train_file_name,
+	    test_file_name,
+	    loss_file_name,
+	    result_file_name
+	);
+
+	/*
+	Storage prepare
+	*/
+	printf("Working on testing file...\n");
+	DataSet_t *train_set = read_compact_set_from_file(test_file);
+
+	RNN_t *RNN_storage
+	    = (RNN_t *) malloc(sizeof(RNN_t));
+	RNN_init(
+	    RNN_storage,
+	    train_set->input_n,
+	    train_set->output_n,
+	    hidden_cell_num,
+	    rand_seed
+	);
+	printf(" - RNN paramerter - \n");
+	printf("Input vector length: %d\n", train_set->input_n);
+	printf("Output vector length: %d\n", train_set->output_n);
+	printf("Hidden cell num: %d\n", hidden_cell_num);
+	printf("----------------\n");
+
+	// Storage for RNN_train()
+	Matrix_t *predicted_output_matrix;
+	predicted_output_matrix = matrix_create(
+	                              train_set->output_max_m,
+	                              train_set->output_n);
+
+	/*
+	Import trained model
 	*/
 	// printf("Import model...\n");
 	// read_matrix_from_file(
-	// 	"./data/model/InputWeight_SEMG_2_CT5_0_BPTT4.txt", 
+	// 	". / data / model / InputWeight_SEMG_2_CT5_0_BPTT4.txt",
 	// 	RNN_storage->input_weight_matrix
 	// );
 	// read_matrix_from_file(
-	// 	"./data/model/InternalWeight_SEMG_2_CT5_0_BPTT4.txt", 
+	// 	". / data / model / InternalWeight_SEMG_2_CT5_0_BPTT4.txt",
 	// 	RNN_storage->internal_weight_matrix
 	// );
 	// read_matrix_from_file(
-	// 	"./data/model/OutputWeight_SEMG_2_CT5_0_BPTT4.txt", 
+	// 	". / data / model / OutputWeight_SEMG_2_CT5_0_BPTT4.txt",
 	// 	RNN_storage->output_weight_matrix
 	// );
 
 	/*
-		Testing file forward propagation
-	 */
+	Testing file forward propagation
+	*/
 	FILE *pRes = fopen(result_file, "w");
-	fprintf(pRes, "%d\n", train_set->num_matrix);
+	fprintf(pRes, " %d\n", train_set->num_matrix);
 	fclose(pRes);
 
 	FILE *pLoss = fopen(loss_file, "w");
@@ -262,17 +383,17 @@ int RNN_model_import_example() {
 		           RNN_storage,
 		           predicted_output_matrix,
 		           train_set->output_matrix_list[i]);
-		fprintf(pLoss, "%lf\n", loss);
+		fprintf(pLoss, " % lf\n", loss);
 		total_loss += loss;
 		write_matrix_to_file(result_file, train_set->input_matrix_list[i], "a");
 		write_matrix_to_file(result_file, predicted_output_matrix, "a");
 	}
-	printf("average loss: %lf\n", total_loss / train_set->num_matrix);
+	printf("average loss: % lf\n", total_loss / train_set->num_matrix);
 	fclose(pLoss);
 
 	/*
-		Clean up
-	 */
+	Clean up
+	*/
 	DataSet_destroy(train_set);
 	RNN_destroy(RNN_storage);
 	matrix_free(predicted_output_matrix);
@@ -281,10 +402,49 @@ int RNN_model_import_example() {
 }
 
 int main(int argc, char *argv[]) {
-	if (argc >= 2)
-		seed = atoi(argv[1]);
-	
-	return RNN_model_training_example();
+
+	if (argc < 9) {
+		printf(
+		    "Usage: ./rnn "
+		    "train_file_name/"
+		    "test_file_name/"
+		    "hidden_cell_num/"
+		    "max_epoch/"
+		    "initial_learning_rate/"
+		    "print_loss_interval/"
+		    "learning_rate_adjust_interval/"
+		    "gradient_check_interval/"
+		    "rand_seed"
+		    "\n");
+		printf(
+		    "Example: ./rnn "
+		    "reddit_14 "
+		    "reddit_14 "
+		    "4 "
+		    "10000 "
+		    "0.001 "
+		    "10 "
+		    "10 "
+		    "10 "
+		    "4 "
+		    "\n");
+		exit(60);
+	}
+
+	strncpy(train_file_name_arg, argv[1], FILE_NAME_LENGTH);
+	strncpy(test_file_name_arg, argv[2], FILE_NAME_LENGTH);
+
+	hidden_cell_num = atoi(argv[3]);
+	max_epoch = atoi(argv[4]);
+	initial_learning_rate = atof(argv[5]);
+	print_loss_interval = atoi(argv[6]);
+	learning_rate_adjust_interval = atoi(argv[7]);
+	gradient_check_interval = atoi(argv[8]);
+	rand_seed = atoi(argv[9]);
+
+
+	return RNN_model_train_timed();
+	//return RNN_model_training_example();
 	//return RNN_model_import_example();
 }
 

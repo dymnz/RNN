@@ -11,12 +11,14 @@ import os
 
 nltk.download("book")
 
+_SAMPLE_SIZE = int(os.environ.get('_SAMPLE_SIZE', '1000'))
 _VOCABULARY_SIZE = int(os.environ.get('VOCABULARY_SIZE', '8000'))
 _HIDDEN_DIM = int(os.environ.get('HIDDEN_DIM', '80'))
 _LEARNING_RATE = float(os.environ.get('LEARNING_RATE', '0.005'))
 _NEPOCH = int(os.environ.get('NEPOCH', '100'))
 _MODEL_FILE = os.environ.get('MODEL_FILE')
 
+sample_size = _SAMPLE_SIZE
 vocabulary_size = _VOCABULARY_SIZE
 unknown_token = "UNKNOWN_TOKEN"
 sentence_start_token = "SENTENCE_START"
@@ -24,7 +26,7 @@ sentence_end_token = "SENTENCE_END"
 
 # Read the data and append SENTENCE_START and SENTENCE_END tokens
 print "Reading CSV file..."
-with open('r10.csv', 'rb') as f:
+with open('reddit.csv', 'rb') as f:
     reader = csv.reader(f, skipinitialspace=True)
     reader.next()
     # Split full comments into sentences
@@ -55,19 +57,30 @@ for i, sent in enumerate(tokenized_sentences):
 
 # Create the training data
 X_train = np.asarray([[word_to_index[w] for w in sent[:-1]] for sent in tokenized_sentences])
-y_train = np.asarray([[word_to_index[w] for w in sent[1:]] for sent in tokenized_sentences])
+Y_train = np.asarray([[word_to_index[w] for w in sent[1:]] for sent in tokenized_sentences])
+
+print "Writing %d samples" % (sample_size)
 
 np.set_printoptions(precision=0)
 np.set_printoptions(threshold=np.nan)
-out_file = open("data.txt","w")
-out_file.write('{}\n'.format(len(tokenized_sentences)))
 
-for X in range(10): #range(X_train.size):
-	x = np.zeros((len(X_train[X]), vocabulary_size), dtype=int)
-	out_file.write('{}\t{}\n'.format(vocabulary_size, len(X_train[X])))
-	for i in range(len(X_train[X])):
-		x[i, X_train[X][i]] = 1
-	out_file.write('{}\n'.format(','.join(map(str, x))))
+out_file = open("data.txt","w")
+out_file.write('{}\n'.format(sample_size))
+out_file.write('{}\n'.format(vocabulary_size))
+
+for ind in range(sample_size): 
+    out_file.write(str(len(X_train[ind])) + '\n')
+    out_file.write('\t'.join(map(str, X_train[ind])) + '\n')
+    out_file.write(str(len(Y_train[ind])) + '\n')
+    out_file.write('\t'.join(map(str, Y_train[ind])) + '\n')
+
+# for X in range(10): #range(X_train.size):
+# 	x = np.zeros((len(X_train[X]), vocabulary_size), dtype=int)
+# 	out_file.write('{}\t{}\n'.format(vocabulary_size, len(X_train[X])))
+# 	for i in range(len(X_train[X])):
+# 		x[i, X_train[X][i]] = 1
+# 	out_file.write('{}\n'.format(','.join(map(str, x))))
 	
+
 
 out_file.close()

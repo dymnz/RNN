@@ -24,7 +24,6 @@ void RNN_init(
     int input_vector_len,
     int output_vector_len,
     int hidden_layer_vector_len,
-    int bptt_truncate_len,
     unsigned int seed
 ) {
 	int i_dim = input_vector_len;
@@ -34,7 +33,6 @@ void RNN_init(
 	RNN_storage->i_dim = i_dim;
 	RNN_storage->o_dim = o_dim;
 	RNN_storage->h_dim = h_dim;
-	RNN_storage->bptt_truncate_len = bptt_truncate_len;
 
 	/* LSTM state */
 	// Size to be adjusted for different test sample size
@@ -303,7 +301,7 @@ void RNN_forward_propagation(
 			for (r = 0; r < h_dim; ++r) {
 				temp_vector[o] += V[o][r] * Y[t][r];
 			}
-			temp_vector[o]  += Bpo[o];
+			temp_vector[o] += Bpo[o];
 		}
 		network_output_squash_func(temp_vector, P_O[t], o_dim);
 	}
@@ -374,10 +372,9 @@ void RNN_BPTT(
 
 	/* For t = t_dim - 1 */
 	for (o = 0; o < o_dim; ++o) {
-		dP_O[o] = E_O[t_dim - 1][o];
+		dP_O[o] = P_O[t_dim - 1][o];
 		if (E_O[t_dim - 1][o] == 1) {
 			dP_O[o] -= 1;
-			break;
 		}
 	}
 	for (h = 0; h < h_dim; ++h) {
@@ -445,10 +442,9 @@ void RNN_BPTT(
 	for (t = t_dim - 2; t >= 1; --t) {
 		clear_1d(dY, h_dim);
 		for (o = 0; o < o_dim; ++o) {
-			dP_O[o] = E_O[t][o];
+			dP_O[o] = P_O[t][o];
 			if (E_O[t][o] == 1) {
 				dP_O[o] -= 1;
-				break;
 			}
 		}
 		for (h = 0; h < h_dim; ++h) {
@@ -534,10 +530,9 @@ void RNN_BPTT(
 	/* For t = 0 */
 	clear_1d(dY, h_dim);
 	for (o = 0; o < o_dim; ++o) {
-		dP_O[o] = E_O[0][o];
+		dP_O[o] = P_O[0][o];
 		if (E_O[0][o] == 1) {
 			dP_O[o] -= 1;
-			break;
 		}
 	}
 	for (h = 0; h < h_dim; ++h) {
@@ -696,14 +691,14 @@ void RNN_SGD(
 		Bpo[o] -= learning_rate * dBpo[o];
 	}
 }
-
-void RNN_train(
+int RNN_train(
     RNN_t * RNN_storage,
     DataSet_t *train_set,
     Matrix_t *predicted_output_matrix,
     math_t initial_learning_rate,
     int max_epoch,
     int print_loss_interval,
+    int learning_rate_adjust_interval,
     int gradient_check_interval
 ) {
 	int num_train = train_set->num_matrix;
@@ -715,10 +710,8 @@ void RNN_train(
 	math_t learning_rate = initial_learning_rate;
 
 	for (e = 0; e < max_epoch; ++e) {
-		if (e % print_loss_interval == 0)
-			printf("average loss at epoch: %10d = %10.10lf LR: %lf\n",
-			       e, current_total_loss / num_train, learning_rate);
-		if (e > 0 && e % gradient_check_interval == 0) {
+		printf("epoch: %10d out of %10d\n", e + 1, max_epoch);
+		if (e > 0 && e % learning_rate_adjust_interval == 0) {
 			current_total_loss = 0.0;
 			for (i = 0; i < num_train; ++i) {
 				input_matrix = train_set->input_matrix_list[i];
@@ -734,42 +727,61 @@ void RNN_train(
 				                          predicted_output_matrix,
 				                          expected_output_matrix);
 			}
-
 			// Adjust learning rate if the loss increases
 			if (last_total_loss < current_total_loss) {
 				if (learning_rate / 2 > 1e-6)
 					learning_rate /= 2;
 				else {
 					printf("Super low learning rate error: %10d\n", e);
-					return;
+					return e;
 				}
 			} else if (learning_rate * 1.1 < 1 * initial_learning_rate) {
 				learning_rate *= 1.1;
 			}
 
 			last_total_loss = current_total_loss;
+		}
 
-			int old_bptt_truncate_len = RNN_storage->bptt_truncate_len;
-			RNN_storage->bptt_truncate_len = 10000;
+		if (e > 0 && e % print_loss_interval == 0) {
+			current_total_loss = 0.0;
+			for (i = 0; i < num_train; ++i) {
+				input_matrix = train_set->input_matrix_list[i];
+				expected_output_matrix = train_set->output_matrix_list[i];
+				RNN_Predict(
+				    RNN_storage,
+				    input_matrix,
+				    predicted_output_matrix
+				);
+
+				current_total_loss += RNN_loss_calculation(
+				                          RNN_storage,
+				                          predicted_output_matrix,
+				                          expected_output_matrix);
+			}
+			printf("average loss at epoch: %10d = %10.10lf LR: %lf\n",
+			       e, current_total_loss / num_train, learning_rate);
+		}
+
+		if (e > 0 && e % gradient_check_interval == 0) {
 			int gradient_check_result =
 			    RNN_Gradient_check(
 			        RNN_storage,
 			        train_set,
 			        predicted_output_matrix,
-			        1e-5,
-			        1e-2,
+			        1e-3,
+			        2e-2,
 			        0
 			    );
-			RNN_storage->bptt_truncate_len = old_bptt_truncate_len;
 
 			// Terminate the training process if the gradient check did not pass
 			if (gradient_check_result != 0) {
 				printf("Gradient check error at epoch: %10d\n", e);
-				return;
+				return e;
 			}
 		}
 
 		for (t = 0; t < num_train; ++t) {
+			//printf("training sample: %d out of %d\n", t + 1, num_train);
 			input_matrix = train_set->input_matrix_list[t];
 			expected_output_matrix = train_set->output_matrix_list[t];
 
@@ -782,6 +794,7 @@ void RNN_train(
 			);
 		}
 	}
+	return e;
 }
 
 // Cross entropy loss
@@ -792,7 +805,7 @@ math_t RNN_loss_calculation(
 ) {
 	math_t total_loss = 0.0, log_term = 0.0;
 
-	int t_dim = predicted_output_matrix->m;
+	int t_dim = expected_output_matrix->m;
 	int o_dim = RNN_storage->o_dim;
 
 	int t, o;
@@ -893,6 +906,7 @@ int RNN_Gradient_check(
 
 	int num_parameter = sizeof(testing_model_list) / sizeof(Matrix_t *);
 	for (i = 0; i < num_parameter; ++i) {
+		printf("Checking parameter: %d out of %d\n", i, num_parameter);
 		testing_model = testing_model_list[i];
 		testing_matrix = UVW[i];
 		testing_gradient_matrix = dLdUVW[i];

@@ -697,9 +697,26 @@ void RNN_train(
 	math_t learning_rate = initial_learning_rate;
 
 	for (e = 0; e < max_epoch; ++e) {
-		if (e % print_loss_interval == 0)
+		if (e % print_loss_interval == 0) {
+			current_total_loss = 0.0;
+			for (i = 0; i < num_train; ++i) {
+				input_matrix = train_set->input_matrix_list[i];
+				expected_output_matrix = train_set->output_matrix_list[i];
+				RNN_Predict(
+				    RNN_storage,
+				    input_matrix,
+				    predicted_output_matrix
+				);
+
+				current_total_loss += RNN_loss_calculation(
+				                          RNN_storage,
+				                          predicted_output_matrix,
+				                          expected_output_matrix);
+			}
+
 			printf("average loss at epoch: %10d = %10.10lf LR: %lf\n",
 			       e, current_total_loss / num_train, learning_rate);
+		}
 		if (e > 0 && e % gradient_check_interval == 0) {
 			current_total_loss = 0.0;
 			for (i = 0; i < num_train; ++i) {
@@ -723,7 +740,7 @@ void RNN_train(
 					learning_rate /= 2;
 				else {
 					printf("Super low learning rate error: %10d\n", e);
-					return;
+					return e;
 				}
 			} else if (learning_rate * 1.1 < 1 * initial_learning_rate) {
 				learning_rate *= 1.1;
@@ -731,26 +748,23 @@ void RNN_train(
 
 			last_total_loss = current_total_loss;
 
-			int old_bptt_truncate_len = RNN_storage->bptt_truncate_len;
-			RNN_storage->bptt_truncate_len = 10000;
 			int gradient_check_result =
 			    RNN_Gradient_check(
 			        RNN_storage,
 			        train_set,
 			        predicted_output_matrix,
 			        1e-5,
-			        1e-2,
+			        2e-2,
 			        0
 			    );
-			RNN_storage->bptt_truncate_len = old_bptt_truncate_len;
 
 			// Terminate the training process if the gradient check did not pass
 			if (gradient_check_result != 0) {
 				printf("Gradient check error at epoch: %10d\n", e);
-				return;
+				return e;
 			}
 		}
-
+		
 		for (t = 0; t < num_train; ++t) {
 			input_matrix = train_set->input_matrix_list[t];
 			expected_output_matrix = train_set->output_matrix_list[t];

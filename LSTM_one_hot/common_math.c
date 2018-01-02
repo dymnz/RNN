@@ -25,7 +25,7 @@ void matrix_random_with_seed(
 }
 
 math_t **create_2d(int m, int n) {
-	math_t **data = (math_t **) malloc(m * sizeof(math_t *));
+	math_t **data = (math_t **) calloc(m, sizeof(math_t *));
 	if (!data) {
 		exit(69);
 	}
@@ -33,7 +33,7 @@ math_t **create_2d(int m, int n) {
 	int i;
 	math_t *col_data;
 	for (i = 0; i < m; ++i) {
-		col_data = (math_t *) malloc(n * sizeof(math_t));
+		col_data = (math_t *) calloc(n, sizeof(math_t));
 		if (!col_data)
 			exit(69);
 
@@ -62,6 +62,10 @@ void clear_2d(math_t **data, int m, int n) {
 			data[i][r] = 0.0;
 		}
 	}
+}
+
+void matrix_clear(Matrix_t *matrix) {
+	clear_2d(matrix->data, matrix->m, matrix->n);
 }
 
 Matrix_t *matrix_create(int m, int n) {

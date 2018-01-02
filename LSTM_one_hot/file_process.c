@@ -113,6 +113,64 @@ DataSet_t *read_set_from_file(char *file_name) {
 	return train_set;
 }
 
+DataSet_t *read_compact_set_from_file(char *file_name) {
+	FILE *pFile = fopen (file_name, "r");
+	if (!pFile) {
+		printf("%s read error\n", file_name);
+		exit(69);
+	}
+
+	int num_matrix, num_column;
+	fscanf(pFile, "%d", &num_matrix);
+	fscanf(pFile, "%d", &num_column);
+	printf("Reading %d matrix with %d rows from %s\n", num_matrix, num_column, file_name);
+
+	DataSet_t *train_set = (DataSet_t *) malloc(sizeof(DataSet_t));
+	TrainSet_init(train_set, num_matrix);
+
+	int i, r, j, i_m, o_m;
+	int index;
+	for (i = 0; i < num_matrix; ++i) {
+		// Read input vector
+		fscanf(pFile, "%d", &i_m);
+
+		if (train_set->input_max_m < i_m) {
+			train_set->input_max_m = i_m;
+			train_set->output_max_m = i_m;
+		}
+
+		Matrix_t *input_matrix = matrix_create(i_m, num_column);
+
+		for (r = 0; r < i_m; ++r) {			
+			fscanf(pFile, "%d", &index);
+			input_matrix->data[r][index] = 1;
+		}
+
+		// Read output vector
+		fscanf(pFile, "%d", &o_m);
+		if (o_m != i_m) {
+			printf("input/output time step mis-match\n");
+			exit(47);
+		}
+
+		Matrix_t *output_matrix = matrix_create(o_m, num_column);
+
+		for (r = 0; r < o_m; ++r) {			
+			fscanf(pFile, "%d", &index);
+			output_matrix->data[r][index] = 1;
+		}
+
+		train_set->input_matrix_list[i] = input_matrix;
+		train_set->output_matrix_list[i] = output_matrix;
+	}
+	train_set->input_n = num_column;
+	train_set->output_n = num_column;
+
+	fclose(pFile);
+
+	return train_set;
+}
+
 // Matrix should be allocated already
 void read_matrix_from_file(char file[], Matrix_t *matrix) {
 	int m, n, r, j;
