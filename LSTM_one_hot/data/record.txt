@@ -1,3 +1,4 @@
+```
 RNN_model_training_example
 Working on training file...
 Reading 1000 matrix with 8000 rows from ./data/input/exp_reddit_1000.txt
@@ -21,3 +22,32 @@ average loss at epoch:          9 = 118.1527436497 LR: 0.001000
 done!
 Elapsed_time: 598.77454300
 epoch_per_second: 0.01670078
+```
+---
+```
+./rnn reddit_1000 reddit_1000 4 10 0.001 100 100 10000000 4
+RNN_model_training_example
+Working on training file...
+Reading 1000 matrix with 8000 rows from ./data/input/exp_reddit_1000.txt
+ - RNN paramerter - 
+Input vector length: 8000
+Output vector length: 8000
+Hidden cell num: 4
+Rand seed : 4
+----------------
+Start training. Max epoch: 10 Initital learning rate:  0.001000
+epoch:          1 out of         10
+epoch:          2 out of         10
+epoch:          3 out of         10
+epoch:          4 out of         10
+epoch:          5 out of         10
+epoch:          6 out of         10
+epoch:          7 out of         10
+epoch:          8 out of         10
+epoch:          9 out of         10
+epoch:         10 out of         10
+done!
+Elapsed_time: 294.48618700
+seconds_per_epoch: 29.44861870
+epoch_per_second: 0.03395745
+```
