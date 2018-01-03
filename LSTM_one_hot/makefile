@@ -1,6 +1,6 @@
 CC=gcc
 CFLAGS=-Wall -DFILE_NAME_LENGTH=255
-LFLAGS=-lm -fopenmp
+LFLAGS=-lm
 DEPS = common_math.h RNN.h file_process.h util.h
 #TEST_OBJ = test.o
 DEPS_OBJ = common_math.o RNN.o file_process.o util.o
