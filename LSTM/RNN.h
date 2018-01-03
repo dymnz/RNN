@@ -87,7 +87,7 @@ void RNN_SGD(
     math_t learning_rate    
 );
 
-void RNN_train(
+int RNN_train(
     RNN_t *RNN_storage,
     DataSet_t *train_set,
     Matrix_t *predicted_output_matrix,

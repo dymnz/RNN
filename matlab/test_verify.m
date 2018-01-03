@@ -4,7 +4,7 @@ clear; close all;
 P = 1;     % Peak force
 CT = 5;    % Time to peak
 
-file_location = '../C/data/output/';
+file_location = '../LSTM/data/output/';
 file_name = 'res_SEMG_10_CT5_0.txt';
 %% 
 
