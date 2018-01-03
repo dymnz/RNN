@@ -8,7 +8,7 @@
 * ~~Dynamic learning rate~~
 * ~~Gradient check~~
 * ~~Abstract squash function derivative for gradeint descent calculation~~
-* ~~Model parameter import/export~~
+* Model parameter import/export
 * ~~LSTM!~~
 
 #### Note
