@@ -95,7 +95,7 @@ int RNN_model_training_example() {
 	// Storage for RNN_train()
 	Matrix_t *predicted_output_matrix;
 	predicted_output_matrix = matrix_create(
-	                              train_set->output_max_m,
+	                              train_set->output_max_m,	                          
 	                              train_set->output_n);
 
 	/*

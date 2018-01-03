@@ -6,6 +6,8 @@ void TrainSet_init(DataSet_t *train_set, int num_matrix) {
 	    (Matrix_t **) malloc(num_matrix * sizeof(Matrix_t *));
 	train_set->output_matrix_list =
 	    (Matrix_t **) malloc(num_matrix * sizeof(Matrix_t *));
+	train_set->input_max_m = 0;
+	train_set->output_max_m = 0;
 }
 
 void DataSet_destroy(DataSet_t *train_set) {
@@ -212,13 +214,11 @@ void RNN_forward_propagation(
 
 	math_t **V = RNN_storage->V->data;
 	math_t *Bpo = RNN_storage->Bpo->data[0];
-
 	clear_2d(Z_, t_dim, h_dim);
 	clear_2d(I_, t_dim, h_dim);
 	clear_2d(F_, t_dim, h_dim);
 	clear_2d(O_, t_dim, h_dim);
 	clear_2d(P_O, t_dim, o_dim);
-
 	int h, i, o, r, t;
 
 	// For t = 0
@@ -229,8 +229,7 @@ void RNN_forward_propagation(
 			I_[0][h] += Wi[h][i] * X[0][i];
 			F_[0][h] += Wf[h][i] * X[0][i];
 		}
-
-		Z_[0][h] += Bz[h];
+		Z_[0][h] += Bz[h];	
 		I_[0][h] += Bi[h];
 		F_[0][h] += Bf[h];
 
