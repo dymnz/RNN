@@ -1,11 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <omp.h>
 
 #include "common_math.h"
 #include "RNN.h"
 #include "file_process.h"
 #include "util.h"
+
 
 #define DEFAULT_RAND_SEED 5
 
