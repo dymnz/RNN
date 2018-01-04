@@ -123,7 +123,7 @@ DataSet_t *read_compact_set_from_file(char *file_name) {
 	int num_matrix, num_column;
 	fscanf(pFile, "%d", &num_matrix);
 	fscanf(pFile, "%d", &num_column);
-	printf("Reading %d matrix with %d columns from %s\n", num_matrix, num_column, file_name);
+	//printf("Reading %d matrix with %d columns from %s\n", num_matrix, num_column, file_name);
 
 	DataSet_t *train_set = (DataSet_t *) malloc(sizeof(DataSet_t));
 	TrainSet_init(train_set, num_matrix);

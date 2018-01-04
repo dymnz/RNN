@@ -802,7 +802,7 @@ int RNN_train(
 	math_t learning_rate = initial_learning_rate;
 
 	for (e = 0; e < max_epoch; ++e) {
-		printf("epoch: %10d out of %10d\n", e + 1, max_epoch);
+		//printf("epoch: %10d out of %10d\n", e + 1, max_epoch);
 		if (e > 0 && e % learning_rate_adjust_interval == 0) {
 			current_total_loss = 0.0;
 			for (i = 0; i < num_train; ++i) {
