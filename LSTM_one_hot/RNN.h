@@ -2,8 +2,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include "common_math.h"
+#include <omp.h>
 
+#include "common_math.h"
 
 typedef struct {
 	int i_dim;

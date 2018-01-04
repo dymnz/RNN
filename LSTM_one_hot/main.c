@@ -6,14 +6,14 @@
 #include "common_math.h"
 #include "RNN.h"
 #include "file_process.h"
-#include "util.h"
 
-
+#define DEFAULT_THREAD_COUNT 8
 #define DEFAULT_RAND_SEED 5
 
 #define DEFAULT_TRAIN_FILE_NAME "debug"
 #define DEFAULT_TEST_FILE_NAME "debug"
 
+unsigned int threads_to_use = DEFAULT_THREAD_COUNT;
 unsigned int rand_seed = DEFAULT_RAND_SEED;
 char train_file_name_arg[FILE_NAME_LENGTH] =
     DEFAULT_TRAIN_FILE_NAME;
@@ -254,9 +254,8 @@ int RNN_model_train_timed() {
 	printf("Start training. Max epoch: %d Initital learning rate: % lf\n",
 	       max_epoch, initial_learning_rate);
 
-	mytspec start_time, end_time;
 	int epoch;
-	get_time(start_time);
+
 	epoch = RNN_train(
 	    RNN_storage,
 	    train_set,
@@ -267,11 +266,8 @@ int RNN_model_train_timed() {
 	    learning_rate_adjust_interval,
 	    gradient_check_interval
 	);
-	get_time(end_time);
-	printf("done!\nElapsed_time: %3.8lf\nseconds_per_epoch: %3.8lf\nepoch_per_second: %3.8lf\n",
-	       elapsed_time(end_time, start_time),
-	       elapsed_time(end_time, start_time) / (double) epoch,
-	       (double) epoch / elapsed_time(end_time, start_time));
+
+	printf("Training finished with %10d epochs\n", epoch);
 
 	DataSet_destroy(train_set);
 	RNN_destroy(RNN_storage);
@@ -405,7 +401,7 @@ int RNN_model_import_example() {
 
 int main(int argc, char *argv[]) {
 
-	if (argc < 9) {
+	if (argc < 10) {
 		printf(
 		    "Usage: ./rnn "
 		    "train_file_name/"
@@ -417,18 +413,20 @@ int main(int argc, char *argv[]) {
 		    "learning_rate_adjust_interval/"
 		    "gradient_check_interval/"
 		    "rand_seed"
+		    "num_threads"
 		    "\n");
 		printf(
 		    "Example: ./rnn "
 		    "reddit_14 "
 		    "reddit_14 "
-		    "4 "
-		    "10000 "
+		    "100 "
+		    "10 "
 		    "0.001 "
-		    "10 "
-		    "10 "
-		    "10 "
+		    "1 "
+		    "1 "
+		    "100000 "
 		    "4 "
+		    "8 "
 		    "\n");
 		exit(60);
 	}
@@ -443,6 +441,11 @@ int main(int argc, char *argv[]) {
 	learning_rate_adjust_interval = atoi(argv[7]);
 	gradient_check_interval = atoi(argv[8]);
 	rand_seed = atoi(argv[9]);
+	threads_to_use = atoi(argv[10]);
+
+	omp_set_num_threads(threads_to_use);
+
+	printf("The training process will be running in %3d threads\n", threads_to_use);
 
 
 	return RNN_model_train_timed();
