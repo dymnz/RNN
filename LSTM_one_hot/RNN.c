@@ -370,72 +370,86 @@ void RNN_BPTT(
 
 
 	/* For t = t_dim - 1 */
-	for (o = 0; o < o_dim; ++o) {
-		dP_O[o] = P_O[t_dim - 1][o];
-		if (E_O[t_dim - 1][o] == 1) {
-			dP_O[o] -= 1;
-		}
-	}
-	for (h = 0; h < h_dim; ++h) {
+	#pragma omp parallel
+	{
+		#pragma omp for
 		for (o = 0; o < o_dim; ++o) {
-			dY[h] += V[o][h] * dP_O[o] * (1 -  P_O[t_dim - 1][o] *  P_O[t_dim - 1][o]);
+			dP_O[o] = P_O[t_dim - 1][o];
+			if (E_O[t_dim - 1][o] == 1) {
+				dP_O[o] -= 1;
+			}
 		}
-	}
-	for (h = 0; h < h_dim; ++h) {
-		dO[h] =
-		    dY[h] *
-		    cell_output_squash_func(C[t_dim - 1][h]) *
-		    cell_state_squash_derivative(O_[t_dim - 1][h]);
-		dC[h] =
-		    dY[h] *
-		    O[t_dim - 1][h] *
-		    cell_output_squash_derivative(C[t_dim - 1][h])
-		    +
-		    Po[h] * dO[h];
-		dF[h] =
-		    dC[h] *
-		    C[t_dim - 1 - 1][h] *
-		    cell_state_squash_derivative(F_[t_dim - 1][h]);
-		dI[h] =
-		    dC[h] *
-		    Z[t_dim - 1][h] *
-		    cell_state_squash_derivative(I_[t_dim - 1][h]);
-		dZ[h] =
-		    dC[h] *
-		    I[t_dim - 1][h] *
-		    gate_squash_derivative(Z_[t_dim - 1][h]);
-	}
-
-	for (o = 0; o < o_dim; ++o) {
+		#pragma omp for collapse(2)
 		for (h = 0; h < h_dim; ++h) {
-			dV[o][h] = Y[t_dim - 1][h] * dP_O[o];
+			for (o = 0; o < o_dim; ++o) {
+				dY[h] += V[o][h] * dP_O[o] * (1 -  P_O[t_dim - 1][o] *  P_O[t_dim - 1][o]);
+			}
 		}
-		dBpo[o] = dP_O[o];
-	}
-	for (h = 0; h < h_dim; ++h) {
-		for (i = 0; i < i_dim; ++i) {
-			dWz[h][i] = dZ[h] * X[t_dim - 1][i];
-			dWi[h][i] = dI[h] * X[t_dim - 1][i];
-			dWf[h][i] = dF[h] * X[t_dim - 1][i];
-			dWo[h][i] = dO[h] * X[t_dim - 1][i];
+		#pragma omp for
+		for (h = 0; h < h_dim; ++h) {
+			dO[h] =
+			    dY[h] *
+			    cell_output_squash_func(C[t_dim - 1][h]) *
+			    cell_state_squash_derivative(O_[t_dim - 1][h]);
+			dC[h] =
+			    dY[h] *
+			    O[t_dim - 1][h] *
+			    cell_output_squash_derivative(C[t_dim - 1][h])
+			    +
+			    Po[h] * dO[h];
+			dF[h] =
+			    dC[h] *
+			    C[t_dim - 1 - 1][h] *
+			    cell_state_squash_derivative(F_[t_dim - 1][h]);
+			dI[h] =
+			    dC[h] *
+			    Z[t_dim - 1][h] *
+			    cell_state_squash_derivative(I_[t_dim - 1][h]);
+			dZ[h] =
+			    dC[h] *
+			    I[t_dim - 1][h] *
+			    gate_squash_derivative(Z_[t_dim - 1][h]);
 		}
-	}
-	for (h = 0; h < h_dim; ++h) {
-		for (r = 0; r < h_dim; ++r) {
-			dRz[h][r] = dZ[h] * Y[t_dim - 1 - 1][r];
-			dRi[h][r] = dI[h] * Y[t_dim - 1 - 1][r];
-			dRf[h][r] = dF[h] * Y[t_dim - 1 - 1][r];
-			dRo[h][r] = dO[h] * Y[t_dim - 1 - 1][r];
-		}
-		dBz[h] = dZ[h];
-		dBi[h] = dI[h];
-		dBf[h] = dF[h];
-		dBo[h] = dO[h];
-		dPi[h] = C[t_dim - 1 - 1][h] * dI[h];
-		dPf[h] = C[t_dim - 1 - 1][h] * dF[h];
-		dPo[h] = C[t_dim - 1][h] * dO[h];
-	}
 
+		#pragma omp for collapse(2)
+		for (o = 0; o < o_dim; ++o) {
+			for (h = 0; h < h_dim; ++h) {
+				dV[o][h] = Y[t_dim - 1][h] * dP_O[o];
+			}
+		}
+		#pragma omp for
+		for (o = 0; o < o_dim; ++o) {
+			dBpo[o] = dP_O[o];
+		}
+		#pragma omp for collapse(2)
+		for (h = 0; h < h_dim; ++h) {
+			for (i = 0; i < i_dim; ++i) {
+				dWz[h][i] = dZ[h] * X[t_dim - 1][i];
+				dWi[h][i] = dI[h] * X[t_dim - 1][i];
+				dWf[h][i] = dF[h] * X[t_dim - 1][i];
+				dWo[h][i] = dO[h] * X[t_dim - 1][i];
+			}
+		}
+		#pragma omp for collapse(2)
+		for (h = 0; h < h_dim; ++h) {
+			for (r = 0; r < h_dim; ++r) {
+				dRz[h][r] = dZ[h] * Y[t_dim - 1 - 1][r];
+				dRi[h][r] = dI[h] * Y[t_dim - 1 - 1][r];
+				dRf[h][r] = dF[h] * Y[t_dim - 1 - 1][r];
+				dRo[h][r] = dO[h] * Y[t_dim - 1 - 1][r];
+			}
+		}
+		#pragma omp for
+		for (h = 0; h < h_dim; ++h) {
+			dBz[h] = dZ[h];
+			dBi[h] = dI[h];
+			dBf[h] = dF[h];
+			dBo[h] = dO[h];
+			dPi[h] = C[t_dim - 1 - 1][h] * dI[h];
+			dPf[h] = C[t_dim - 1 - 1][h] * dF[h];
+			dPo[h] = C[t_dim - 1][h] * dO[h];
+		}
+	}
 	/* For t = t_dim - 2 ... 1 */
 	for (t = t_dim - 2; t >= 1; --t) {
 		clear_1d(dY, h_dim);
@@ -675,65 +689,53 @@ void RNN_SGD(
 
 	int h, i, r, o;
 
-	//#pragma omp sections
+	#pragma omp parallel
 	{
-		//#pragma omp section
-		{
-			//#pragma omp parallel for collapse(2)
-			for (h = 0; h < h_dim; ++h) {
-				for (i = 0; i < i_dim; ++i) {
-					Wz[h][i] -= learning_rate * dWz[h][i];
-					Wi[h][i] -= learning_rate * dWi[h][i];
-					Wf[h][i] -= learning_rate * dWf[h][i];
-					Wo[h][i] -= learning_rate * dWo[h][i];
-				}
+		#pragma omp for collapse(2)
+		for (h = 0; h < h_dim; ++h) {
+			for (i = 0; i < i_dim; ++i) {
+				Wz[h][i] -= learning_rate * dWz[h][i];
+				Wi[h][i] -= learning_rate * dWi[h][i];
+				Wf[h][i] -= learning_rate * dWf[h][i];
+				Wo[h][i] -= learning_rate * dWo[h][i];
 			}
 		}
 
-		//#pragma omp section
-		{
-			//#pragma omp parallel for collapse(2)
-			for (h = 0; h < h_dim; ++h) {
-				for (r = 0; r < h_dim; ++r) {
-					Rz[h][r] -= learning_rate * dRz[h][r];
-					Ri[h][r] -= learning_rate * dRi[h][r];
-					Rf[h][r] -= learning_rate * dRf[h][r];
-					Ro[h][r] -= learning_rate * dRo[h][r];
-				}
+		#pragma omp for collapse(2)
+		for (h = 0; h < h_dim; ++h) {
+			for (r = 0; r < h_dim; ++r) {
+				Rz[h][r] -= learning_rate * dRz[h][r];
+				Ri[h][r] -= learning_rate * dRi[h][r];
+				Rf[h][r] -= learning_rate * dRf[h][r];
+				Ro[h][r] -= learning_rate * dRo[h][r];
 			}
 		}
 
-		//#pragma omp section
-		{
-			//#pragma omp parallel for
-			for (h = 0; h < h_dim; ++h) {
-				Pi[h] -= learning_rate * dPi[h];
-				Pf[h] -= learning_rate * dPf[h];
-				Po[h] -= learning_rate * dPo[h];
+		#pragma omp for
+		for (h = 0; h < h_dim; ++h) {
+			Pi[h] -= learning_rate * dPi[h];
+			Pf[h] -= learning_rate * dPf[h];
+			Po[h] -= learning_rate * dPo[h];
 
-				Bz[h] -= learning_rate * dBz[h];
-				Bi[h] -= learning_rate * dBi[h];
-				Bf[h] -= learning_rate * dBf[h];
-				Bo[h] -= learning_rate * dBo[h];
+			Bz[h] -= learning_rate * dBz[h];
+			Bi[h] -= learning_rate * dBi[h];
+			Bf[h] -= learning_rate * dBf[h];
+			Bo[h] -= learning_rate * dBo[h];
+		}
+
+		#pragma omp for collapse(2)
+		for (o = 0; o < o_dim; ++o) {
+			for (h = 0; h < h_dim; ++h) {
+				V[o][h] -= learning_rate * dV[o][h];
 			}
 		}
-		//#pragma omp section
-		{
-			//#pragma omp parallel for collapse(2)
-			for (o = 0; o < o_dim; ++o) {
-				for (h = 0; h < h_dim; ++h) {
-					V[o][h] -= learning_rate * dV[o][h];
-				}
-			}
-			//#pragma omp parallel for
-			for (o = 0; o < o_dim; ++o) {
-				Bpo[o] -= learning_rate * dBpo[o];
-			}
+		#pragma omp for
+		for (o = 0; o < o_dim; ++o) {
+			Bpo[o] -= learning_rate * dBpo[o];
 		}
 	}
-
-
 }
+
 int RNN_train(
     RNN_t * RNN_storage,
     DataSet_t *train_set,
