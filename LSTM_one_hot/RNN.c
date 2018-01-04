@@ -214,6 +214,7 @@ void RNN_forward_propagation(
 
 	math_t **V = RNN_storage->V->data;
 	math_t *Bpo = RNN_storage->Bpo->data[0];
+
 	clear_2d(Z_, t_dim, h_dim);
 	clear_2d(I_, t_dim, h_dim);
 	clear_2d(F_, t_dim, h_dim);
@@ -222,37 +223,51 @@ void RNN_forward_propagation(
 	int h, i, o, r, t;
 
 	// For t = 0
-	for (h = 0; h < h_dim; ++h) {
-		/* Block input / Input gate / Forget gate */
-		for (i = 0; i < i_dim; ++i) {
-			Z_[0][h] += Wz[h][i] * X[0][i];
-			I_[0][h] += Wi[h][i] * X[0][i];
-			F_[0][h] += Wf[h][i] * X[0][i];
+	#pragma omp parallel
+	{
+		#pragma omp for collapse(2)
+		for (h = 0; h < h_dim; ++h) {
+			/* Block input / Input gate / Forget gate */
+			for (i = 0; i < i_dim; ++i) {
+				Z_[0][h] += Wz[h][i] * X[0][i];
+				I_[0][h] += Wi[h][i] * X[0][i];
+				F_[0][h] += Wf[h][i] * X[0][i];
+			}
 		}
-		Z_[0][h] += Bz[h];
-		I_[0][h] += Bi[h];
-		F_[0][h] += Bf[h];
+		#pragma omp for
+		for (h = 0; h < h_dim; ++h) {
+			Z_[0][h] += Bz[h];
+			I_[0][h] += Bi[h];
+			F_[0][h] += Bf[h];
 
-		Z[0][h] = gate_squash_func(Z_[0][h]);
-		I[0][h] = cell_state_squash_func(I_[0][h]);
-		F[0][h] = cell_state_squash_func(F_[0][h]);
+			Z[0][h] = gate_squash_func(Z_[0][h]);
+			I[0][h] = cell_state_squash_func(I_[0][h]);
+			F[0][h] = cell_state_squash_func(F_[0][h]);
 
-		/* Cell state */
-		C[0][h] = Z[0][h] * I[0][h];
-
-		/* Output gate */
-		for (i = 0; i < i_dim; ++i) {
-			O_[0][h] += Wo[h][i] * X[0][i];
+			/* Cell state */
+			C[0][h] = Z[0][h] * I[0][h];
 		}
-		O_[0][h] += Po[h] * C[0][h] + Bo[h];
-		O[0][h] = cell_state_squash_func(O_[0][h]);
+		#pragma omp for collapse(2)
+		for (h = 0; h < h_dim; ++h) {
+			/* Output gate */
+			for (i = 0; i < i_dim; ++i) {
+				O_[0][h] += Wo[h][i] * X[0][i];
+			}
+		}
+		#pragma omp for
+		for (h = 0; h < h_dim; ++h) {
+			O_[0][h] += Po[h] * C[0][h] + Bo[h];
+			O[0][h] = cell_state_squash_func(O_[0][h]);
 
-		/* Block output */
-		Y[0][h] = cell_output_squash_func(C[0][h]) * O[0][h];
+			/* Block output */
+			Y[0][h] = cell_output_squash_func(C[0][h]) * O[0][h];
+		}
 	}
 
 	// For t = 1 ... t_dim
+	#pragma omp parallel private(h, i, r, t)
 	for (t = 1; t < t_dim; ++t) {
+		#pragma omp for collapse(2)
 		for (h = 0; h < h_dim; ++h) {
 			/* Block input / Input gate / Forget gate */
 			for (i = 0; i < i_dim; ++i) {
@@ -260,12 +275,17 @@ void RNN_forward_propagation(
 				I_[t][h] += Wi[h][i] * X[t][i];
 				F_[t][h] += Wf[h][i] * X[t][i];
 			}
+		}
+		#pragma omp for collapse(2)
+		for (h = 0; h < h_dim; ++h) {
 			for (r = 0; r < h_dim; ++r) {
 				Z_[t][h] += Rz[h][r] * Y[t - 1][r];
 				I_[t][h] += Ri[h][r] * Y[t - 1][r];
 				F_[t][h] += Rf[h][r] * Y[t - 1][r];
 			}
-
+		}
+		#pragma omp for
+		for (h = 0; h < h_dim; ++h) {
 			Z_[t][h] += Bz[h];
 			I_[t][h] += Pi[h] * C[t - 1][h] + Bi[h];
 			F_[t][h] += Pf[h] * C[t - 1][h] + Bf[h];
@@ -276,14 +296,22 @@ void RNN_forward_propagation(
 
 			/* Cell state */
 			C[t][h] = Z[t][h] * I[t][h] + C[t - 1][h] * F[t][h];
-
+		}
+		#pragma omp for collapse(2)
+		for (h = 0; h < h_dim; ++h) {
 			/* Output gate */
 			for (i = 0; i < i_dim; ++i) {
 				O_[t][h] += Wo[h][i] * X[t][i];
 			}
+		}
+		#pragma omp for collapse(2)
+		for (h = 0; h < h_dim; ++h) {
 			for (r = 0; r < h_dim; ++r) {
 				O_[t][h] += Ro[h][r] * Y[t - 1][r];
 			}
+		}
+		#pragma omp for
+		for (h = 0; h < h_dim; ++h) {
 			O_[t][h] += Po[h] * C[t][h] + Bo[h];
 			O[t][h] = cell_state_squash_func(O_[t][h]);
 
@@ -296,11 +324,18 @@ void RNN_forward_propagation(
 	math_t *temp_vector = (math_t *) malloc(o_dim * sizeof(math_t));
 	for (t = 0; t < t_dim; ++t) {
 		clear_1d(temp_vector, o_dim);
-		for (o = 0; o < o_dim; ++o) {
-			for (r = 0; r < h_dim; ++r) {
-				temp_vector[o] += V[o][r] * Y[t][r];
+		#pragma omp parallel
+		{
+			#pragma omp for collapse(2)
+			for (o = 0; o < o_dim; ++o) {
+				for (r = 0; r < h_dim; ++r) {
+					temp_vector[o] += V[o][r] * Y[t][r];
+				}
 			}
-			temp_vector[o] += Bpo[o];
+			#pragma omp for
+			for (o = 0; o < o_dim; ++o) {
+				temp_vector[o] += Bpo[o];
+			}
 		}
 		network_output_squash_func(temp_vector, P_O[t], o_dim);
 	}
@@ -451,184 +486,196 @@ void RNN_BPTT(
 		}
 	}
 	/* For t = t_dim - 2 ... 1 */
+	#pragma omp parallel private(t, o, h, r, i)
 	for (t = t_dim - 2; t >= 1; --t) {
 		clear_1d(dY, h_dim);
-		#pragma omp parallel
-		{
-			#pragma omp for
+		#pragma omp for
+		for (o = 0; o < o_dim; ++o) {
+			dP_O[o] = P_O[t][o];
+			if (E_O[t][o] == 1) {
+				dP_O[o] -= 1;
+			}
+		}
+		#pragma omp for collapse(2)
+		for (h = 0; h < h_dim; ++h) {
 			for (o = 0; o < o_dim; ++o) {
-				dP_O[o] = P_O[t][o];
-				if (E_O[t][o] == 1) {
-					dP_O[o] -= 1;
-				}
+				dY[h] += V[o][h] * dP_O[o] * (1 -  P_O[t][o] *  P_O[t][o]);
 			}
-			#pragma omp for collapse(2)
-			for (h = 0; h < h_dim; ++h) {
-				for (o = 0; o < o_dim; ++o) {
-					dY[h] += V[o][h] * dP_O[o] * (1 -  P_O[t][o] *  P_O[t][o]);
-				}
+		}
+		#pragma omp for collapse(2)
+		for (h = 0; h < h_dim; ++h) {
+			for (r = 0; r < h_dim; ++r) {
+				dY[h] +=
+				    Rz[r][h] * dZ[r]
+				    +
+				    Ri[r][h] * dI[r]
+				    +
+				    Rf[r][h] * dF[r]
+				    +
+				    Ro[r][h] * dO[r];
 			}
-			#pragma omp for collapse(2)
-			for (h = 0; h < h_dim; ++h) {
-				for (r = 0; r < h_dim; ++r) {
-					dY[h] +=
-					    Rz[r][h] * dZ[r]
-					    +
-					    Ri[r][h] * dI[r]
-					    +
-					    Rf[r][h] * dF[r]
-					    +
-					    Ro[r][h] * dO[r];
-				}
-			}
-			#pragma omp for
-			for (h = 0; h < h_dim; ++h) {
-				dO[h] =
-				    dY[h] *
-				    cell_output_squash_func(C[t][h]) *
-				    cell_state_squash_derivative(O_[t][h]);
+		}
+		#pragma omp for
+		for (h = 0; h < h_dim; ++h) {
+			dO[h] =
+			    dY[h] *
+			    cell_output_squash_func(C[t][h]) *
+			    cell_state_squash_derivative(O_[t][h]);
 
-				dC[h] =
-				    dY[h] *
-				    O[t][h] *
-				    cell_output_squash_derivative(C[t][h])
-				    +
-				    Po[h] * dO[h]
-				    +
-				    Pi[h] * dI[h]
-				    +
-				    Pf[h] * dF[h]
-				    +
-				    dC[h] * F[t + 1][h];
+			dC[h] =
+			    dY[h] *
+			    O[t][h] *
+			    cell_output_squash_derivative(C[t][h])
+			    +
+			    Po[h] * dO[h]
+			    +
+			    Pi[h] * dI[h]
+			    +
+			    Pf[h] * dF[h]
+			    +
+			    dC[h] * F[t + 1][h];
 
-				dF[h] =
-				    dC[h] *
-				    C[t - 1][h] *
-				    cell_state_squash_derivative(F_[t][h]);
-				dI[h] =
-				    dC[h] *
-				    Z[t][h] *
-				    cell_state_squash_derivative(I_[t][h]);
-				dZ[h] =
-				    dC[h] *
-				    I[t][h] *
-				    gate_squash_derivative(Z_[t][h]);
-			}
-			#pragma omp for collapse(2)
-			for (o = 0; o < o_dim; ++o) {
-				for (h = 0; h < h_dim; ++h) {
-					dV[o][h] += Y[t][h] * dP_O[o];
-				}
-			}
-			#pragma omp for
-			for (o = 0; o < o_dim; ++o) {
-				dBpo[o] += dP_O[o];
-			}
-			#pragma omp for collapse(2)
+			dF[h] =
+			    dC[h] *
+			    C[t - 1][h] *
+			    cell_state_squash_derivative(F_[t][h]);
+			dI[h] =
+			    dC[h] *
+			    Z[t][h] *
+			    cell_state_squash_derivative(I_[t][h]);
+			dZ[h] =
+			    dC[h] *
+			    I[t][h] *
+			    gate_squash_derivative(Z_[t][h]);
+		}
+		#pragma omp for collapse(2)
+		for (o = 0; o < o_dim; ++o) {
 			for (h = 0; h < h_dim; ++h) {
-				for (i = 0; i < i_dim; ++i) {
-					dWz[h][i] += dZ[h] * X[t][i];
-					dWi[h][i] += dI[h] * X[t][i];
-					dWf[h][i] += dF[h] * X[t][i];
-					dWo[h][i] += dO[h] * X[t][i];
-				}
+				dV[o][h] += Y[t][h] * dP_O[o];
 			}
-			#pragma omp for collapse(2)
-			for (h = 0; h < h_dim; ++h) {
-				for (r = 0; r < h_dim; ++r) {
-					dRz[h][r] += dZ[h] * Y[t - 1][r];
-					dRi[h][r] += dI[h] * Y[t - 1][r];
-					dRf[h][r] += dF[h] * Y[t - 1][r];
-					dRo[h][r] += dO[h] * Y[t - 1][r];
-				}
+		}
+		#pragma omp for
+		for (o = 0; o < o_dim; ++o) {
+			dBpo[o] += dP_O[o];
+		}
+		#pragma omp for collapse(2)
+		for (h = 0; h < h_dim; ++h) {
+			for (i = 0; i < i_dim; ++i) {
+				dWz[h][i] += dZ[h] * X[t][i];
+				dWi[h][i] += dI[h] * X[t][i];
+				dWf[h][i] += dF[h] * X[t][i];
+				dWo[h][i] += dO[h] * X[t][i];
 			}
-			#pragma omp for
-			for (h = 0; h < h_dim; ++h) {
-				dBz[h] += dZ[h];
-				dBi[h] += dI[h];
-				dBf[h] += dF[h];
-				dBo[h] += dO[h];
-				dPi[h] += C[t - 1][h] * dI[h];
-				dPf[h] += C[t - 1][h] * dF[h];
-				dPo[h] += C[t][h] * dO[h];
+		}
+		#pragma omp for collapse(2)
+		for (h = 0; h < h_dim; ++h) {
+			for (r = 0; r < h_dim; ++r) {
+				dRz[h][r] += dZ[h] * Y[t - 1][r];
+				dRi[h][r] += dI[h] * Y[t - 1][r];
+				dRf[h][r] += dF[h] * Y[t - 1][r];
+				dRo[h][r] += dO[h] * Y[t - 1][r];
 			}
+		}
+		#pragma omp for
+		for (h = 0; h < h_dim; ++h) {
+			dBz[h] += dZ[h];
+			dBi[h] += dI[h];
+			dBf[h] += dF[h];
+			dBo[h] += dO[h];
+			dPi[h] += C[t - 1][h] * dI[h];
+			dPf[h] += C[t - 1][h] * dF[h];
+			dPo[h] += C[t][h] * dO[h];
 		}
 	}
 
 	/* For t = 0 */
 	clear_1d(dY, h_dim);
-	for (o = 0; o < o_dim; ++o) {
-		dP_O[o] = P_O[0][o];
-		if (E_O[0][o] == 1) {
-			dP_O[o] -= 1;
-		}
-	}
-	for (h = 0; h < h_dim; ++h) {
+	#pragma omp parallel
+	{
+		#pragma omp for
 		for (o = 0; o < o_dim; ++o) {
-			dY[h] += dP_O[o] * V[o][h];
+			dP_O[o] = P_O[0][o];
+			if (E_O[0][o] == 1) {
+				dP_O[o] -= 1;
+			}
 		}
-		for (r = 0; r < h_dim; ++r) {
-			dY[h] +=
-			    Rz[r][h] * dZ[r]
-			    +
-			    Ri[r][h] * dI[r]
-			    +
-			    Rf[r][h] * dF[r]
-			    +
-			    Ro[r][h] * dO[r];
-		}
-	}
-	for (h = 0; h < h_dim; ++h) {
-		dO[h] =
-		    dY[h] *
-		    cell_output_squash_func(C[0][h]) *
-		    cell_state_squash_derivative(O_[0][h]);
-
-		dC[h] =
-		    dY[h] *
-		    O[0][h] *
-		    cell_output_squash_derivative(C[0][h])
-		    +
-		    Po[h] * dO[h]
-		    +
-		    Pi[h] * dI[h]
-		    +
-		    Pf[h] * dF[h]
-		    +
-		    dC[h] * F[1][h];
-		dF[h] = 0.0;
-		dI[h] =
-		    dC[h] *
-		    Z[0][h] *
-		    cell_state_squash_derivative(I_[0][h]);
-
-		dZ[h] =
-		    dC[h] *
-		    I[0][h] *
-		    gate_squash_derivative(Z_[0][h]);
-	}
-	for (o = 0; o < o_dim; ++o) {
+		#pragma omp for collapse(2)
 		for (h = 0; h < h_dim; ++h) {
-			dV[o][h] += Y[0][h] * dP_O[o];
+			for (o = 0; o < o_dim; ++o) {
+				dY[h] += dP_O[o] * V[o][h];
+			}
 		}
-		dBpo[o] += dP_O[o];
-	}
-	for (h = 0; h < h_dim; ++h) {
-		for (i = 0; i < i_dim; ++i) {
-			dWz[h][i] += dZ[h] * X[0][i];
-			dWi[h][i] += dI[h] * X[0][i];
-			dWf[h][i] += dF[h] * X[0][i];
-			dWo[h][i] += dO[h] * X[0][i];
+		#pragma omp for collapse(2)
+		for (h = 0; h < h_dim; ++h) {
+			for (r = 0; r < h_dim; ++r) {
+				dY[h] +=
+				    Rz[r][h] * dZ[r]
+				    +
+				    Ri[r][h] * dI[r]
+				    +
+				    Rf[r][h] * dF[r]
+				    +
+				    Ro[r][h] * dO[r];
+			}
 		}
-	}
-	for (h = 0; h < h_dim; ++h) {
-		dBz[h] += dZ[h];
-		dBi[h] += dI[h];
-		dBf[h] += dF[h];
-		dBo[h] += dO[h];
-		dPo[h] += C[0][h] * dO[h];
-	}
+		#pragma omp for
+		for (h = 0; h < h_dim; ++h) {
+			dO[h] =
+			    dY[h] *
+			    cell_output_squash_func(C[0][h]) *
+			    cell_state_squash_derivative(O_[0][h]);
 
+			dC[h] =
+			    dY[h] *
+			    O[0][h] *
+			    cell_output_squash_derivative(C[0][h])
+			    +
+			    Po[h] * dO[h]
+			    +
+			    Pi[h] * dI[h]
+			    +
+			    Pf[h] * dF[h]
+			    +
+			    dC[h] * F[1][h];
+			dF[h] = 0.0;
+			dI[h] =
+			    dC[h] *
+			    Z[0][h] *
+			    cell_state_squash_derivative(I_[0][h]);
+
+			dZ[h] =
+			    dC[h] *
+			    I[0][h] *
+			    gate_squash_derivative(Z_[0][h]);
+		}
+		#pragma omp for collapse(2)
+		for (o = 0; o < o_dim; ++o) {
+			for (h = 0; h < h_dim; ++h) {
+				dV[o][h] += Y[0][h] * dP_O[o];
+			}
+		}
+		#pragma omp for
+		for (o = 0; o < o_dim; ++o) {
+			dBpo[o] += dP_O[o];
+		}
+		#pragma omp for collapse(2)
+		for (h = 0; h < h_dim; ++h) {
+			for (i = 0; i < i_dim; ++i) {
+				dWz[h][i] += dZ[h] * X[0][i];
+				dWi[h][i] += dI[h] * X[0][i];
+				dWf[h][i] += dF[h] * X[0][i];
+				dWo[h][i] += dO[h] * X[0][i];
+			}
+		}
+		#pragma omp for
+		for (h = 0; h < h_dim; ++h) {
+			dBz[h] += dZ[h];
+			dBi[h] += dI[h];
+			dBf[h] += dF[h];
+			dBo[h] += dO[h];
+			dPo[h] += C[0][h] * dO[h];
+		}
+	}
 	free(dP_O);
 	free(dY);
 	free(dO);
