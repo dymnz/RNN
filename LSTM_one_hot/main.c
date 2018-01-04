@@ -1,12 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <omp.h>
 
 #include "common_math.h"
 #include "RNN.h"
 #include "file_process.h"
-#include "util.h"
 
 
 #define DEFAULT_RAND_SEED 5
@@ -254,9 +252,7 @@ int RNN_model_train_timed() {
 	printf("Start training. Max epoch: %d Initital learning rate: % lf\n",
 	       max_epoch, initial_learning_rate);
 
-	mytspec start_time, end_time;
 	int epoch;
-	get_time(start_time);
 	epoch = RNN_train(
 	    RNN_storage,
 	    train_set,
@@ -267,11 +263,8 @@ int RNN_model_train_timed() {
 	    learning_rate_adjust_interval,
 	    gradient_check_interval
 	);
-	get_time(end_time);
-	printf("done!\nElapsed_time: %3.8lf\nseconds_per_epoch: %3.8lf\nepoch_per_second: %3.8lf\n",
-	       elapsed_time(end_time, start_time),
-	       elapsed_time(end_time, start_time) / (double) epoch,
-	       (double) epoch / elapsed_time(end_time, start_time));
+	printf("Training finished with %10d epochs\n", epoch);
+
 
 	DataSet_destroy(train_set);
 	RNN_destroy(RNN_storage);
