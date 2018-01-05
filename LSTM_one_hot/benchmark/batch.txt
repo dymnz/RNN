@@ -248,3 +248,253 @@ Thread:    16	Hidden:   100	Epoch:    10
 real	0m27.659s
 user	7m9.006s
 sys	0m0.712s
+Thread:     1	Hidden:   100	Epoch:    10
+
+real	2m15.539s
+user	2m15.404s
+sys	0m0.124s
+Thread:     1	Hidden:   200	Epoch:    10
+
+real	4m33.937s
+user	4m33.279s
+sys	0m0.624s
+Thread:     1	Hidden:   300	Epoch:    10
+
+real	6m55.311s
+user	6m54.903s
+sys	0m0.324s
+Thread:     1	Hidden:   400	Epoch:    10
+
+real	9m13.048s
+user	9m12.847s
+sys	0m0.160s
+Thread:     1	Hidden:   500	Epoch:    10
+
+real	11m55.579s
+user	11m54.664s
+sys	0m0.852s
+Thread:     1	Hidden:   600	Epoch:    10
+
+real	14m30.965s
+user	14m30.676s
+sys	0m0.220s
+Thread:     1	Hidden:   700	Epoch:    10
+
+real	17m8.582s
+user	17m7.025s
+sys	0m1.440s
+Thread:     1	Hidden:   800	Epoch:    10
+
+real	20m8.229s
+user	20m5.967s
+sys	0m1.580s
+Thread:     1	Hidden:   900	Epoch:    10
+
+real	23m8.375s
+user	22m55.476s
+sys	0m12.783s
+Thread:     1	Hidden:  1000	Epoch:    10
+
+real	26m9.151s
+user	25m56.093s
+sys	0m12.923s
+Thread:     2	Hidden:   100	Epoch:    10
+
+real	1m6.295s
+user	2m11.532s
+sys	0m0.480s
+Thread:     2	Hidden:   200	Epoch:    10
+
+real	2m17.382s
+user	4m33.391s
+sys	0m0.676s
+Thread:     2	Hidden:   300	Epoch:    10
+
+real	3m35.253s
+user	7m5.841s
+sys	0m1.556s
+Thread:     2	Hidden:   400	Epoch:    10
+
+real	4m51.520s
+user	9m38.606s
+sys	0m1.492s
+Thread:     2	Hidden:   500	Epoch:    10
+
+real	6m12.308s
+user	12m19.904s
+sys	0m1.508s
+Thread:     2	Hidden:   600	Epoch:    10
+
+real	7m45.219s
+user	15m21.102s
+sys	0m6.056s
+Thread:     2	Hidden:   700	Epoch:    10
+
+real	9m19.426s
+user	18m20.983s
+sys	0m5.159s
+Thread:     2	Hidden:   800	Epoch:    10
+
+real	11m18.596s
+user	22m29.750s
+sys	0m4.396s
+Thread:     2	Hidden:   900	Epoch:    10
+
+real	12m52.766s
+user	25m37.595s
+sys	0m4.220s
+Thread:     2	Hidden:  1000	Epoch:    10
+
+real	13m57.568s
+user	27m34.282s
+sys	0m9.871s
+Thread:     4	Hidden:   100	Epoch:    10
+
+real	0m36.211s
+user	2m24.266s
+sys	0m0.188s
+Thread:     4	Hidden:   200	Epoch:    10
+
+real	1m15.784s
+user	5m1.272s
+sys	0m0.792s
+Thread:     4	Hidden:   300	Epoch:    10
+
+real	1m54.642s
+user	7m36.772s
+sys	0m0.840s
+Thread:     4	Hidden:   400	Epoch:    10
+
+real	2m37.423s
+user	10m27.258s
+sys	0m0.656s
+Thread:     4	Hidden:   500	Epoch:    10
+
+real	4m46.811s
+user	17m38.081s
+sys	0m2.236s
+Thread:     4	Hidden:   600	Epoch:    10
+
+real	6m46.228s
+user	24m3.426s
+sys	0m3.217s
+Thread:     4	Hidden:   700	Epoch:    10
+
+real	5m49.823s
+user	21m34.845s
+sys	0m1.764s
+Thread:     4	Hidden:   800	Epoch:    10
+
+real	6m46.260s
+user	25m1.275s
+sys	0m1.708s
+Thread:     4	Hidden:   900	Epoch:    10
+
+real	7m11.823s
+user	27m8.632s
+sys	0m5.034s
+Thread:     4	Hidden:  1000	Epoch:    10
+
+real	8m50.284s
+user	32m10.353s
+sys	0m7.659s
+Thread:     8	Hidden:   100	Epoch:    10
+
+real	0m34.986s
+user	4m32.275s
+sys	0m0.664s
+Thread:     8	Hidden:   200	Epoch:    10
+
+real	1m9.503s
+user	8m30.892s
+sys	0m0.661s
+Thread:     8	Hidden:   300	Epoch:    10
+
+real	1m32.249s
+user	11m14.603s
+sys	0m0.922s
+Thread:     8	Hidden:   400	Epoch:    10
+
+real	2m25.613s
+user	17m31.426s
+sys	0m1.605s
+Thread:     8	Hidden:   500	Epoch:    10
+
+real	3m4.056s
+user	21m15.091s
+sys	0m2.002s
+Thread:     8	Hidden:   600	Epoch:    10
+
+real	3m36.027s
+user	24m47.326s
+sys	0m2.477s
+Thread:     8	Hidden:   700	Epoch:    10
+
+real	4m46.986s
+user	32m38.163s
+sys	0m13.219s
+Thread:     8	Hidden:   800	Epoch:    10
+
+real	3m34.356s
+user	26m13.685s
+sys	0m13.736s
+Thread:     8	Hidden:   900	Epoch:    10
+
+real	3m45.608s
+user	28m31.757s
+sys	0m13.204s
+Thread:     8	Hidden:  1000	Epoch:    10
+
+real	4m14.750s
+user	32m16.481s
+sys	0m17.771s
+Thread:    16	Hidden:   100	Epoch:    10
+
+real	0m23.775s
+user	6m7.734s
+sys	0m0.824s
+Thread:    16	Hidden:   200	Epoch:    10
+
+real	0m23.184s
+user	6m5.933s
+sys	0m1.164s
+Thread:    16	Hidden:   300	Epoch:    10
+
+real	0m37.202s
+user	9m39.569s
+sys	0m1.555s
+Thread:    16	Hidden:   400	Epoch:    10
+
+real	0m51.733s
+user	13m10.940s
+sys	0m4.717s
+Thread:    16	Hidden:   500	Epoch:    10
+
+real	1m8.630s
+user	17m10.574s
+sys	0m4.481s
+Thread:    16	Hidden:   600	Epoch:    10
+
+real	1m25.842s
+user	21m14.652s
+sys	0m4.916s
+Thread:    16	Hidden:   700	Epoch:    10
+
+real	1m33.165s
+user	23m32.438s
+sys	0m7.142s
+Thread:    16	Hidden:   800	Epoch:    10
+
+real	1m51.208s
+user	27m39.800s
+sys	0m10.974s
+Thread:    16	Hidden:   900	Epoch:    10
+
+real	2m33.494s
+user	35m1.505s
+sys	0m16.825s
+Thread:    16	Hidden:  1000	Epoch:    10
+
+real	2m26.056s
+user	35m49.749s
+sys	0m13.233s
