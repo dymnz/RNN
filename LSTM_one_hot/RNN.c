@@ -223,7 +223,7 @@ void RNN_forward_propagation(
 	int h, i, o, r, t;
 
 	// For t = 0
-	#pragma omp parallel
+	#pragma omp parallel private(h, i)
 	{
 		#pragma omp for collapse(2)
 		for (h = 0; h < h_dim; ++h) {
@@ -324,7 +324,7 @@ void RNN_forward_propagation(
 	math_t *temp_vector = (math_t *) malloc(o_dim * sizeof(math_t));
 	for (t = 0; t < t_dim; ++t) {
 		clear_1d(temp_vector, o_dim);
-		#pragma omp parallel
+		#pragma omp parallel private(o, r)
 		{
 			#pragma omp for collapse(2)
 			for (o = 0; o < o_dim; ++o) {
@@ -405,7 +405,7 @@ void RNN_BPTT(
 
 
 	/* For t = t_dim - 1 */
-	#pragma omp parallel
+	#pragma omp parallel private(o, h, i, r)
 	{
 		#pragma omp for
 		for (o = 0; o < o_dim; ++o) {
@@ -590,7 +590,7 @@ void RNN_BPTT(
 
 	/* For t = 0 */
 	clear_1d(dY, h_dim);
-	#pragma omp parallel
+	#pragma omp parallel private(o, h, r, i)
 	{
 		#pragma omp for
 		for (o = 0; o < o_dim; ++o) {
@@ -736,7 +736,7 @@ void RNN_SGD(
 
 	int h, i, r, o;
 
-	#pragma omp parallel
+	#pragma omp parallel private(h, i, r, o)
 	{
 		#pragma omp for collapse(2)
 		for (h = 0; h < h_dim; ++h) {
