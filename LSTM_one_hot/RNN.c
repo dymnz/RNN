@@ -225,13 +225,16 @@ void RNN_forward_propagation(
 	// For t = 0
 	#pragma omp parallel private(h, i)
 	{
-		#pragma omp for collapse(2)
+		#pragma omp for
 		for (h = 0; h < h_dim; ++h) {
 			/* Block input / Input gate / Forget gate */
 			for (i = 0; i < i_dim; ++i) {
-				Z_[0][h] += Wz[h][i] * X[0][i];
-				I_[0][h] += Wi[h][i] * X[0][i];
-				F_[0][h] += Wf[h][i] * X[0][i];
+				if (X[0][i] == 1) {
+					Z_[0][h] += Wz[h][i];
+					I_[0][h] += Wi[h][i];
+					F_[0][h] += Wf[h][i];
+					break;
+				}
 			}
 		}
 		#pragma omp for
@@ -267,13 +270,16 @@ void RNN_forward_propagation(
 	// For t = 1 ... t_dim
 	#pragma omp parallel private(h, i, r, t)
 	for (t = 1; t < t_dim; ++t) {
-		#pragma omp for collapse(2)
+		#pragma omp for
 		for (h = 0; h < h_dim; ++h) {
 			/* Block input / Input gate / Forget gate */
 			for (i = 0; i < i_dim; ++i) {
-				Z_[t][h] += Wz[h][i] * X[t][i];
-				I_[t][h] += Wi[h][i] * X[t][i];
-				F_[t][h] += Wf[h][i] * X[t][i];
+				if (X[t][i] == 1) {
+					Z_[t][h] += Wz[h][i];
+					I_[t][h] += Wi[h][i];
+					F_[t][h] += Wf[h][i];
+					break;
+				}
 			}
 		}
 		#pragma omp for collapse(2)
