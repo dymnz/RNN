@@ -35,6 +35,7 @@ void RNN_init(
 	RNN_storage->i_dim = i_dim;
 	RNN_storage->o_dim = o_dim;
 	RNN_storage->h_dim = h_dim;
+	RNN_storage->gamma = 0.9;
 
 	/* LSTM state */
 	// Size to be adjusted for different test sample size
@@ -44,6 +45,7 @@ void RNN_init(
 	RNN_storage->O_ = matrix_create(0, 0); RNN_storage->O = matrix_create(0, 0);
 	RNN_storage->C = matrix_create(0, 0);
 	RNN_storage->Y = matrix_create(0, 0);
+
 
 	/* LSTM model */
 	RNN_storage->Wz = matrix_create(h_dim, i_dim);
@@ -136,6 +138,43 @@ void RNN_init(
 	matrix_random_with_seed(
 	    RNN_storage->Bpo, -sqrt(1.0f / (h_dim + 1)),
 	    sqrt(1.0f / (h_dim + 1)), &seed);
+
+	/* Adadelta */
+	RNN_storage->EdWz = matrix_create(h_dim, i_dim);
+	RNN_storage->EdWi = matrix_create(h_dim, i_dim);
+	RNN_storage->EdWf = matrix_create(h_dim, i_dim);
+	RNN_storage->EdWo = matrix_create(h_dim, i_dim);
+	RNN_storage->EdRz = matrix_create(h_dim, h_dim);
+	RNN_storage->EdRi = matrix_create(h_dim, h_dim);
+	RNN_storage->EdRf = matrix_create(h_dim, h_dim);
+	RNN_storage->EdRo = matrix_create(h_dim, h_dim);
+	RNN_storage->EdPi = matrix_create(1, h_dim);
+	RNN_storage->EdPf = matrix_create(1, h_dim);
+	RNN_storage->EdPo = matrix_create(1, h_dim);
+	RNN_storage->EdBz = matrix_create(1, h_dim);
+	RNN_storage->EdBi = matrix_create(1, h_dim);
+	RNN_storage->EdBf = matrix_create(1, h_dim);
+	RNN_storage->EdBo = matrix_create(1, h_dim);
+	RNN_storage->EdV = matrix_create(o_dim, h_dim);
+	RNN_storage->EdBpo = matrix_create(1, o_dim);
+
+	RNN_storage->dEdWz = matrix_create(h_dim, i_dim);
+	RNN_storage->dEdWi = matrix_create(h_dim, i_dim);
+	RNN_storage->dEdWf = matrix_create(h_dim, i_dim);
+	RNN_storage->dEdWo = matrix_create(h_dim, i_dim);
+	RNN_storage->dEdRz = matrix_create(h_dim, h_dim);
+	RNN_storage->dEdRi = matrix_create(h_dim, h_dim);
+	RNN_storage->dEdRf = matrix_create(h_dim, h_dim);
+	RNN_storage->dEdRo = matrix_create(h_dim, h_dim);
+	RNN_storage->dEdPi = matrix_create(1, h_dim);
+	RNN_storage->dEdPf = matrix_create(1, h_dim);
+	RNN_storage->dEdPo = matrix_create(1, h_dim);
+	RNN_storage->dEdBz = matrix_create(1, h_dim);
+	RNN_storage->dEdBi = matrix_create(1, h_dim);
+	RNN_storage->dEdBf = matrix_create(1, h_dim);
+	RNN_storage->dEdBo = matrix_create(1, h_dim);
+	RNN_storage->dEdV = matrix_create(o_dim, h_dim);
+	RNN_storage->dEdBpo = matrix_create(1, o_dim);
 }
 
 void RNN_destroy(RNN_t *RNN_storage) {
@@ -727,6 +766,32 @@ void RNN_SGD(
 	math_t *Bpo = RNN_storage->Bpo->data[0];
 	math_t *dBpo = RNN_storage->dBpo->data[0];
 
+
+	math_t **EdWz = RNN_storage->EdWz->data; math_t **EdRz = RNN_storage->EdRz->data;
+	math_t **EdWi = RNN_storage->EdWi->data; math_t **EdRi = RNN_storage->EdRi->data;
+	math_t **EdWf = RNN_storage->EdWf->data; math_t **EdRf = RNN_storage->EdRf->data;
+	math_t **EdWo = RNN_storage->EdWo->data; math_t **EdRo = RNN_storage->EdRo->data;
+	math_t *EdBz = RNN_storage->EdBz->data[0];
+	math_t *EdBi = RNN_storage->EdBi->data[0]; math_t *EdPi = RNN_storage->EdPi->data[0];
+	math_t *EdBf = RNN_storage->EdBf->data[0]; math_t *EdPf = RNN_storage->EdPf->data[0];
+	math_t *EdBo = RNN_storage->EdBo->data[0]; math_t *EdPo = RNN_storage->EdPo->data[0];
+	math_t **EdV = RNN_storage->EdV->data;
+	math_t *EdBpo = RNN_storage->EdBpo->data[0];
+
+	math_t **dEdWz = RNN_storage->dEdWz->data; math_t **dEdRz = RNN_storage->dEdRz->data;
+	math_t **dEdWi = RNN_storage->dEdWi->data; math_t **dEdRi = RNN_storage->dEdRi->data;
+	math_t **dEdWf = RNN_storage->dEdWf->data; math_t **dEdRf = RNN_storage->dEdRf->data;
+	math_t **dEdWo = RNN_storage->dEdWo->data; math_t **dEdRo = RNN_storage->dEdRo->data;
+	math_t *dEdBz = RNN_storage->dEdBz->data[0];
+	math_t *dEdBi = RNN_storage->dEdBi->data[0]; math_t *dEdPi = RNN_storage->dEdPi->data[0];
+	math_t *dEdBf = RNN_storage->dEdBf->data[0]; math_t *dEdPf = RNN_storage->dEdPf->data[0];
+	math_t *dEdBo = RNN_storage->dEdBo->data[0]; math_t *dEdPo = RNN_storage->dEdPo->data[0];
+	math_t **dEdV = RNN_storage->dEdV->data;
+	math_t *dEdBpo = RNN_storage->dEdBpo->data[0];
+
+	math_t gamma = RNN_storage->gamma;
+	math_t ep = 1e-6;
+
 	RNN_forward_propagation(
 	    RNN_storage,
 	    input_matrix,
@@ -742,49 +807,137 @@ void RNN_SGD(
 
 	int h, i, r, o;
 
+	// Adadelta update
 	#pragma omp parallel private(h, i, r, o)
 	{
 		#pragma omp for collapse(2)
 		for (h = 0; h < h_dim; ++h) {
 			for (i = 0; i < i_dim; ++i) {
-				Wz[h][i] -= learning_rate * dWz[h][i];
-				Wi[h][i] -= learning_rate * dWi[h][i];
-				Wf[h][i] -= learning_rate * dWf[h][i];
-				Wo[h][i] -= learning_rate * dWo[h][i];
+				EdWz[h][i] = gamma * EdWz[h][i] + (dWz[h][i] * dWz[h][i]) * (1 - gamma);
+				EdWi[h][i] = gamma * EdWi[h][i] + (dWi[h][i] * dWi[h][i]) * (1 - gamma);
+				EdWf[h][i] = gamma * EdWf[h][i] + (dWf[h][i] * dWf[h][i]) * (1 - gamma);
+				EdWo[h][i] = gamma * EdWo[h][i] + (dWo[h][i] * dWo[h][i]) * (1 - gamma);
+			}
+		}
+		#pragma omp for collapse(2)
+		for (h = 0; h < h_dim; ++h) {
+			for (r = 0; r < h_dim; ++r) {
+				EdRz[h][r] = gamma * EdRz[h][r] + (dRz[h][r] * dRz[h][r]) * (1 - gamma);
+				EdRi[h][r] = gamma * EdRi[h][r] + (dRi[h][r] * dRi[h][r]) * (1 - gamma);
+				EdRf[h][r] = gamma * EdRf[h][r] + (dRf[h][r] * dRf[h][r]) * (1 - gamma);
+				EdRo[h][r] = gamma * EdRo[h][r] + (dRo[h][r] * dRo[h][r]) * (1 - gamma);
+			}
+		}
+		#pragma omp for
+		for (h = 0; h < h_dim; ++h) {
+			EdPi[h] = gamma * EdPi[h] + (dPi[h] * dPi[h]) * (1 - gamma);
+			EdPf[h] = gamma * EdPf[h] + (dPf[h] * dPf[h]) * (1 - gamma);
+			EdPo[h] = gamma * EdPo[h] + (dPo[h] * dPo[h]) * (1 - gamma);
+
+			EdBz[h] = gamma * EdBz[h] + (dBz[h] * dBz[h]) * (1 - gamma);
+			EdBi[h] = gamma * EdBi[h] + (dBi[h] * dBi[h]) * (1 - gamma);
+			EdBf[h] = gamma * EdBf[h] + (dBf[h] * dBf[h]) * (1 - gamma);
+			EdBo[h] = gamma * EdBo[h] + (dBo[h] * dBo[h]) * (1 - gamma);
+		}
+
+		#pragma omp for collapse(2)
+		for (o = 0; o < o_dim; ++o) {
+			for (h = 0; h < h_dim; ++h) {
+				EdV[o][h] = gamma * EdV[o][h] + (dV[o][h] * dV[o][h]) * (1 - gamma);
+			}
+		}
+		#pragma omp for
+		for (o = 0; o < o_dim; ++o) {
+			EdBpo[o] = gamma * EdBpo[o] + (dBpo[o]  * dBpo[o]) * (1 - gamma);
+		}
+	}
+
+	#pragma omp parallel private(h, i, r, o)
+	{
+		#pragma omp for collapse(2)
+		for (h = 0; h < h_dim; ++h) {
+			for (i = 0; i < i_dim; ++i) {
+				math_t d_z = sqrt(dEdWz[h][i] + ep) / sqrt(EdWz[h][i] + ep) * dWz[h][i];
+				math_t d_i = sqrt(dEdWi[h][i] + ep) / sqrt(EdWi[h][i] + ep) * dWi[h][i];
+				math_t d_f = sqrt(dEdWf[h][i] + ep) / sqrt(EdWf[h][i] + ep) * dWf[h][i];
+				math_t d_o = sqrt(dEdWo[h][i] + ep) / sqrt(EdWo[h][i] + ep) * dWo[h][i];
+
+				Wz[h][i] -= d_z;
+				Wi[h][i] -= d_i;
+				Wf[h][i] -= d_f;
+				Wo[h][i] -= d_o;
+
+				dEdWz[h][i] = gamma * dEdWz[h][i] + (d_z * d_z) * (1 - gamma);
+				dEdWi[h][i] = gamma * dEdWi[h][i] + (d_i * d_i) * (1 - gamma);
+				dEdWf[h][i] = gamma * dEdWf[h][i] + (d_f * d_f) * (1 - gamma);
+				dEdWo[h][i] = gamma * dEdWo[h][i] + (d_o * d_o) * (1 - gamma);
 			}
 		}
 
 		#pragma omp for collapse(2)
 		for (h = 0; h < h_dim; ++h) {
 			for (r = 0; r < h_dim; ++r) {
-				Rz[h][r] -= learning_rate * dRz[h][r];
-				Ri[h][r] -= learning_rate * dRi[h][r];
-				Rf[h][r] -= learning_rate * dRf[h][r];
-				Ro[h][r] -= learning_rate * dRo[h][r];
+				math_t d_z = sqrt(dEdRz[h][r] + ep) / sqrt(EdRz[h][r] + ep) * dRz[h][r];
+				math_t d_i = sqrt(dEdRi[h][r] + ep) / sqrt(EdRi[h][r] + ep) * dRi[h][r];
+				math_t d_f = sqrt(dEdRf[h][r] + ep) / sqrt(EdRf[h][r] + ep) * dRf[h][r];
+				math_t d_o = sqrt(dEdRo[h][r] + ep) / sqrt(EdRo[h][r] + ep) * dRo[h][r];
+
+				Rz[h][r] -= d_z;
+				Ri[h][r] -= d_i;
+				Rf[h][r] -= d_f;
+				Ro[h][r] -= d_o;
+
+				dEdRz[h][r] = gamma * dEdRz[h][r] + (d_z * d_z) * (1 - gamma);
+				dEdRi[h][r] = gamma * dEdRi[h][r] + (d_i * d_i) * (1 - gamma);
+				dEdRf[h][r] = gamma * dEdRf[h][r] + (d_f * d_f) * (1 - gamma);
+				dEdRo[h][r] = gamma * dEdRo[h][r] + (d_o * d_o) * (1 - gamma);
 			}
+
 		}
 
 		#pragma omp for
 		for (h = 0; h < h_dim; ++h) {
-			Pi[h] -= learning_rate * dPi[h];
-			Pf[h] -= learning_rate * dPf[h];
-			Po[h] -= learning_rate * dPo[h];
+			math_t d_z = sqrt(dEdPi[h] + ep) / sqrt(EdPi[h] + ep) * dPi[h];
+			math_t d_i = sqrt(dEdPf[h] + ep) / sqrt(EdPf[h] + ep) * dPf[h];
+			math_t d_f = sqrt(dEdPo[h] + ep) / sqrt(EdPo[h] + ep) * dPo[h];
+			math_t d_o;
 
-			Bz[h] -= learning_rate * dBz[h];
-			Bi[h] -= learning_rate * dBi[h];
-			Bf[h] -= learning_rate * dBf[h];
-			Bo[h] -= learning_rate * dBo[h];
+			Pi[h] -= d_z;
+			Pf[h] -= d_i;
+			Po[h] -= d_f;
+
+			dEdPi[h] = gamma * dEdPi[h] + (d_z * d_z) * (1 - gamma);
+			dEdPf[h] = gamma * dEdPf[h] + (d_z * d_z) * (1 - gamma);
+			dEdPo[h] = gamma * dEdPo[h] + (d_z * d_z) * (1 - gamma);
+
+			d_z = d_z;
+			d_i = d_i;
+			d_f = d_f;
+			d_o = d_o;
+			Bz[h] -= sqrt(dEdBz[h] + ep) / sqrt(EdBz[h] + ep) * dBz[h];
+			Bi[h] -= sqrt(dEdBi[h] + ep) / sqrt(EdBi[h] + ep) * dBi[h];
+			Bf[h] -= sqrt(dEdBf[h] + ep) / sqrt(EdBf[h] + ep) * dBf[h];
+			Bo[h] -= sqrt(dEdBo[h] + ep) / sqrt(EdBo[h] + ep) * dBo[h];
+
+			dEdBz[h] = gamma * dEdBz[h] + (d_z * d_z) * (1 - gamma);
+			dEdBi[h] = gamma * dEdBi[h] + (d_i * d_i) * (1 - gamma);
+			dEdBf[h] = gamma * dEdBf[h] + (d_f * d_f) * (1 - gamma);
+			dEdBo[h] = gamma * dEdBo[h] + (d_o * d_o) * (1 - gamma);			
 		}
 
 		#pragma omp for collapse(2)
 		for (o = 0; o < o_dim; ++o) {
 			for (h = 0; h < h_dim; ++h) {
-				V[o][h] -= learning_rate * dV[o][h];
+				math_t d_o = sqrt(dEdV[o][h] + ep) / sqrt(EdV[o][h] + ep) * dV[o][h]; 
+				V[o][h] -= d_o;
+				dEdV[o][h] = gamma * dEdV[o][h] + (d_o * d_o) * (1 - gamma);
 			}
 		}
 		#pragma omp for
 		for (o = 0; o < o_dim; ++o) {
-			Bpo[o] -= learning_rate * dBpo[o];
+			math_t d_o = sqrt(dEdBpo[o] + ep) / sqrt(EdBpo[o] + ep) * dBpo[o];
+			Bpo[o] -= d_o;
+			dEdBpo[o] = gamma * dEdBpo[o] + (d_o * d_o) * (1 - gamma);
 		}
 	}
 }
@@ -870,7 +1023,7 @@ int RNN_train(
 			// };
 			char translate[] = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
 			                    'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w',
-			                    'x', 'y', 'z', '\n', ' ', '!', '$', '&', '\'', ',', '-', '.', '3',
+			                    'x', 'y', 'z', ' ', ' ', '!', '$', '&', '\'', ',', '-', '.', '3',
 			                    ':', ';', '?', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
 			                    'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W'
 			                    , 'X', 'Y', 'Z'
@@ -910,8 +1063,8 @@ int RNN_train(
 				                          predicted_output_matrix,
 				                          expected_output_matrix);
 			}
-			printf("average loss at epoch: %10d = %10.10lf LR: %lf\n",
-			       e, current_total_loss / num_train, learning_rate);
+			printf("average loss at epoch: %10d = %10.10lf\n",
+			       e, current_total_loss / num_train);
 		}
 
 		if (e > 0 && e % gradient_check_interval == 0) {

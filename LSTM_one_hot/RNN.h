@@ -34,6 +34,21 @@ typedef struct {
     Matrix_t *dV;                    // OxH
     Matrix_t *dBpo;                  // 1xO
 
+    Matrix_t *EdWz, *EdWi, *EdWf, *EdWo;    // HxI
+    Matrix_t *EdRz, *EdRi, *EdRf, *EdRo;    // HxH
+    Matrix_t *EdPi, *EdPf, *EdPo;          // 1xH
+    Matrix_t *EdBz, *EdBi, *EdBf, *EdBo;    // 1xH  
+    Matrix_t *EdV;                    // OxH
+    Matrix_t *EdBpo;                  // 1xO
+
+    Matrix_t *dEdWz, *dEdWi, *dEdWf, *dEdWo;    // HxI
+    Matrix_t *dEdRz, *dEdRi, *dEdRf, *dEdRo;    // HxH
+    Matrix_t *dEdPi, *dEdPf, *dEdPo;          // 1xH
+    Matrix_t *dEdBz, *dEdBi, *dEdBf, *dEdBo;    // 1xH  
+    Matrix_t *dEdV;                    // OxH
+    Matrix_t *dEdBpo;                  // 1xO
+
+    math_t gamma;   // Adadelta update weight
 } RNN_t;
 
 typedef struct {
