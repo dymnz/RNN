@@ -128,7 +128,7 @@ DataSet_t *read_compact_set_from_file(char *file_name) {
 	DataSet_t *train_set = (DataSet_t *) malloc(sizeof(DataSet_t));
 	TrainSet_init(train_set, num_matrix);
 
-	int i, r, j, i_m, o_m;
+	int i, r, i_m, o_m;
 	int index;
 	for (i = 0; i < num_matrix; ++i) {
 		// Read input vector

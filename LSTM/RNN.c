@@ -962,6 +962,7 @@ void RNN_Predict(
 math_t cell_state_squash_func(math_t value) {
 	return sigmoid(value);
 }
+
 math_t cell_state_squash_derivative(math_t value) {
 	math_t temp_v =  sigmoid(value);
 	return temp_v * (1.0 - temp_v);
@@ -978,11 +979,11 @@ math_t gate_squash_derivative(math_t value) {
 math_t cell_output_squash_func(math_t value) {
 	return tanh(value);
 }
+
 math_t cell_output_squash_derivative(math_t value) {
 	math_t temp_v =  tanh(value);
 	return 1.0 - temp_v * temp_v;
 }
-
 
 math_t sigmoid(math_t value) {
 	//return 2.0 / (1 + exp(-2 * value)) - 1;
