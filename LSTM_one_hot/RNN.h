@@ -115,6 +115,13 @@ int RNN_Gradient_check(
     int index_to_check
 );
 
+void RNN_recursive_forward_propagation(
+    RNN_t *RNN_storage,
+    Matrix_t *input_matrix, // TxI
+    Matrix_t *predicted_output_matrix,   // TxO
+    int t_dim
+);
+
 math_t gate_squash_func(math_t value);
 math_t gate_squash_derivative(math_t value);
 math_t cell_state_squash_func(math_t value);

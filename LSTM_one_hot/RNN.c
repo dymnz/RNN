@@ -55,17 +55,17 @@ void RNN_init(
 	RNN_storage->Wo = matrix_create(h_dim, i_dim);
 	RNN_storage->dWo = matrix_create(h_dim, i_dim);
 	matrix_random_with_seed(
-	    RNN_storage->Wz, -sqrt(2 / (h_dim + i_dim)),
-	    sqrt(2 / (h_dim + i_dim)), &seed);
+	    RNN_storage->Wz, -sqrt(2.0f / (h_dim + i_dim)),
+	    sqrt(2.0f / (h_dim + i_dim)), &seed);
 	matrix_random_with_seed(
-	    RNN_storage->Wi, -sqrt(2 / (h_dim + i_dim)),
-	    sqrt(2 / (h_dim + i_dim)), &seed);
+	    RNN_storage->Wi, -sqrt(2.0f / (h_dim + i_dim)),
+	    sqrt(2.0f / (h_dim + i_dim)), &seed);
 	matrix_random_with_seed(
-	    RNN_storage->Wf, -sqrt(2 / (h_dim + i_dim)),
-	    sqrt(2 / (h_dim + i_dim)), &seed);
+	    RNN_storage->Wf, -sqrt(2.0f / (h_dim + i_dim)),
+	    sqrt(2.0f / (h_dim + i_dim)), &seed);
 	matrix_random_with_seed(
-	    RNN_storage->Wo, -sqrt(2 / (h_dim + i_dim)),
-	    sqrt(2 / (h_dim + i_dim)), &seed);
+	    RNN_storage->Wo, -sqrt(2.0f / (h_dim + i_dim)),
+	    sqrt(2.0f / (h_dim + i_dim)), &seed);
 
 	RNN_storage->Rz = matrix_create(h_dim, h_dim);
 	RNN_storage->dRz = matrix_create(h_dim, h_dim);
@@ -76,17 +76,17 @@ void RNN_init(
 	RNN_storage->Ro = matrix_create(h_dim, h_dim);
 	RNN_storage->dRo = matrix_create(h_dim, h_dim);
 	matrix_random_with_seed(
-	    RNN_storage->Rz, -sqrt(1 / h_dim),
-	    sqrt(1 / h_dim), &seed);
+	    RNN_storage->Rz, -sqrt(1.0f / h_dim),
+	    sqrt(1.0f / h_dim), &seed);
 	matrix_random_with_seed(
-	    RNN_storage->Ri, -sqrt(1 / h_dim),
-	    sqrt(1 / h_dim), &seed);
+	    RNN_storage->Ri, -sqrt(1.0f / h_dim),
+	    sqrt(1.0f / h_dim), &seed);
 	matrix_random_with_seed(
-	    RNN_storage->Rf, -sqrt(1 / h_dim),
-	    sqrt(1 / h_dim), &seed);
+	    RNN_storage->Rf, -sqrt(1.0f / h_dim),
+	    sqrt(1.0f / h_dim), &seed);
 	matrix_random_with_seed(
-	    RNN_storage->Ro, -sqrt(1 / h_dim),
-	    sqrt(1 / h_dim), &seed);
+	    RNN_storage->Ro, -sqrt(1.0f / h_dim),
+	    sqrt(1.0f / h_dim), &seed);
 
 	RNN_storage->Pi = matrix_create(1, h_dim);
 	RNN_storage->dPi = matrix_create(1, h_dim);
@@ -95,14 +95,14 @@ void RNN_init(
 	RNN_storage->Po = matrix_create(1, h_dim);
 	RNN_storage->dPo = matrix_create(1, h_dim);
 	matrix_random_with_seed(
-	    RNN_storage->Pi, -sqrt(2 / (h_dim + 1)),
-	    sqrt(2 / (h_dim + 1)), &seed);
+	    RNN_storage->Pi, -sqrt(2.0f / (h_dim + 1)),
+	    sqrt(2.0f / (h_dim + 1)), &seed);
 	matrix_random_with_seed(
-	    RNN_storage->Pf, -sqrt(2 / (h_dim + 1)),
-	    sqrt(2 / (h_dim + 1)), &seed);
+	    RNN_storage->Pf, -sqrt(2.0f / (h_dim + 1)),
+	    sqrt(2.0f / (h_dim + 1)), &seed);
 	matrix_random_with_seed(
-	    RNN_storage->Po, -sqrt(2 / (h_dim + 1)),
-	    sqrt(2 / (h_dim + 1)), &seed);
+	    RNN_storage->Po, -sqrt(2.0f / (h_dim + 1)),
+	    sqrt(2.0f / (h_dim + 1)), &seed);
 
 	RNN_storage->Bz = matrix_create(1, h_dim);
 	RNN_storage->dBz = matrix_create(1, h_dim);
@@ -113,17 +113,17 @@ void RNN_init(
 	RNN_storage->Bo = matrix_create(1, h_dim);
 	RNN_storage->dBo = matrix_create(1, h_dim);
 	matrix_random_with_seed(
-	    RNN_storage->Bz, -sqrt(2 / (h_dim + 1)),
-	    sqrt(2 / (h_dim + 1)), &seed);
+	    RNN_storage->Bz, -sqrt(2.0f / (h_dim + 1)),
+	    sqrt(2.0f / (h_dim + 1)), &seed);
 	matrix_random_with_seed(
-	    RNN_storage->Bi, -sqrt(2 / (h_dim + 1)),
-	    sqrt(2 / (h_dim + 1)), &seed);
+	    RNN_storage->Bi, -sqrt(2.0f / (h_dim + 1)),
+	    sqrt(2.0f / (h_dim + 1)), &seed);
 	matrix_random_with_seed(
-	    RNN_storage->Bf, -sqrt(2 / (h_dim + 1)),
-	    sqrt(2 / (h_dim + 1)), &seed);
+	    RNN_storage->Bf, -sqrt(2.0f / (h_dim + 1)),
+	    sqrt(2.0f / (h_dim + 1)), &seed);
 	matrix_random_with_seed(
-	    RNN_storage->Bo, -sqrt(2 / (h_dim + 1)),
-	    sqrt(2 / (h_dim + 1)), &seed);
+	    RNN_storage->Bo, -sqrt(2.0f / (h_dim + 1)),
+	    sqrt(2.0f / (h_dim + 1)), &seed);
 
 	/* Output model */
 	RNN_storage->V = matrix_create(o_dim, h_dim);
@@ -131,11 +131,11 @@ void RNN_init(
 	RNN_storage->Bpo = matrix_create(1, o_dim);
 	RNN_storage->dBpo = matrix_create(1, o_dim);
 	matrix_random_with_seed(
-	    RNN_storage->V, -sqrt(2 / (h_dim + o_dim)),
-	    sqrt(2 / (h_dim + o_dim)), &seed);
+	    RNN_storage->V, -sqrt(2.0f / (h_dim + o_dim)),
+	    sqrt(2.0f / (h_dim + o_dim)), &seed);
 	matrix_random_with_seed(
-	    RNN_storage->Bpo, -sqrt(1 / (h_dim + 1)),
-	    sqrt(1 / (h_dim + 1)), &seed);
+	    RNN_storage->Bpo, -sqrt(1.0f / (h_dim + 1)),
+	    sqrt(1.0f / (h_dim + 1)), &seed);
 }
 
 void RNN_destroy(RNN_t *RNN_storage) {
@@ -841,6 +841,60 @@ int RNN_train(
 		}
 
 		if (e > 0 && e % print_loss_interval == 0) {
+			/*
+			Recurrent gen
+			*/
+			printf("Print current prediction\n");
+			int T = 100;
+			Matrix_t *recurrent_output_matrix = matrix_create(
+			                                        T,
+			                                        train_set->output_n);
+			Matrix_t *recurrent_input_matrix = matrix_create(
+			                                       T,
+			                                       train_set->output_n);
+			recurrent_input_matrix->data[0][0] = 1;
+			RNN_recursive_forward_propagation(
+			    RNN_storage,
+			    recurrent_input_matrix,
+			    recurrent_output_matrix,   // TxO
+			    T
+			);
+
+			// char translate[] = {
+			// 	97, 98, 99, 100, 101, 102, 103, 104, 105, 106,
+			// 	107, 108, 109, 110, 111, 112, 113, 114, 115, 116,
+			// 	117, 118, 119, 120, 121, 122, 10, 32, 33, 36, 38,
+			// 	39, 44, 45, 46, 51, 58, 59, 63, 65, 66, 67, 68, 69,
+			// 	70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82,
+			// 	83, 84, 85, 86, 87, 88, 89, 90
+			// };
+			char translate[] = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
+			                    'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w',
+			                    'x', 'y', 'z', '\n', ' ', '!', '$', '&', '\'', ',', '-', '.', '3',
+			                    ':', ';', '?', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
+			                    'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W'
+			                    , 'X', 'Y', 'Z'
+			                   };
+
+			int i, o;
+			for (i = 0; i < T; ++i) {
+				math_t max_prob = 0;
+				int max_ind = 0;
+				for (o = 0; o < train_set->output_n; ++o) {
+					if (recurrent_output_matrix->data[i][o] > max_prob) {
+						max_prob = recurrent_output_matrix->data[i][o];
+						max_ind = o;
+						if (max_prob >= 0.5) break;
+					}
+				}
+				printf("%c", translate[max_ind]);
+			}
+			printf("\n-------------------------------\n");
+			matrix_free(recurrent_input_matrix);
+			matrix_free(recurrent_output_matrix);
+
+			/* loss calc */
+
 			current_total_loss = 0.0;
 			for (i = 0; i < num_train; ++i) {
 				input_matrix = train_set->input_matrix_list[i];
@@ -1071,6 +1125,206 @@ void RNN_Predict(
 	    input_matrix,
 	    predicted_output_matrix
 	);
+}
+
+
+void RNN_recursive_forward_propagation(
+    RNN_t *RNN_storage,
+    Matrix_t *input_matrix,	// TxI
+    Matrix_t *predicted_output_matrix,	// TxO
+    int t_dim
+) {
+	int i_dim = RNN_storage->i_dim;
+	int o_dim = RNN_storage->o_dim;
+	int h_dim = RNN_storage->h_dim;
+
+	matrix_resize(RNN_storage->Z_, t_dim, h_dim);
+	matrix_resize(RNN_storage->Z, t_dim, h_dim);
+	matrix_resize(RNN_storage->I_, t_dim, h_dim);
+	matrix_resize(RNN_storage->I, t_dim, h_dim);
+	matrix_resize(RNN_storage->F_, t_dim, h_dim);
+	matrix_resize(RNN_storage->F, t_dim, h_dim);
+	matrix_resize(RNN_storage->O_, t_dim, h_dim);
+	matrix_resize(RNN_storage->O, t_dim, h_dim);
+	matrix_resize(RNN_storage->C, t_dim, h_dim);
+	matrix_resize(RNN_storage->Y, t_dim, h_dim);
+
+	math_t **X = input_matrix->data;
+	math_t **P_O = predicted_output_matrix->data;
+
+	math_t **Z_ = RNN_storage->Z_->data; 	math_t **Z = RNN_storage->Z->data;
+	math_t **I_ = RNN_storage->I_->data; 	math_t **I = RNN_storage->I->data;
+	math_t **F_ = RNN_storage->F_->data; 	math_t **F = RNN_storage->F->data;
+	math_t **O_ = RNN_storage->O_->data; 	math_t **O = RNN_storage->O->data;
+	math_t **C = RNN_storage->C->data;
+	math_t **Y = RNN_storage->Y->data;
+
+	math_t **Wz = RNN_storage->Wz->data; math_t **Rz = RNN_storage->Rz->data;
+	math_t **Wi = RNN_storage->Wi->data; math_t **Ri = RNN_storage->Ri->data;
+	math_t **Wf = RNN_storage->Wf->data; math_t **Rf = RNN_storage->Rf->data;
+	math_t **Wo = RNN_storage->Wo->data; math_t **Ro = RNN_storage->Ro->data;
+
+	math_t *Bz = RNN_storage->Bz->data[0];
+	math_t *Bi = RNN_storage->Bi->data[0]; math_t *Pi = RNN_storage->Pi->data[0];
+	math_t *Bf = RNN_storage->Bf->data[0]; math_t *Pf = RNN_storage->Pf->data[0];
+	math_t *Bo = RNN_storage->Bo->data[0]; math_t *Po = RNN_storage->Po->data[0];
+
+	math_t **V = RNN_storage->V->data;
+	math_t *Bpo = RNN_storage->Bpo->data[0];
+
+	clear_2d(Z_, t_dim, h_dim);
+	clear_2d(I_, t_dim, h_dim);
+	clear_2d(F_, t_dim, h_dim);
+	clear_2d(O_, t_dim, h_dim);
+	clear_2d(P_O, t_dim, o_dim);
+	int h, i, o, r, t;
+
+	// For t = 0
+	#pragma omp parallel private(h, i)
+	{
+		#pragma omp for
+		for (h = 0; h < h_dim; ++h) {
+			/* Block input / Input gate / Forget gate */
+			for (i = 0; i < i_dim; ++i) {
+				if (X[0][i] == 1) {
+					Z_[0][h] += Wz[h][i];
+					I_[0][h] += Wi[h][i];
+					F_[0][h] += Wf[h][i];
+					break;
+				}
+			}
+		}
+		#pragma omp for
+		for (h = 0; h < h_dim; ++h) {
+			Z_[0][h] += Bz[h];
+			I_[0][h] += Bi[h];
+			F_[0][h] += Bf[h];
+
+			Z[0][h] = gate_squash_func(Z_[0][h]);
+			I[0][h] = cell_state_squash_func(I_[0][h]);
+			F[0][h] = cell_state_squash_func(F_[0][h]);
+
+			/* Cell state */
+			C[0][h] = Z[0][h] * I[0][h];
+		}
+		#pragma omp for collapse(2)
+		for (h = 0; h < h_dim; ++h) {
+			/* Output gate */
+			for (i = 0; i < i_dim; ++i) {
+				O_[0][h] += Wo[h][i] * X[0][i];
+			}
+		}
+		#pragma omp for
+		for (h = 0; h < h_dim; ++h) {
+			O_[0][h] += Po[h] * C[0][h] + Bo[h];
+			O[0][h] = cell_state_squash_func(O_[0][h]);
+
+			/* Block output */
+			Y[0][h] = cell_output_squash_func(C[0][h]) * O[0][h];
+		}
+
+		#pragma omp single
+		{
+			math_t *temp_vector = (math_t *) malloc(o_dim * sizeof(math_t));
+
+			for (o = 0; o < o_dim; ++o) {
+				for (r = 0; r < h_dim; ++r) {
+					temp_vector[o] += V[o][r] * Y[t][r];
+				}
+				temp_vector[o] += Bpo[o];
+			}
+			network_output_squash_func(temp_vector, P_O[0], o_dim);
+			free(temp_vector);
+		}
+
+		#pragma omp single
+		{
+			for (o = 0; o < o_dim; ++o) {
+				X[1][o] = P_O[0][o];
+			}
+		}
+	}
+
+	// For t = 1 ... t_dim
+	#pragma omp parallel private(h, i, r, t)
+	for (t = 1; t < t_dim; ++t) {
+		#pragma omp for
+		for (h = 0; h < h_dim; ++h) {
+			/* Block input / Input gate / Forget gate */
+			for (i = 0; i < i_dim; ++i) {
+				if (X[t][i] == 1) {
+					Z_[t][h] += Wz[h][i];
+					I_[t][h] += Wi[h][i];
+					F_[t][h] += Wf[h][i];
+					break;
+				}
+			}
+		}
+		#pragma omp for collapse(2)
+		for (h = 0; h < h_dim; ++h) {
+			for (r = 0; r < h_dim; ++r) {
+				Z_[t][h] += Rz[h][r] * Y[t - 1][r];
+				I_[t][h] += Ri[h][r] * Y[t - 1][r];
+				F_[t][h] += Rf[h][r] * Y[t - 1][r];
+			}
+		}
+		#pragma omp for
+		for (h = 0; h < h_dim; ++h) {
+			Z_[t][h] += Bz[h];
+			I_[t][h] += Pi[h] * C[t - 1][h] + Bi[h];
+			F_[t][h] += Pf[h] * C[t - 1][h] + Bf[h];
+
+			Z[t][h] = gate_squash_func(Z_[t][h]);
+			I[t][h] = cell_state_squash_func(I_[t][h]);
+			F[t][h] = cell_state_squash_func(F_[t][h]);
+
+			/* Cell state */
+			C[t][h] = Z[t][h] * I[t][h] + C[t - 1][h] * F[t][h];
+		}
+		#pragma omp for collapse(2)
+		for (h = 0; h < h_dim; ++h) {
+			/* Output gate */
+			for (i = 0; i < i_dim; ++i) {
+				O_[t][h] += Wo[h][i] * X[t][i];
+			}
+		}
+		#pragma omp for collapse(2)
+		for (h = 0; h < h_dim; ++h) {
+			for (r = 0; r < h_dim; ++r) {
+				O_[t][h] += Ro[h][r] * Y[t - 1][r];
+			}
+		}
+		#pragma omp for
+		for (h = 0; h < h_dim; ++h) {
+			O_[t][h] += Po[h] * C[t][h] + Bo[h];
+			O[t][h] = cell_state_squash_func(O_[t][h]);
+
+			/* Block output */
+			Y[t][h] = cell_output_squash_func(C[t][h]) * O[t][h];
+		}
+		#pragma omp single
+		{
+			math_t *temp_vector = (math_t *) malloc(o_dim * sizeof(math_t));
+
+			for (o = 0; o < o_dim; ++o) {
+				for (r = 0; r < h_dim; ++r) {
+					temp_vector[o] += V[o][r] * Y[t][r];
+				}
+				temp_vector[o] += Bpo[o];
+			}
+			network_output_squash_func(temp_vector, P_O[t], o_dim);
+			free(temp_vector);
+		}
+
+		#pragma omp single
+		{
+			if (t + 1 < t_dim) {
+				for (o = 0; o < o_dim; ++o) {
+					X[t + 1][o] = P_O[t][o];
+				}
+			}
+		}
+	}
 }
 
 math_t cell_state_squash_func(math_t value) {
