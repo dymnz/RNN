@@ -53,17 +53,17 @@ void RNN_init(
 	RNN_storage->Wo = matrix_create(h_dim, i_dim);
 	RNN_storage->dWo = matrix_create(h_dim, i_dim);
 	matrix_random_with_seed(
-	    RNN_storage->Wz, -sqrt(2 / (h_dim + i_dim)),
-	    sqrt(2 / (h_dim + i_dim)), &seed);
+	    RNN_storage->Wz, -sqrt(2.0f / (h_dim + i_dim)),
+	    sqrt(2.0f / (h_dim + i_dim)), &seed);
 	matrix_random_with_seed(
-	    RNN_storage->Wi, -sqrt(2 / (h_dim + i_dim)),
-	    sqrt(2 / (h_dim + i_dim)), &seed);
+	    RNN_storage->Wi, -sqrt(2.0f / (h_dim + i_dim)),
+	    sqrt(2.0f / (h_dim + i_dim)), &seed);
 	matrix_random_with_seed(
-	    RNN_storage->Wf, -sqrt(2 / (h_dim + i_dim)),
-	    sqrt(2 / (h_dim + i_dim)), &seed);
+	    RNN_storage->Wf, -sqrt(2.0f / (h_dim + i_dim)),
+	    sqrt(2.0f / (h_dim + i_dim)), &seed);
 	matrix_random_with_seed(
-	    RNN_storage->Wo, -sqrt(2 / (h_dim + i_dim)),
-	    sqrt(2 / (h_dim + i_dim)), &seed);
+	    RNN_storage->Wo, -sqrt(2.0f / (h_dim + i_dim)),
+	    sqrt(2.0f / (h_dim + i_dim)), &seed);
 
 	RNN_storage->Rz = matrix_create(h_dim, h_dim);
 	RNN_storage->dRz = matrix_create(h_dim, h_dim);
@@ -74,17 +74,17 @@ void RNN_init(
 	RNN_storage->Ro = matrix_create(h_dim, h_dim);
 	RNN_storage->dRo = matrix_create(h_dim, h_dim);
 	matrix_random_with_seed(
-	    RNN_storage->Rz, -sqrt(1 / h_dim),
-	    sqrt(1 / h_dim), &seed);
+	    RNN_storage->Rz, -sqrt(1.0f / h_dim),
+	    sqrt(1.0f / h_dim), &seed);
 	matrix_random_with_seed(
-	    RNN_storage->Ri, -sqrt(1 / h_dim),
-	    sqrt(1 / h_dim), &seed);
+	    RNN_storage->Ri, -sqrt(1.0f / h_dim),
+	    sqrt(1.0f / h_dim), &seed);
 	matrix_random_with_seed(
-	    RNN_storage->Rf, -sqrt(1 / h_dim),
-	    sqrt(1 / h_dim), &seed);
+	    RNN_storage->Rf, -sqrt(1.0f / h_dim),
+	    sqrt(1.0f / h_dim), &seed);
 	matrix_random_with_seed(
-	    RNN_storage->Ro, -sqrt(1 / h_dim),
-	    sqrt(1 / h_dim), &seed);
+	    RNN_storage->Ro, -sqrt(1.0f / h_dim),
+	    sqrt(1.0f / h_dim), &seed);
 
 	RNN_storage->Pi = matrix_create(1, h_dim);
 	RNN_storage->dPi = matrix_create(1, h_dim);
@@ -93,14 +93,14 @@ void RNN_init(
 	RNN_storage->Po = matrix_create(1, h_dim);
 	RNN_storage->dPo = matrix_create(1, h_dim);
 	matrix_random_with_seed(
-	    RNN_storage->Pi, -sqrt(2 / (h_dim + 1)),
-	    sqrt(2 / (h_dim + 1)), &seed);
+	    RNN_storage->Pi, -sqrt(2.0f / (h_dim + 1)),
+	    sqrt(2.0f / (h_dim + 1)), &seed);
 	matrix_random_with_seed(
-	    RNN_storage->Pf, -sqrt(2 / (h_dim + 1)),
-	    sqrt(2 / (h_dim + 1)), &seed);
+	    RNN_storage->Pf, -sqrt(2.0f / (h_dim + 1)),
+	    sqrt(2.0f / (h_dim + 1)), &seed);
 	matrix_random_with_seed(
-	    RNN_storage->Po, -sqrt(2 / (h_dim + 1)),
-	    sqrt(2 / (h_dim + 1)), &seed);
+	    RNN_storage->Po, -sqrt(2.0f / (h_dim + 1)),
+	    sqrt(2.0f / (h_dim + 1)), &seed);
 
 	RNN_storage->Bz = matrix_create(1, h_dim);
 	RNN_storage->dBz = matrix_create(1, h_dim);
@@ -111,17 +111,17 @@ void RNN_init(
 	RNN_storage->Bo = matrix_create(1, h_dim);
 	RNN_storage->dBo = matrix_create(1, h_dim);
 	matrix_random_with_seed(
-	    RNN_storage->Bz, -sqrt(2 / (h_dim + 1)),
-	    sqrt(2 / (h_dim + 1)), &seed);
+	    RNN_storage->Bz, -sqrt(2.0f / (h_dim + 1)),
+	    sqrt(2.0f / (h_dim + 1)), &seed);
 	matrix_random_with_seed(
-	    RNN_storage->Bi, -sqrt(2 / (h_dim + 1)),
-	    sqrt(2 / (h_dim + 1)), &seed);
+	    RNN_storage->Bi, -sqrt(2.0f / (h_dim + 1)),
+	    sqrt(2.0f / (h_dim + 1)), &seed);
 	matrix_random_with_seed(
-	    RNN_storage->Bf, -sqrt(2 / (h_dim + 1)),
-	    sqrt(2 / (h_dim + 1)), &seed);
+	    RNN_storage->Bf, -sqrt(2.0f / (h_dim + 1)),
+	    sqrt(2.0f / (h_dim + 1)), &seed);
 	matrix_random_with_seed(
-	    RNN_storage->Bo, -sqrt(2 / (h_dim + 1)),
-	    sqrt(2 / (h_dim + 1)), &seed);
+	    RNN_storage->Bo, -sqrt(2.0f / (h_dim + 1)),
+	    sqrt(2.0f / (h_dim + 1)), &seed);
 
 	/* Output model */
 	RNN_storage->V = matrix_create(o_dim, h_dim);
@@ -129,11 +129,11 @@ void RNN_init(
 	RNN_storage->Bpo = matrix_create(1, o_dim);
 	RNN_storage->dBpo = matrix_create(1, o_dim);
 	matrix_random_with_seed(
-	    RNN_storage->V, -sqrt(2 / (h_dim + o_dim)),
-	    sqrt(2 / (h_dim + o_dim)), &seed);
+	    RNN_storage->V, -sqrt(2.0f / (h_dim + o_dim)),
+	    sqrt(2.0f / (h_dim + o_dim)), &seed);
 	matrix_random_with_seed(
-	    RNN_storage->Bpo, -sqrt(1 / (h_dim + 1)),
-	    sqrt(1 / (h_dim + 1)), &seed);
+	    RNN_storage->Bpo, -sqrt(1.0f / (h_dim + 1)),
+	    sqrt(1.0f / (h_dim + 1)), &seed);
 }
 
 void RNN_destroy(RNN_t *RNN_storage) {
@@ -366,7 +366,7 @@ void RNN_BPTT(
 
 	/* For t = t_dim - 1 */
 	for (o = 0; o < o_dim; ++o) {
-		dP_O[o] = 2 * (P_O[t_dim - 1][o] - E_O[t_dim - 1][o]);
+		dP_O[o] = 2.0f * (P_O[t_dim - 1][o] - E_O[t_dim - 1][o]);
 	}
 	for (h = 0; h < h_dim; ++h) {
 		for (o = 0; o < o_dim; ++o) {
@@ -643,7 +643,7 @@ void RNN_SGD(
 	    predicted_output_matrix,	// TxO
 	    expected_output_matrix		// TxO
 	);
-
+	
 	int h, i, r, o;
 
 
@@ -684,8 +684,9 @@ int RNN_train(
     math_t initial_learning_rate,
     int max_epoch,
     int print_loss_interval,
+    int learning_rate_adjust_interval,
     int gradient_check_interval
-) {
+)  {
 	int num_train = train_set->num_matrix;
 
 	int i, e, t;
@@ -695,7 +696,7 @@ int RNN_train(
 	math_t learning_rate = initial_learning_rate;
 
 	for (e = 0; e < max_epoch; ++e) {
-		if (e % print_loss_interval == 0) {
+		if (e > 0 && e % learning_rate_adjust_interval == 0) {
 			current_total_loss = 0.0;
 			for (i = 0; i < num_train; ++i) {
 				input_matrix = train_set->input_matrix_list[i];
@@ -706,46 +707,49 @@ int RNN_train(
 				    predicted_output_matrix
 				);
 
-				current_total_loss += RNN_loss_calculation(
-				                          RNN_storage,
-				                          predicted_output_matrix,
-				                          expected_output_matrix);
+				current_total_loss +=
+				    RNN_loss_calculation(
+				        RNN_storage,
+				        predicted_output_matrix,
+				        expected_output_matrix) / expected_output_matrix->m;
 			}
-
-			printf("average loss at epoch: %10d = %10.10lf LR: %lf\n",
-			       e, current_total_loss / num_train, learning_rate);
-		}
-		if (e > 0 && e % gradient_check_interval == 0) {
-			current_total_loss = 0.0;
-			for (i = 0; i < num_train; ++i) {
-				input_matrix = train_set->input_matrix_list[i];
-				expected_output_matrix = train_set->output_matrix_list[i];
-				RNN_Predict(
-				    RNN_storage,
-				    input_matrix,
-				    predicted_output_matrix
-				);
-
-				current_total_loss += RNN_loss_calculation(
-				                          RNN_storage,
-				                          predicted_output_matrix,
-				                          expected_output_matrix);
-			}
-
 			// Adjust learning rate if the loss increases
 			if (last_total_loss < current_total_loss) {
-				if (learning_rate / 2 > 1e-6)
+				if (learning_rate / 2 > 1e-10)
 					learning_rate /= 2;
 				else {
 					printf("Super low learning rate error: %10d\n", e);
 					return e;
 				}
-			} else if (learning_rate * 1.1 < 1 * initial_learning_rate) {
-				learning_rate *= 1.1;
+			} else if (learning_rate * 1.5 < 1 * initial_learning_rate) {
+				learning_rate *= 1.5;
 			}
 
 			last_total_loss = current_total_loss;
+		}
 
+		if (e > 0 && e % print_loss_interval == 0) {
+			current_total_loss = 0.0;
+			for (i = 0; i < num_train; ++i) {
+				input_matrix = train_set->input_matrix_list[i];
+				expected_output_matrix = train_set->output_matrix_list[i];
+				RNN_Predict(
+				    RNN_storage,
+				    input_matrix,
+				    predicted_output_matrix
+				);
+
+				current_total_loss +=
+				    RNN_loss_calculation(
+				        RNN_storage,
+				        predicted_output_matrix,
+				        expected_output_matrix) / expected_output_matrix->m;
+			}
+			printf("average loss at epoch: %10d = %10.10lf LR: %lf\n",
+			       e, current_total_loss / num_train, learning_rate);
+		}
+
+		if (e > 0 && e % gradient_check_interval == 0) {
 			int gradient_check_result =
 			    RNN_Gradient_check(
 			        RNN_storage,
@@ -762,7 +766,7 @@ int RNN_train(
 				return e;
 			}
 		}
-		
+
 		for (t = 0; t < num_train; ++t) {
 			input_matrix = train_set->input_matrix_list[t];
 			expected_output_matrix = train_set->output_matrix_list[t];
@@ -787,7 +791,7 @@ math_t RNN_loss_calculation(
 ) {
 	math_t total_loss = 0.0, log_term = 0.0, delta;
 
-	int t_dim = predicted_output_matrix->m;
+	int t_dim = expected_output_matrix->m;
 	int o_dim = RNN_storage->o_dim;
 
 	int t, o;

@@ -1,0 +1,11 @@
+./rnn train_1_ds100_lp_rec_fx train_1_ds100_lp_rec_fx 4 10000 0.001 100 10 1000 4
+./rnn train_1_ds100_lp_rec_fx test_1_ds100_lp_rec_fx 4 10000 0.001 100 10 1000 4
+./rnn test_1_ds100_lp_rec_fx test_1_ds100_lp_rec_fx 4 10000 0.001 100 10 1000 4
+
+./rnn train_1_ds100_lp_rec_fx_ol train_1_ds100_lp_rec_fx_ol 4 10000 0.001 100 10 1000 4
+./rnn train_2_ds100_lp_rec_fx_ol train_2_ds100_lp_rec_fx_ol 4 10000 0.001 10 100 1000 42
+./rnn train_2_ds100_lp_rec_fx_ol test_2_ds100_lp_rec_fx_ol 4 10000 0.001 10 100 1000 42
+
+./rnn train_2_ds100_lp_rec_fx_ol_pul test_2_ds100_lp_rec_fx_ol_pul 4 10000 0.001 10 100 1000 42
+
+./rnn train_2_ds100_lp_rec_fx_ol_pul test_2_ds100_lp_rec_fx_ol_pul 4 10000 0.0001 10 110 1000 52

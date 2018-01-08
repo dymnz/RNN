@@ -88,12 +88,13 @@ void RNN_SGD(
 );
 
 int RNN_train(
-    RNN_t *RNN_storage,
+    RNN_t * RNN_storage,
     DataSet_t *train_set,
     Matrix_t *predicted_output_matrix,
     math_t initial_learning_rate,
     int max_epoch,
     int print_loss_interval,
+    int learning_rate_adjust_interval,
     int gradient_check_interval
 );
 
