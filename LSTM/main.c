@@ -117,6 +117,11 @@ int RNN_model_training_example() {
 
 	printf("Working on testing file...\n");
 	train_set = read_set_from_file(test_file);
+	
+	matrix_free(predicted_output_matrix);
+	predicted_output_matrix = matrix_create(
+	                              train_set->output_max_m,
+	                              train_set->output_n);
 
 	FILE *pRes = fopen(result_file, "w");
 	fprintf(pRes, " %d\n", train_set->num_matrix);
