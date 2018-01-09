@@ -1005,7 +1005,7 @@ int RNN_train(
 			Matrix_t *recurrent_input_matrix = matrix_create(
 			                                       T,
 			                                       train_set->output_n);
-			recurrent_input_matrix->data[0][0] = 1;
+			recurrent_input_matrix->data[0][38] = 1;
 			RNN_recursive_forward_propagation(
 			    RNN_storage,
 			    recurrent_input_matrix,
@@ -1021,18 +1021,25 @@ int RNN_train(
 			// 	70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82,
 			// 	83, 84, 85, 86, 87, 88, 89, 90
 			// };
-			char translate[] = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
-			                    'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w',
-			                    'x', 'y', 'z', ' ', ' ', '!', '$', '&', '\'', ',', '-', '.', '3',
-			                    ':', ';', '?', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
-			                    'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W'
-			                    , 'X', 'Y', 'Z'
-			                   };
+			char translate[] = {'\n', '\r', ' ', '!', '"', '$', '%', '&', "'", '(', ')', ',', '-', '.', '/', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ':', ';', '=', '?', '@', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '[', ']', '_', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '\x80', '\x93', '\x94', '\x98', '\x99', '\x9c', '\x9d', '\xa6', '\xa9', '\xbb', '\xbf', '\xc3', '\xe2', '\xef'};
 
 			int i, o;
+
+			math_t max_prob = 0;
+			int max_ind = 0;
+
+			for (o = 0; o < train_set->output_n; ++o) {
+				if (recurrent_input_matrix->data[i][o] > max_prob) {
+					max_prob = recurrent_input_matrix->data[i][o];
+					max_ind = o;
+					if (max_prob >= 0.5) break;
+				}
+			}
+			printf("%c", translate[max_ind]);
+
 			for (i = 0; i < T; ++i) {
-				math_t max_prob = 0;
-				int max_ind = 0;
+				max_prob = 0;
+				max_ind = 0;
 				for (o = 0; o < train_set->output_n; ++o) {
 					if (recurrent_output_matrix->data[i][o] > max_prob) {
 						max_prob = recurrent_output_matrix->data[i][o];
