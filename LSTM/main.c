@@ -122,7 +122,6 @@ int RNN_model_training_example() {
 
 	printf("Working on testing file...\n");
 	train_set = read_set_from_file(test_file);
-
 	matrix_resize(
 	    predicted_output_matrix,
 	    train_set->output_max_m,
@@ -148,11 +147,11 @@ int RNN_model_training_example() {
 		           predicted_output_matrix,
 		           train_set->output_matrix_list[i]);
 		fprintf(pLoss, " % lf\n", loss);
-		total_loss += loss;
+		total_loss += loss / train_set->num_matrix;
 		write_matrix_to_file(result_file, train_set->input_matrix_list[i], "a");
 		write_matrix_to_file(result_file, predicted_output_matrix, "a");
 	}
-	printf("average loss: % lf\n", total_loss / train_set->num_matrix);
+	printf("average loss: % lf\n", total_loss);
 	fclose(pLoss);
 
 	/*
