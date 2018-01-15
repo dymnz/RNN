@@ -1,6 +1,5 @@
 #include "common_math.h"
 
-
 math_t uniform_random_with_seed(
     math_t lower_bound,
     math_t upper_bound,
@@ -22,6 +21,27 @@ void matrix_random_with_seed(
 		for (n = 0; n < matrix->n; ++n)
 			matrix->data[m][n] = 
 				uniform_random_with_seed(lower_bound, upper_bound, seedp);
+}
+
+math_t uniform_random(
+    math_t lower_bound,
+    math_t upper_bound
+) {
+	return ((math_t)rand() / (math_t)RAND_MAX) *
+	       (upper_bound - lower_bound + 1) +
+	       lower_bound;
+}
+
+void matrix_random(
+	Matrix_t *matrix,
+    math_t lower_bound,
+    math_t upper_bound
+) {
+	int m, n;
+	for (m = 0; m < matrix->m; ++m)
+		for (n = 0; n < matrix->n; ++n)
+			matrix->data[m][n] = 
+				uniform_random(lower_bound, upper_bound);
 }
 
 math_t **create_2d(int m, int n) {

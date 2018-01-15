@@ -5,7 +5,6 @@
 #include "common_math.h"
 #include "RNN.h"
 #include "file_process.h"
-#include "util.h"
 
 #define DEFAULT_RAND_SEED 5
 
@@ -25,7 +24,6 @@ int hidden_cell_num = 4;
 math_t initial_learning_rate = 0.001;
 int max_epoch = 100;
 int print_loss_interval = 10;
-int learning_rate_adjust_interval = 10;
 int gradient_check_interval = 10;
 
 int RNN_model_training_example() {
@@ -106,10 +104,8 @@ int RNN_model_training_example() {
 	            RNN_storage,
 	            train_set,
 	            predicted_output_matrix,
-	            initial_learning_rate,
 	            max_epoch,
 	            print_loss_interval,
-	            learning_rate_adjust_interval,
 	            gradient_check_interval
 	        );
 
@@ -310,28 +306,24 @@ int RNN_model_import_example() {
 }
 
 int main(int argc, char *argv[]) {
-	if (argc < 10) {
+	if (argc < 8) {
 		printf(
 		    "Usage: ./rnn "
 		    "train_file_name/"
 		    "test_file_name/"
 		    "hidden_cell_num/"
 		    "max_epoch/"
-		    "initial_learning_rate/"
 		    "print_loss_interval/"
-		    "learning_rate_adjust_interval/"
 		    "gradient_check_interval/"
 		    "rand_seed"
 		    "\n");
 		printf(
 		    "Example: ./rnn "
-		    "reddit_14 "
-		    "reddit_14 "
+		    "2_full_stream "
+		    "2_full_stream "
+		    "4 "
 		    "100 "
 		    "10 "
-		    "0.001 "
-		    "1 "
-		    "1 "
 		    "100000 "
 		    "4 "
 		    "\n");
@@ -343,11 +335,9 @@ int main(int argc, char *argv[]) {
 
 	hidden_cell_num = atoi(argv[3]);
 	max_epoch = atoi(argv[4]);
-	initial_learning_rate = atof(argv[5]);
-	print_loss_interval = atoi(argv[6]);
-	learning_rate_adjust_interval = atoi(argv[7]);
-	gradient_check_interval = atoi(argv[8]);
-	rand_seed = atoi(argv[9]);
+	print_loss_interval = atoi(argv[5]);
+	gradient_check_interval = atoi(argv[6]);
+	rand_seed = atoi(argv[7]);
 
 
 	return RNN_model_training_example();

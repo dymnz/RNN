@@ -25,6 +25,16 @@ void matrix_random_with_seed(
     unsigned int *seedp
 );
 
+math_t uniform_random(
+    math_t lower_bound,
+    math_t upper_bound
+);
+
+void matrix_random(
+    Matrix_t *matrix,
+    math_t lower_bound,
+    math_t upper_bound
+);
 
 Matrix_t *matrix_create(int m, int n);
 void matrix_free(Matrix_t *matrix);
