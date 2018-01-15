@@ -103,15 +103,15 @@ int RNN_model_training_example() {
 	int epoch;
 
 	epoch = RNN_train(
-	    RNN_storage,
-	    train_set,
-	    predicted_output_matrix,
-	    initial_learning_rate,
-	    max_epoch,
-	    print_loss_interval,
-	    learning_rate_adjust_interval,
-	    gradient_check_interval
-	);
+	            RNN_storage,
+	            train_set,
+	            predicted_output_matrix,
+	            initial_learning_rate,
+	            max_epoch,
+	            print_loss_interval,
+	            learning_rate_adjust_interval,
+	            gradient_check_interval
+	        );
 
 	printf("Hidden: %5d\tEpoch: %5d\n", hidden_cell_num, epoch);
 
@@ -122,10 +122,11 @@ int RNN_model_training_example() {
 
 	printf("Working on testing file...\n");
 	train_set = read_set_from_file(test_file);
-	matrix_resize(
-	    predicted_output_matrix,
-	    train_set->output_max_m,
-	    train_set->output_n);
+	matrix_free(predicted_output_matrix);
+	predicted_output_matrix = matrix_create(
+	                              train_set->output_max_m,
+	                              train_set->output_n);
+
 
 	FILE *pRes = fopen(result_file, "w");
 	fprintf(pRes, " %d\n", train_set->num_matrix);

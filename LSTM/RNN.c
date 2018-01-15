@@ -120,6 +120,11 @@ void RNN_init(
 	matrix_random_with_seed(
 	    RNN_storage->Bf, -sqrt(2.0f / (h_dim + 1)),
 	    sqrt(2.0f / (h_dim + 1)), &seed);
+
+	// Large bias on forget gate to learn to remember
+	// for (int i = 0; i < h_dim; ++i) 
+	// 	RNN_storage->Bf->data[0][i] = 10;
+
 	matrix_random_with_seed(
 	    RNN_storage->Bo, -sqrt(2.0f / (h_dim + 1)),
 	    sqrt(2.0f / (h_dim + 1)), &seed);
@@ -257,6 +262,7 @@ void RNN_forward_propagation(
 	clear_2d(O_, t_dim, h_dim);
 	clear_2d(P_O, t_dim, o_dim);
 
+
 	int h, i, o, r, t;
 
 	// For t = 0
@@ -348,7 +354,7 @@ void RNN_forward_propagation(
 				P_O[t][o] += V[o][r] * Y[t][r];
 			}
 			P_O[t][o] += Bpo[o];
-			P_O[t][o] = network_output_squash_func(P_O[t][o]);
+			//P_O[t][o] = network_output_squash_func(P_O[t][o]);
 		}
 	}
 	
@@ -414,9 +420,11 @@ void RNN_BPTT(
 
 	int i, o, h, t, r;
 
+
 	/* For t = t_dim - 1 */
 	for (o = 0; o < o_dim; ++o) {
-		dP_O[o] = 2.0f * (P_O[t_dim - 1][o] - E_O[t_dim - 1][o]) * P_O[t_dim - 1][o] * (1 - P_O[t_dim - 1][o]);
+		dP_O[o] = 2.0f * (P_O[t_dim - 1][o] - E_O[t_dim - 1][o]) / t_dim;
+		//* P_O[t_dim - 1][o] * (1 - P_O[t_dim - 1][o]);
 	}
 	for (h = 0; h < h_dim; ++h) {
 		for (o = 0; o < o_dim; ++o) {
@@ -483,7 +491,7 @@ void RNN_BPTT(
 	for (t = t_dim - 2; t >= 1; --t) {
 		clear_1d(dY, h_dim);
 		for (o = 0; o < o_dim; ++o) {
-			dP_O[o] = 2 * (P_O[t][o] - E_O[t][o]) * P_O[t][o] * (1 - P_O[t][o]);
+			dP_O[o] = 2 * (P_O[t][o] - E_O[t][o]) / t_dim; //* P_O[t][o] * (1 - P_O[t][o]);
 		}
 		for (h = 0; h < h_dim; ++h) {
 			for (o = 0; o < o_dim; ++o) {
@@ -568,7 +576,7 @@ void RNN_BPTT(
 	/* For t = 0 */
 	clear_1d(dY, h_dim);
 	for (o = 0; o < o_dim; ++o) {
-		dP_O[o] = 2 * (P_O[0][o] - E_O[0][o]) * P_O[0][o] * (1 - P_O[0][o]);
+		dP_O[o] = 2 * (P_O[0][o] - E_O[0][o]) / t_dim; // * P_O[0][o] * (1 - P_O[0][o]);
 	}
 	for (h = 0; h < h_dim; ++h) {
 		for (o = 0; o < o_dim; ++o) {
@@ -933,7 +941,7 @@ math_t RNN_loss_calculation(
 		total_loss += log_term;
 	}
 
-	return total_loss;
+	return total_loss / t_dim;
 }
 
 int RNN_Gradient_check(

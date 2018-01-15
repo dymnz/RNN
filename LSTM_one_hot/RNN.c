@@ -818,7 +818,7 @@ math_t RNN_loss_calculation(
 		}
 		total_loss += -1.0 * log(log_term);
 	}
-	return total_loss;
+	return total_loss / t_dim;
 }
 
 int RNN_Gradient_check(
