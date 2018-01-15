@@ -1,0 +1,219 @@
+RNN_model_training_example
+Working on training file...
+ - RNN paramerter - 
+Input vector length: 65
+Output vector length: 65
+Hidden cell num: 4
+Rand seed : 4
+----------------
+Start training. Max epoch: 100000 Initital learning rate:  0.100000
+Print current prediction
+   
+ 
+
+   
+
+
+
+
+
+
+
+
+  
+
+ 
+         
+
+
+   
+
+ 
+
+
+  
+ 
+ 
+  
+ 
+
+
+
+
+  
+  
+    
+       
+ 
+   
+ 
+    
+ 
+
+
+  
+-------------------------------
+average loss at epoch:          1 = 301.5828451885 LR: 0.100000
+Print current prediction
+  
+  
+      
+       
+        
+      
+
+
+ 
+    
+        
+
+ 
+ 
+
+  
+    
+         
+  
+
+           
+ 
+   
+-------------------------------
+average loss at epoch:          2 = 323.2315510304 LR: 0.100000
+Print current prediction
+    
+                                                                                               
+-------------------------------
+average loss at epoch:          3 = 319.1656598746 LR: 0.100000
+Print current prediction
+                                                   t   t   t     t   t    t    tt     t   t         
+-------------------------------
+average loss at epoch:          4 = 310.1445558771 LR: 0.100000
+Print current prediction
+t tt     tt ttt   ttt ttttt            t  t    t t    t t   tttttt t t  ttt t  t  t       t tt   t  
+-------------------------------
+average loss at epoch:          5 = 298.1096815416 LR: 0.100000
+Print current prediction
+  t      tt          tt  t   t tt     t t   tt t t t    t      tt            t  tt     t t tttt    t
+-------------------------------
+average loss at epoch:          6 = 296.9731058612 LR: 0.100000
+Print current prediction
+ tt t tt t t ttt tt t tttt t tt t   t  ttttt t tt  t  ttt ttttt   tt t ttt  t   t tt t  t  tt       
+-------------------------------
+average loss at epoch:          7 = 297.0328575948 LR: 0.100000
+Print current prediction
+ t t t   t   t  t   t        tt          t   tt      t      t  t    t t  t  t  tt  tttt tt ttt tt   
+-------------------------------
+average loss at epoch:          8 = 299.5071530019 LR: 0.100000
+Print current prediction
+ t   t     t ttt t  tt t t     tt tt  tt    tt t   t tttttt t  tt  ttttt t tt   t   t  tt t ttt ttt 
+-------------------------------
+average loss at epoch:          9 = 299.2579263681 LR: 0.100000
+Print current prediction
+ ttt t  t t  t      ttt     tt    ttttt   t t     tt t tt        t  t  t  t t  t  tttt tt ttt    t  
+-------------------------------
+average loss at epoch:         10 = 297.8597746244 LR: 0.100000
+Print current prediction
+ t t          t t t            ttt t      t t      tt    tttt        t     ttt tt tt            t   
+-------------------------------
+average loss at epoch:         11 = 295.4625284346 LR: 0.100000
+Print current prediction
+t  t  t t   ttt ttttt  ttttttttt   ttttt  t      t    tt tt tt tt tttt ttt  ttt tt  tttt  tt t     t
+-------------------------------
+average loss at epoch:         12 = 297.4092978615 LR: 0.100000
+Print current prediction
+t          tt   t          t   t tt t   t t                  t    t    t                   tt tt tt 
+-------------------------------
+average loss at epoch:         13 = 293.9696342923 LR: 0.100000
+Print current prediction
+   ttt tttttt  tt  ttt t tttt tt tt tt tt ttt t  tt ttttt  t t ttt ttttt t t   ttt t ttt t tt  ttt t
+-------------------------------
+average loss at epoch:         14 = 295.2002313232 LR: 0.100000
+Print current prediction
+ tt   ttt tt tttttt   tttt t    tt t ttt    tt t   t  tttt ttt ttt ttttt tt t   t tt tt tt t tt  ttt
+-------------------------------
+average loss at epoch:         15 = 276.1885474064 LR: 0.100000
+Print current prediction
+tt t tt tt ttt t tt   tt   ttt t  t tttt tt ttt  tt t ttttttttttt tt tttt tt  tttt t ttttttt  ttttt 
+-------------------------------
+average loss at epoch:         16 = 274.5381482507 LR: 0.100000
+Print current prediction
+   ttttttt  t  ttt tt  ttttttttttttt ttttttt t tttt  ttttttt tt tttt t ttt ttt tt tt  t tttttt tt t 
+-------------------------------
+average loss at epoch:         17 = 274.3344441391 LR: 0.100000
+Print current prediction
+tt t tt ttt ttttttttttttttttttttt ttttttttttttttt   tttttttt  ttttt  t ttt tttttt t ttt t t  t  tt t
+-------------------------------
+average loss at epoch:         18 = 287.6190880812 LR: 0.100000
+Print current prediction
+tt  tt tttt ttttt tttt  ttttt tt tttt  tt t t  ttt ttttt tt t  ttttttttt ttt  ttt tt   tt  ttttttttt
+-------------------------------
+average loss at epoch:         19 = 284.9490547668 LR: 0.100000
+Print current prediction
+t ttt ttt  t t t t t t    tt  t tt   t  ttttt   t ttttt t   tt       ttttttttt ttt tttt t  tttt tttt
+-------------------------------
+average loss at epoch:         20 = 284.8010320777 LR: 0.100000
+Print current prediction
+ t tt  ttt t ttttttttttttttttttttt  tttttt t t tt tttttt ttttttttt tttttt t ttt t   tt  t tt   t tt 
+-------------------------------
+average loss at epoch:         21 = 284.7409850157 LR: 0.100000
+Print current prediction
+ ttt    ttt tt tt t   tttttttttt  ttt  ttttt ttttttttttt tttttt tt ttttt tt t tt t tt ttttttt t ttt 
+-------------------------------
+average loss at epoch:         22 = 286.3907378728 LR: 0.100000
+Print current prediction
+tt tttttttt  ttttttttt tttt    tttttttttttt ttttttt tt tttttttttttttt tttttt ttttt tt tt ttttt t tt 
+-------------------------------
+average loss at epoch:         23 = 283.9094735853 LR: 0.100000
+Print current prediction
+ tt ttttttt ttttttttt tt   tttttt  t t tt   tt ttt  ttt  tttttttt t t t     t ttttttttt t tt ttt t  
+-------------------------------
+average loss at epoch:         24 = 283.5058888875 LR: 0.100000
+Print current prediction
+ t tttt t t   tt  tt t t tt tt tttt   tt t t t  t  tt  t tt tt ttt    ttttt tttttt tttttttttttt tt t
+-------------------------------
+average loss at epoch:         25 = 284.8335941091 LR: 0.100000
+Print current prediction
+ t  t     tt    t  t ttt   tt   tttt tttt t tt   t ttt  t ttt t ttt t   ttt t t    t tt  t tt   t   
+-------------------------------
+average loss at epoch:         26 = 282.5821058020 LR: 0.100000
+Print current prediction
+t   ttt tt t ttt t   tttt  tttt ttt  ttttt ttttttttttt ttttt ttt  tttttttt tttttttt tt tttttttttt t 
+-------------------------------
+average loss at epoch:         27 = 283.2515463496 LR: 0.100000
+Print current prediction
+ tttt t tt  ttttt t tttttt tttttttt tt ttttttttttttt tttttttt tttt t tttttttttttt  tt tt ttttttttt t
+-------------------------------
+average loss at epoch:         28 = 282.1618826676 LR: 0.100000
+Print current prediction
+ tt  tttttt t t tt   t t tt ttttttttttt   tt tttt tt tttt tt ttt ttt tttttttt  t tt tt ttt tt     t 
+-------------------------------
+average loss at epoch:         29 = 308.9444203781 LR: 0.100000
+Print current prediction
+ttttttttttttttttt t  ttttttttt tt t ttt t t  tt  tt  tt t  tttt  t  t   t    t tt tttt tt  t tttttt 
+-------------------------------
+average loss at epoch:         30 = 309.7208692518 LR: 0.050000
+Print current prediction
+  t t tt tt tt  tt t tttttttt  ttttttttttttt ttttttt  t tt tttt    t ttttttt t ttt   tttttttt    ttt
+-------------------------------
+average loss at epoch:         31 = 303.0329791170 LR: 0.050000
+Print current prediction
+tttttt tttttt t    t  tttt  t t  t  t     tt  ttttttttttt  t tt tt   ttt  tt t  t t     tt t t t tt 
+-------------------------------
+average loss at epoch:         32 = 303.2102207999 LR: 0.050000
+Print current prediction
+t tttttttt t t ttt  t tt tt t t  t  tt    t  tt  t   t t t t ttt ttttt   tt tttt ttttttttttt ttttt t
+-------------------------------
+average loss at epoch:         33 = 303.1746712800 LR: 0.050000
+Print current prediction
+ ttt  ttttt  ttt   tt  ttttt tt  t    t    t  tt t tt tt t  t     tt t tt ttt  t  tt tt  t  ttt  ttt
+-------------------------------
+average loss at epoch:         34 = 302.7122790239 LR: 0.050000
+Print current prediction
+tt  t tt t     t  ttttttt tt  t t tt   t tt  tt tt  t    tt t  ttt   t   tt   t    tt tt  t   ttt   
+-------------------------------
+average loss at epoch:         35 = 302.1870896887 LR: 0.050000
+Print current prediction
+ttt    tt tt   t t t     t t t     tt   t tt  t tt  t    t    t  t  t t tt  ttt      tt       t  t t
+-------------------------------
+average loss at epoch
