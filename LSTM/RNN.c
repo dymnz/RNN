@@ -6,6 +6,11 @@ void TrainSet_init(DataSet_t *train_set, int num_matrix) {
 	    (Matrix_t **) malloc(num_matrix * sizeof(Matrix_t *));
 	train_set->output_matrix_list =
 	    (Matrix_t **) malloc(num_matrix * sizeof(Matrix_t *));
+
+	train_set->input_max_m = 0;
+	train_set->input_n = 0;
+	train_set->output_max_m = 0;
+	train_set->output_n = 0;
 }
 
 void DataSet_destroy(DataSet_t *train_set) {
@@ -34,6 +39,8 @@ void RNN_init(
 	RNN_storage->o_dim = o_dim;
 	RNN_storage->h_dim = h_dim;
 	RNN_storage->gamma = 0.95;
+
+	srand(seed);
 
 	/* LSTM state */
 	// Size to be adjusted for different test sample size
@@ -122,8 +129,8 @@ void RNN_init(
 	    sqrt(2.0f / (h_dim + 1)));
 
 	// Large bias on forget gate to learn to remember
-	// for (int i = 0; i < h_dim; ++i) 
-	// 	RNN_storage->Bf->data[0][i] = 10;
+	//for (int i = 0; i < h_dim; ++i)
+	//	RNN_storage->Bf->data[0][i] = 1.0f;
 
 	matrix_random(
 	    RNN_storage->Bo, -sqrt(2.0f / (h_dim + 1)),
@@ -356,7 +363,7 @@ void RNN_forward_propagation(
 			P_O[t][o] += Bpo[o];
 			//P_O[t][o] = network_output_squash_func(P_O[t][o]);
 		}
-	}	
+	}
 }
 
 void RNN_BPTT(
@@ -652,6 +659,16 @@ void RNN_BPTT(
 	free(dZ);
 }
 
+void RNN_Gradient_Clipping(Matrix_t *matrix, math_t threshold) {
+	int m, n;
+	for (m = 0; m < matrix->m; ++m) {
+		for (n = 0; n < matrix->n; ++n) {
+			if (fabs(matrix->data[m][n]) > threshold)
+				matrix->data[m][n] *= threshold / fabs(matrix->data[m][n]);
+		}
+	}
+}
+
 void RNN_SGD(
     RNN_t * RNN_storage,
     Matrix_t *input_matrix,
@@ -804,7 +821,7 @@ void RNN_SGD(
 		math_t d_z;
 		math_t d_i = sqrt(dEdPi[h] + ep) / sqrt(EdPi[h] + ep) * dPi[h];
 		math_t d_f = sqrt(dEdPf[h] + ep) / sqrt(EdPf[h] + ep) * dPf[h];
-		math_t d_o = sqrt(dEdPo[h] + ep) / sqrt(EdPo[h] + ep) * dPo[h];  
+		math_t d_o = sqrt(dEdPo[h] + ep) / sqrt(EdPo[h] + ep) * dPo[h];
 
 		Pi[h] -= d_i;
 		Pf[h] -= d_f;
@@ -884,8 +901,8 @@ int RNN_train(
 			        RNN_storage,
 			        train_set,
 			        predicted_output_matrix,
-			        1e-5,
-			        2e-2,
+			        1e-4,
+			        1e-2,
 			        0
 			    );
 

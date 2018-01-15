@@ -19,7 +19,7 @@
 // 	int m, n;
 // 	for (m = 0; m < matrix->m; ++m)
 // 		for (n = 0; n < matrix->n; ++n)
-// 			matrix->data[m][n] = 
+// 			matrix->data[m][n] =
 // 				uniform_random_with_seed(lower_bound, upper_bound, seedp);
 // }
 
@@ -33,15 +33,15 @@ math_t uniform_random(
 }
 
 void matrix_random(
-	Matrix_t *matrix,
+    Matrix_t *matrix,
     math_t lower_bound,
     math_t upper_bound
 ) {
 	int m, n;
 	for (m = 0; m < matrix->m; ++m)
 		for (n = 0; n < matrix->n; ++n)
-			matrix->data[m][n] = 
-				uniform_random(lower_bound, upper_bound);
+			matrix->data[m][n] =
+			    uniform_random(lower_bound, upper_bound);
 }
 
 math_t **create_2d(int m, int n) {
@@ -61,6 +61,16 @@ math_t **create_2d(int m, int n) {
 	}
 
 	return data;
+}
+
+math_t matrix_abs_avg(Matrix_t *matrix) {
+	int i, r;
+	math_t sum = 0.0f;
+	for (i = 0; i < matrix->m; ++i)
+		for (r = 0; r < matrix->n; ++r)
+			sum += fabs(matrix->data[i][r]);
+
+	return sum / (matrix->m * matrix->n);
 }
 
 void clear_1d(math_t *data, int m) {
@@ -104,8 +114,8 @@ void matrix_resize(Matrix_t *matrix, int m, int n) {
 
 	if (matrix->m >= m && matrix->n >= n)
 		return;
-	
-	free_2d(matrix->data, matrix->m);	
+
+	free_2d(matrix->data, matrix->m);
 
 	matrix->m = m;
 	matrix->n = n;
@@ -114,7 +124,7 @@ void matrix_resize(Matrix_t *matrix, int m, int n) {
 
 void free_2d(math_t **data, int m) {
 	int i;
-	for (i = 0; i < m; ++i) 
+	for (i = 0; i < m; ++i)
 		free(data[i]);
 
 	free(data);
@@ -155,7 +165,7 @@ void softmax(math_t *vector, math_t *result, int dim) {
 // Subtract max value from exp for numerical stability
 void stable_softmax(math_t *vector, math_t *result, int dim) {
 	int i;
-	
+
 	math_t max_val = 0;
 	for (i = 0; i < dim; ++i)
 		if (vector[i] > max_val)

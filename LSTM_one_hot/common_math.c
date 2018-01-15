@@ -1,5 +1,6 @@
 #include "common_math.h"
 
+#define rand_r rand
 
 math_t uniform_random_with_seed(
     math_t lower_bound,
