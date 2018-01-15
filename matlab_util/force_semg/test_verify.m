@@ -2,16 +2,16 @@ clear; close all;
 
 
 test_file_location = '../../LSTM/data/output/';
-test_file_name = 'res_2_first_half_stream.txt';
+test_file_name = 'res_2_first_half_stream_rect.txt';
 
 train_file_location = '../../LSTM/data/input/';
-train_file_name = 'exp_2_first_half_stream.txt';
+train_file_name = 'exp_2_first_half_stream_rect.txt';
 
 % test_file_location = '../../LSTM/data/output/';
 % test_file_name = 'res_test_2_ds100_lp_rec_fx_ol.txt';
 % 
 % train_file_location = '../../LSTM/data/input/';
-% train_file_name = 'exp_test_2_ds100_lp_rec_fx_ol.txt';
+% train_file_name = 'exp_test_2_ds10s0_lp_rec_fx_ol.txt';
 
 [num_matrix, test_input_matrix_list, test_output_matrix_list] = ...
     read_test_file(strcat(test_file_location, test_file_name));
@@ -39,6 +39,6 @@ for i = 1 : num_matrix
                     [2 1 2], ...
                     {'sample' 'amplitude' 'twitch force prototype'}, ...
                     '-');                
-    ylim([-1 1]);
+    ylim([0 1]);
    
 end
