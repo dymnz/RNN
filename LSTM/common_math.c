@@ -1,27 +1,27 @@
 #include "common_math.h"
 
-math_t uniform_random_with_seed(
-    math_t lower_bound,
-    math_t upper_bound,
-    unsigned int *seedp
-) {
-	return ((math_t)rand_r(seedp) / (math_t)RAND_MAX) *
-	       (upper_bound - lower_bound + 1) +
-	       lower_bound;
-}
+// math_t uniform_random_with_seed(
+//     math_t lower_bound,
+//     math_t upper_bound,
+//     unsigned int *seedp
+// ) {
+// 	return ((math_t)rand_r(seedp) / (math_t)RAND_MAX) *
+// 	       (upper_bound - lower_bound + 1) +
+// 	       lower_bound;
+// }
 
-void matrix_random_with_seed(
-	Matrix_t *matrix,
-    math_t lower_bound,
-    math_t upper_bound,
-    unsigned int *seedp
-) {
-	int m, n;
-	for (m = 0; m < matrix->m; ++m)
-		for (n = 0; n < matrix->n; ++n)
-			matrix->data[m][n] = 
-				uniform_random_with_seed(lower_bound, upper_bound, seedp);
-}
+// void matrix_random_with_seed(
+// 	Matrix_t *matrix,
+//     math_t lower_bound,
+//     math_t upper_bound,
+//     unsigned int *seedp
+// ) {
+// 	int m, n;
+// 	for (m = 0; m < matrix->m; ++m)
+// 		for (n = 0; n < matrix->n; ++n)
+// 			matrix->data[m][n] = 
+// 				uniform_random_with_seed(lower_bound, upper_bound, seedp);
+// }
 
 math_t uniform_random(
     math_t lower_bound,
