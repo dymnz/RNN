@@ -2,10 +2,10 @@ clear; close all;
 
 
 test_file_location = '../../LSTM/data/output/';
-test_file_name = 'res_2_first_half_stream_rect.txt';
+test_file_name = 'res_2_first_half_stream_rect_DS300_pulse.txt';
 
 train_file_location = '../../LSTM/data/input/';
-train_file_name = 'exp_2_first_half_stream_rect.txt';
+train_file_name = 'exp_2_first_half_stream_rect_DS300_pulse.txt';
 
 % test_file_location = '../../LSTM/data/output/';
 % test_file_name = 'res_test_2_ds100_lp_rec_fx_ol.txt';
@@ -33,11 +33,11 @@ for i = 1 : num_matrix
                     [2 1 1], {'sample' 'amplitude' 'pulse'}, ':x');
     subplot_helper(1:length(test_force_data), test_force_data, ...
                     [2 1 2], ...
-                    {'sample' 'amplitude' 'twitch force prototype'}, ...
+                    {'sample' 'amplitude' 'semg'}, ...
                     '-');
     subplot_helper(1:length(train_force_data), train_force_data, ...
                     [2 1 2], ...
-                    {'sample' 'amplitude' 'twitch force prototype'}, ...
+                    {'sample' 'amplitude' 'force'}, ...
                     '-');                
     ylim([0 1]);
    

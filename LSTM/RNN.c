@@ -129,8 +129,8 @@ void RNN_init(
 	    sqrt(2.0f / (h_dim + 1)));
 
 	// Large bias on forget gate to learn to remember
-	//for (int i = 0; i < h_dim; ++i)
-	//	RNN_storage->Bf->data[0][i] = 1.0f;
+	for (int i = 0; i < h_dim; ++i)
+		RNN_storage->Bf->data[0][i] = 1.0f;
 
 	matrix_random(
 	    RNN_storage->Bo, -sqrt(2.0f / (h_dim + 1)),
