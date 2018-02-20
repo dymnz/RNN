@@ -6,9 +6,9 @@
 
 
 typedef struct {
-	int i_dim;
-	int o_dim;
-	int h_dim;
+    int i_dim;
+    int o_dim;
+    int h_dim;
 
     /* LSTM state */
     Matrix_t *Z_, *I_, *F_, *O_;        // TxH
@@ -52,15 +52,15 @@ typedef struct {
 } RNN_t;
 
 typedef struct {
-	Matrix_t **input_matrix_list;
-	Matrix_t **output_matrix_list;
+    Matrix_t **input_matrix_list;
+    Matrix_t **output_matrix_list;
     int input_max_m;
     int input_n;      // This should be the same accoross all input matrix
 
     int output_max_m;
     int output_n;      // This should be the same accoross all output matrix
 
-	int num_matrix;
+    int num_matrix;
 } DataSet_t;
 
 void TrainSet_init(DataSet_t *train_set, int num_matrix);
@@ -77,22 +77,22 @@ void RNN_init(
 void RNN_destroy(RNN_t *RNN_storage);
 
 void RNN_forward_propagation(
-	RNN_t *RNN_storage,
-	Matrix_t *input_matrix,
-	Matrix_t *output_matrix
+    RNN_t *RNN_storage,
+    Matrix_t *input_matrix,
+    Matrix_t *output_matrix
 );
 
 math_t RNN_loss_calculation(
     RNN_t *RNN_storage,
-    Matrix_t *predicted_output_matrix,	// TxO
-    Matrix_t *expected_output_matrix	// TxO
+    Matrix_t *predicted_output_matrix,  // TxO
+    Matrix_t *expected_output_matrix    // TxO
 );
 
 void RNN_BPTT(
-	RNN_t *RNN_storage,
-	Matrix_t *input_matrix,
-	Matrix_t *predicted_output_matrix,
-	Matrix_t *expected_output_matrix
+    RNN_t *RNN_storage,
+    Matrix_t *input_matrix,
+    Matrix_t *predicted_output_matrix,
+    Matrix_t *expected_output_matrix
 );
 
 void RNN_SGD(
