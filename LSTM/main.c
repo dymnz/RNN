@@ -80,6 +80,7 @@ int RNN_model_training_example() {
 	    hidden_cell_num,
 	    rand_seed
 	);
+
 	printf(" - RNN paramerter - \n");
 	printf("Input vector length: %d\n", train_set->input_n);
 	printf("Output vector length: %d\n", train_set->output_n);

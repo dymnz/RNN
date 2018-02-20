@@ -370,7 +370,9 @@ void RNN_BPTT(
     RNN_t * RNN_storage,
     Matrix_t *input_matrix,				// TxI
     Matrix_t *predicted_output_matrix,	// TxO
-    Matrix_t *expected_output_matrix	// TxO
+    Matrix_t *expected_output_matrix,	// TxO
+    int BPTT_pivot,		// Work back from {pivot} for {step} to {end}
+    int BPTT_end
 ) {
 	int i_dim = RNN_storage->i_dim;
 	int o_dim = RNN_storage->o_dim;
@@ -426,9 +428,11 @@ void RNN_BPTT(
 
 	int i, o, h, t, r;
 
+	BPTT_pivot = BPTT_pivot > t_dim - 1? t_dim - 1 : BPTT_pivot;
 
 	/* For t = t_dim - 1 */
-	for (o = 0; o < o_dim; ++o) {
+	if (BPTT_pivot == t_dim - 1) {
+		for (o = 0; o < o_dim; ++o) {
 		dP_O[o] = 2.0f * (P_O[t_dim - 1][o] - E_O[t_dim - 1][o]);
 		//* P_O[t_dim - 1][o] * (1 - P_O[t_dim - 1][o]);
 	}
@@ -493,8 +497,13 @@ void RNN_BPTT(
 		dPo[h] = C[t_dim - 1][h] * dO[h];
 	}
 
+	}
+	
+
 	/* For t = t_dim - 2 ... 1 */
-	for (t = t_dim - 2; t >= 1; --t) {
+	for (t = (BPTT_pivot == t_dim - 1? BPTT_pivot - 1 : BPTT_pivot); 
+		 t >= (BPTT_end == 0 ? 1 : BPTT_end); 
+		 --t) {
 		clear_1d(dY, h_dim);
 		for (o = 0; o < o_dim; ++o) {
 			dP_O[o] = 2 * (P_O[t][o] - E_O[t][o]); //* P_O[t][o] * (1 - P_O[t][o]);
@@ -580,6 +589,8 @@ void RNN_BPTT(
 	}
 
 	/* For t = 0 */
+	if (BPTT_end == 0) {
+
 	clear_1d(dY, h_dim);
 	for (o = 0; o < o_dim; ++o) {
 		dP_O[o] = 2 * (P_O[0][o] - E_O[0][o]); // * P_O[0][o] * (1 - P_O[0][o]);
@@ -649,7 +660,7 @@ void RNN_BPTT(
 		dBo[h] += dO[h];
 		dPo[h] += C[0][h] * dO[h];
 	}
-
+}
 	free(dP_O);
 	free(dY);
 	free(dO);
@@ -678,6 +689,7 @@ void RNN_SGD(
 	int i_dim = RNN_storage->i_dim;
 	int o_dim = RNN_storage->o_dim;
 	int h_dim = RNN_storage->h_dim;
+	int t_dim = input_matrix->m;
 
 	math_t **Wz = RNN_storage->Wz->data; math_t **Rz = RNN_storage->Rz->data;
 	math_t **Wi = RNN_storage->Wi->data; math_t **Ri = RNN_storage->Ri->data;
@@ -736,11 +748,20 @@ void RNN_SGD(
 	    predicted_output_matrix
 	);
 
+	const int BPTT_period = 200;
+	const int BPTT_step = 200;
+	int BPTT_pivot = BPTT_period - 1;
+	int BPTT_end = BPTT_pivot - BPTT_step >= 0 ? BPTT_pivot - BPTT_step : 0;
+	while (BPTT_end < t_dim - 1) {
+
+	//printf("BPTT: %10d %10d\n", BPTT_end, BPTT_pivot);
 	RNN_BPTT(
 	    RNN_storage,
 	    input_matrix,				// TxI
 	    predicted_output_matrix,	// TxO
-	    expected_output_matrix		// TxO
+	    expected_output_matrix,		// TxO
+	    BPTT_pivot,
+	    BPTT_end
 	);
 
 	int h, i, r, o;
@@ -856,6 +877,10 @@ void RNN_SGD(
 		Bpo[o] -= d_o;
 		dEdBpo[o] = gamma * dEdBpo[o] + (d_o * d_o) * (1 - gamma);
 	}
+
+	BPTT_pivot += BPTT_period;
+	BPTT_end = BPTT_pivot - BPTT_step;
+}
 }
 
 int RNN_train(
@@ -966,7 +991,7 @@ int RNN_Gradient_check(
 	Matrix_t *input_matrix, *expected_output_matrix;
 	input_matrix = train_set->input_matrix_list[index_to_check];
 	expected_output_matrix = train_set->output_matrix_list[index_to_check];
-
+	int t_dim = input_matrix->m;
 	math_t **Wz = RNN_storage->Wz->data; math_t **Rz = RNN_storage->Rz->data;
 	math_t **Wi = RNN_storage->Wi->data; math_t **Ri = RNN_storage->Ri->data;
 	math_t **Wf = RNN_storage->Wf->data; math_t **Rf = RNN_storage->Rf->data;
@@ -998,11 +1023,20 @@ int RNN_Gradient_check(
 	    predicted_output_matrix
 	);
 
+
+	const int BPTT_period = 150;
+	const int BPTT_step = 150;
+	int BPTT_pivot = BPTT_period - 1;
+	int BPTT_end = BPTT_pivot - BPTT_step;
+	while (BPTT_end < t_dim - 1) {
+
 	RNN_BPTT(
 	    RNN_storage,
 	    input_matrix,				// TxI
 	    predicted_output_matrix,	// TxO
-	    expected_output_matrix		// TxO
+	    expected_output_matrix,		// TxO
+	    BPTT_pivot,
+	    BPTT_end
 	);
 
 	int i, m, n;
@@ -1093,6 +1127,7 @@ int RNN_Gradient_check(
 			}
 		}
 	}
+}
 	return 0;
 }
 

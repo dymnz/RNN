@@ -92,7 +92,9 @@ void RNN_BPTT(
 	RNN_t *RNN_storage,
 	Matrix_t *input_matrix,
 	Matrix_t *predicted_output_matrix,
-	Matrix_t *expected_output_matrix
+	Matrix_t *expected_output_matrix,
+    int BPTT_pivot,
+    int BPTT_end
 );
 
 void RNN_SGD(
