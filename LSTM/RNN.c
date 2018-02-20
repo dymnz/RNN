@@ -432,7 +432,7 @@ void RNN_BPTT(
 
 	/* For t = t_dim - 1 */
 	if (BPTT_pivot == t_dim - 1) {
-		for (o = 0; o < o_dim; ++o) {
+	for (o = 0; o < o_dim; ++o) {
 		dP_O[o] = 2.0f * (P_O[t_dim - 1][o] - E_O[t_dim - 1][o]);
 		//* P_O[t_dim - 1][o] * (1 - P_O[t_dim - 1][o]);
 	}
@@ -748,8 +748,8 @@ void RNN_SGD(
 	    predicted_output_matrix
 	);
 
-	const int BPTT_period = 200;
-	const int BPTT_step = 200;
+	const int BPTT_period = 500;
+	const int BPTT_step = 500;
 	int BPTT_pivot = BPTT_period - 1;
 	int BPTT_end = BPTT_pivot - BPTT_step >= 0 ? BPTT_pivot - BPTT_step : 0;
 	while (BPTT_end < t_dim - 1) {
