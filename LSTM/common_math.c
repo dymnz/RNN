@@ -99,27 +99,32 @@ Matrix_t *matrix_create(int m, int n) {
 	if (!matrix)
 		exit(69);
 
+
 	matrix->m = m;
 	matrix->n = n;
+
+	matrix->real_m = m;
+	matrix->real_n = n;
+
 	matrix->data = create_2d(m, n);
 
 	return matrix;
 }
 
 
-/* TODO: If m > _m && n > _n, return ? */
 void matrix_resize(Matrix_t *matrix, int m, int n) {
 	if (matrix == NULL)
 		exit(77);
 
-	if (matrix->m >= m && matrix->n >= n)
-		return;
-
-	free_2d(matrix->data, matrix->m);
+	if (matrix->real_m < m || matrix->real_n < n) {
+		free_2d(matrix->data, matrix->real_m);
+		matrix->data = create_2d(m, n);
+		matrix->real_m = m;
+		matrix->real_n = n;
+	}
 
 	matrix->m = m;
 	matrix->n = n;
-	matrix->data = create_2d(m, n);
 }
 
 void free_2d(math_t **data, int m) {
@@ -133,7 +138,7 @@ void free_2d(math_t **data, int m) {
 void matrix_free(Matrix_t *matrix) {
 	if (!matrix || !(matrix->data))
 		return;
-	free_2d(matrix->data, matrix->m);
+	free_2d(matrix->data, matrix->real_m);
 	matrix->data = NULL;
 	free(matrix);
 }
