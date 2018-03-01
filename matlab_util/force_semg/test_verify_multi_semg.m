@@ -2,10 +2,10 @@ clear; close all;
 
 
 test_file_location = '../../LSTM/data/output/';
-test_file_name = 'res_ard_DS300_FORCE_SEG_full_noREC.txt';
+test_file_name = 'res_ard_DS200_FORCE_SEG_full_noREC.txt';
 
 train_file_location = '../../LSTM/data/input/';
-train_file_name = 'exp_ard_DS300_FORCE_SEG_full_noREC.txt';
+train_file_name = 'exp_ard_DS200_FORCE_SEG_full_noREC.txt';
 
 % test_file_location = '../../LSTM/data/output/';
 % test_file_name = 'res_test_2_ds100_lp_rec_fx_ol.txt';
