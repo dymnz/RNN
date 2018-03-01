@@ -135,14 +135,11 @@ int RNN_model_training_example() {
 	int i;
 	math_t loss, total_loss = 0.0f;
 	for (i = 0; i < train_set->num_matrix; ++i) {
-<<<<<<< HEAD
-=======
 		matrix_resize(
 		    predicted_output_matrix, 
 		    train_set->input_matrix_list[i]->m, 
 		    train_set->output_n
 		);
->>>>>>> master
 		RNN_Predict(
 		    RNN_storage,
 		    train_set->input_matrix_list[i],
