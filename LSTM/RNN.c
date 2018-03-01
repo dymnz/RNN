@@ -428,82 +428,83 @@ void RNN_BPTT(
 
 	int i, o, h, t, r;
 
-	BPTT_pivot = BPTT_pivot > t_dim - 1? t_dim - 1 : BPTT_pivot;
+	BPTT_pivot = BPTT_pivot > t_dim - 1 ? t_dim - 1 : BPTT_pivot;
 
 	/* For t = t_dim - 1 */
 	if (BPTT_pivot == t_dim - 1) {
-	for (o = 0; o < o_dim; ++o) {
-		dP_O[o] = 2.0f * (P_O[t_dim - 1][o] - E_O[t_dim - 1][o]);
-		//* P_O[t_dim - 1][o] * (1 - P_O[t_dim - 1][o]);
-	}
-	for (h = 0; h < h_dim; ++h) {
 		for (o = 0; o < o_dim; ++o) {
-			dY[h] += V[o][h] * dP_O[o];
+			dP_O[o] = 2.0f * (P_O[t_dim - 1][o] - E_O[t_dim - 1][o]);
+			//* P_O[t_dim - 1][o] * (1 - P_O[t_dim - 1][o]);
 		}
-	}
-	for (h = 0; h < h_dim; ++h) {
-		dO[h] =
-		    dY[h] *
-		    cell_output_squash_func(C[t_dim - 1][h]) *
-		    cell_state_squash_derivative(O_[t_dim - 1][h]);
-		dC[h] =
-		    dY[h] *
-		    O[t_dim - 1][h] *
-		    cell_output_squash_derivative(C[t_dim - 1][h])
-		    +
-		    Po[h] * dO[h];
-		dF[h] =
-		    dC[h] *
-		    C[t_dim - 1 - 1][h] *
-		    cell_state_squash_derivative(F_[t_dim - 1][h]);
-		dI[h] =
-		    dC[h] *
-		    Z[t_dim - 1][h] *
-		    cell_state_squash_derivative(I_[t_dim - 1][h]);
-		dZ[h] =
-		    dC[h] *
-		    I[t_dim - 1][h] *
-		    gate_squash_derivative(Z_[t_dim - 1][h]);
-	}
-
-	for (o = 0; o < o_dim; ++o) {
 		for (h = 0; h < h_dim; ++h) {
-			dV[o][h] = Y[t_dim - 1][h] * dP_O[o];
+			for (o = 0; o < o_dim; ++o) {
+				dY[h] += V[o][h] * dP_O[o];
+			}
 		}
-		dBpo[o] = dP_O[o];
+		for (h = 0; h < h_dim; ++h) {
+			dO[h] =
+			    dY[h] *
+			    cell_output_squash_func(C[t_dim - 1][h]) *
+			    cell_state_squash_derivative(O_[t_dim - 1][h]);
+			dC[h] =
+			    dY[h] *
+			    O[t_dim - 1][h] *
+			    cell_output_squash_derivative(C[t_dim - 1][h])
+			    +
+			    Po[h] * dO[h];
+			dF[h] =
+			    dC[h] *
+			    C[t_dim - 1 - 1][h] *
+			    cell_state_squash_derivative(F_[t_dim - 1][h]);
+			dI[h] =
+			    dC[h] *
+			    Z[t_dim - 1][h] *
+			    cell_state_squash_derivative(I_[t_dim - 1][h]);
+			dZ[h] =
+			    dC[h] *
+			    I[t_dim - 1][h] *
+			    gate_squash_derivative(Z_[t_dim - 1][h]);
+		}
+
+		for (o = 0; o < o_dim; ++o) {
+			for (h = 0; h < h_dim; ++h) {
+				dV[o][h] = Y[t_dim - 1][h] * dP_O[o];
+			}
+			dBpo[o] = dP_O[o];
+		}
+
+		for (h = 0; h < h_dim; ++h) {
+			for (i = 0; i < i_dim; ++i) {
+				dWz[h][i] = dZ[h] * X[t_dim - 1][i];
+				dWi[h][i] = dI[h] * X[t_dim - 1][i];
+				dWf[h][i] = dF[h] * X[t_dim - 1][i];
+				dWo[h][i] = dO[h] * X[t_dim - 1][i];
+			}
+		}
+		for (h = 0; h < h_dim; ++h) {
+			for (r = 0; r < h_dim; ++r) {
+				dRz[h][r] = dZ[h] * Y[t_dim - 1 - 1][r];
+				dRi[h][r] = dI[h] * Y[t_dim - 1 - 1][r];
+				dRf[h][r] = dF[h] * Y[t_dim - 1 - 1][r];
+				dRo[h][r] = dO[h] * Y[t_dim - 1 - 1][r];
+			}
+			dBz[h] = dZ[h];
+			dBi[h] = dI[h];
+			dBf[h] = dF[h];
+			dBo[h] = dO[h];
+			dPi[h] = C[t_dim - 1 - 1][h] * dI[h];
+			dPf[h] = C[t_dim - 1 - 1][h] * dF[h];
+			dPo[h] = C[t_dim - 1][h] * dO[h];
+		}
+
 	}
 
-	for (h = 0; h < h_dim; ++h) {
-		for (i = 0; i < i_dim; ++i) {
-			dWz[h][i] = dZ[h] * X[t_dim - 1][i];
-			dWi[h][i] = dI[h] * X[t_dim - 1][i];
-			dWf[h][i] = dF[h] * X[t_dim - 1][i];
-			dWo[h][i] = dO[h] * X[t_dim - 1][i];
-		}
-	}
-	for (h = 0; h < h_dim; ++h) {
-		for (r = 0; r < h_dim; ++r) {
-			dRz[h][r] = dZ[h] * Y[t_dim - 1 - 1][r];
-			dRi[h][r] = dI[h] * Y[t_dim - 1 - 1][r];
-			dRf[h][r] = dF[h] * Y[t_dim - 1 - 1][r];
-			dRo[h][r] = dO[h] * Y[t_dim - 1 - 1][r];
-		}
-		dBz[h] = dZ[h];
-		dBi[h] = dI[h];
-		dBf[h] = dF[h];
-		dBo[h] = dO[h];
-		dPi[h] = C[t_dim - 1 - 1][h] * dI[h];
-		dPf[h] = C[t_dim - 1 - 1][h] * dF[h];
-		dPo[h] = C[t_dim - 1][h] * dO[h];
-	}
-
-	}
-	
 
 	/* For t = t_dim - 2 ... 1 */
-	for (t = (BPTT_pivot == t_dim - 1? BPTT_pivot - 1 : BPTT_pivot); 
-		 t >= (BPTT_end == 0 ? 1 : BPTT_end); 
-		 --t) {
+	for (t = (BPTT_pivot == t_dim - 1 ? BPTT_pivot - 1 : BPTT_pivot);
+	        t >= (BPTT_end == 0 ? 1 : BPTT_end);
+	        --t) {
+
 		clear_1d(dY, h_dim);
 		for (o = 0; o < o_dim; ++o) {
 			dP_O[o] = 2 * (P_O[t][o] - E_O[t][o]); //* P_O[t][o] * (1 - P_O[t][o]);
@@ -591,76 +592,77 @@ void RNN_BPTT(
 	/* For t = 0 */
 	if (BPTT_end == 0) {
 
-	clear_1d(dY, h_dim);
-	for (o = 0; o < o_dim; ++o) {
-		dP_O[o] = 2 * (P_O[0][o] - E_O[0][o]); // * P_O[0][o] * (1 - P_O[0][o]);
-	}
-	for (h = 0; h < h_dim; ++h) {
+		clear_1d(dY, h_dim);
 		for (o = 0; o < o_dim; ++o) {
-			dY[h] += dP_O[o] * V[o][h];
+			dP_O[o] = 2 * (P_O[0][o] - E_O[0][o]); // * P_O[0][o] * (1 - P_O[0][o]);
 		}
-		for (r = 0; r < h_dim; ++r) {
-			dY[h] +=
-			    Rz[r][h] * dZ[r]
-			    +
-			    Ri[r][h] * dI[r]
-			    +
-			    Rf[r][h] * dF[r]
-			    +
-			    Ro[r][h] * dO[r];
-		}
-	}
-	for (h = 0; h < h_dim; ++h) {
-		dO[h] =
-		    dY[h] *
-		    cell_output_squash_func(C[0][h]) *
-		    cell_state_squash_derivative(O_[0][h]);
-
-		dC[h] =
-		    dY[h] *
-		    O[0][h] *
-		    cell_output_squash_derivative(C[0][h])
-		    +
-		    Po[h] * dO[h]
-		    +
-		    Pi[h] * dI[h]
-		    +
-		    Pf[h] * dF[h]
-		    +
-		    dC[h] * F[1][h];
-		dF[h] = 0.0;
-		dI[h] =
-		    dC[h] *
-		    Z[0][h] *
-		    cell_state_squash_derivative(I_[0][h]);
-
-		dZ[h] =
-		    dC[h] *
-		    I[0][h] *
-		    gate_squash_derivative(Z_[0][h]);
-	}
-	for (o = 0; o < o_dim; ++o) {
 		for (h = 0; h < h_dim; ++h) {
-			dV[o][h] += Y[0][h] * dP_O[o];
+			for (o = 0; o < o_dim; ++o) {
+				dY[h] += dP_O[o] * V[o][h];
+			}
+			for (r = 0; r < h_dim; ++r) {
+				dY[h] +=
+				    Rz[r][h] * dZ[r]
+				    +
+				    Ri[r][h] * dI[r]
+				    +
+				    Rf[r][h] * dF[r]
+				    +
+				    Ro[r][h] * dO[r];
+			}
 		}
-		dBpo[o] += dP_O[o];
-	}
-	for (h = 0; h < h_dim; ++h) {
-		for (i = 0; i < i_dim; ++i) {
-			dWz[h][i] += dZ[h] * X[0][i];
-			dWi[h][i] += dI[h] * X[0][i];
-			dWf[h][i] += dF[h] * X[0][i];
-			dWo[h][i] += dO[h] * X[0][i];
+		for (h = 0; h < h_dim; ++h) {
+			dO[h] =
+			    dY[h] *
+			    cell_output_squash_func(C[0][h]) *
+			    cell_state_squash_derivative(O_[0][h]);
+
+			dC[h] =
+			    dY[h] *
+			    O[0][h] *
+			    cell_output_squash_derivative(C[0][h])
+			    +
+			    Po[h] * dO[h]
+			    +
+			    Pi[h] * dI[h]
+			    +
+			    Pf[h] * dF[h]
+			    +
+			    dC[h] * F[1][h];
+			dF[h] = 0.0;
+			dI[h] =
+			    dC[h] *
+			    Z[0][h] *
+			    cell_state_squash_derivative(I_[0][h]);
+
+			dZ[h] =
+			    dC[h] *
+			    I[0][h] *
+			    gate_squash_derivative(Z_[0][h]);
 		}
+		for (o = 0; o < o_dim; ++o) {
+			for (h = 0; h < h_dim; ++h) {
+				dV[o][h] += Y[0][h] * dP_O[o];
+			}
+			dBpo[o] += dP_O[o];
+		}
+		for (h = 0; h < h_dim; ++h) {
+			for (i = 0; i < i_dim; ++i) {
+				dWz[h][i] += dZ[h] * X[0][i];
+				dWi[h][i] += dI[h] * X[0][i];
+				dWf[h][i] += dF[h] * X[0][i];
+				dWo[h][i] += dO[h] * X[0][i];
+			}
+		}
+		for (h = 0; h < h_dim; ++h) {
+			dBz[h] += dZ[h];
+			dBi[h] += dI[h];
+			dBf[h] += dF[h];
+			dBo[h] += dO[h];
+			dPo[h] += C[0][h] * dO[h];
+		}
+
 	}
-	for (h = 0; h < h_dim; ++h) {
-		dBz[h] += dZ[h];
-		dBi[h] += dI[h];
-		dBf[h] += dF[h];
-		dBo[h] += dO[h];
-		dPo[h] += C[0][h] * dO[h];
-	}
-}
 	free(dP_O);
 	free(dY);
 	free(dO);
@@ -754,133 +756,132 @@ void RNN_SGD(
 	int BPTT_end = BPTT_pivot - BPTT_step >= 0 ? BPTT_pivot - BPTT_step : 0;
 	while (BPTT_end < t_dim - 1) {
 
-	//printf("BPTT: %10d %10d\n", BPTT_end, BPTT_pivot);
-	RNN_BPTT(
-	    RNN_storage,
-	    input_matrix,				// TxI
-	    predicted_output_matrix,	// TxO
-	    expected_output_matrix,		// TxO
-	    BPTT_pivot,
-	    BPTT_end
-	);
+		//printf("BPTT: %10d %10d\n", BPTT_end, BPTT_pivot);
+		RNN_BPTT(
+		    RNN_storage,
+		    input_matrix,				// TxI
+		    predicted_output_matrix,	// TxO
+		    expected_output_matrix,		// TxO
+		    BPTT_pivot,
+		    BPTT_end
+		);
 
-	int h, i, r, o;
+		int h, i, r, o;
 
-	// Adadelta update
+		// Adadelta update
 
-	for (h = 0; h < h_dim; ++h) {
-		for (i = 0; i < i_dim; ++i) {
-			EdWz[h][i] = gamma * EdWz[h][i] + (dWz[h][i] * dWz[h][i]) * (1 - gamma);
-			EdWi[h][i] = gamma * EdWi[h][i] + (dWi[h][i] * dWi[h][i]) * (1 - gamma);
-			EdWf[h][i] = gamma * EdWf[h][i] + (dWf[h][i] * dWf[h][i]) * (1 - gamma);
-			EdWo[h][i] = gamma * EdWo[h][i] + (dWo[h][i] * dWo[h][i]) * (1 - gamma);
-		}
-	}
-
-	for (h = 0; h < h_dim; ++h) {
-		for (r = 0; r < h_dim; ++r) {
-			EdRz[h][r] = gamma * EdRz[h][r] + (dRz[h][r] * dRz[h][r]) * (1 - gamma);
-			EdRi[h][r] = gamma * EdRi[h][r] + (dRi[h][r] * dRi[h][r]) * (1 - gamma);
-			EdRf[h][r] = gamma * EdRf[h][r] + (dRf[h][r] * dRf[h][r]) * (1 - gamma);
-			EdRo[h][r] = gamma * EdRo[h][r] + (dRo[h][r] * dRo[h][r]) * (1 - gamma);
-		}
-	}
-
-	for (h = 0; h < h_dim; ++h) {
-		EdPi[h] = gamma * EdPi[h] + (dPi[h] * dPi[h]) * (1 - gamma);
-		EdPf[h] = gamma * EdPf[h] + (dPf[h] * dPf[h]) * (1 - gamma);
-		EdPo[h] = gamma * EdPo[h] + (dPo[h] * dPo[h]) * (1 - gamma);
-
-		EdBz[h] = gamma * EdBz[h] + (dBz[h] * dBz[h]) * (1 - gamma);
-		EdBi[h] = gamma * EdBi[h] + (dBi[h] * dBi[h]) * (1 - gamma);
-		EdBf[h] = gamma * EdBf[h] + (dBf[h] * dBf[h]) * (1 - gamma);
-		EdBo[h] = gamma * EdBo[h] + (dBo[h] * dBo[h]) * (1 - gamma);
-	}
-
-	for (o = 0; o < o_dim; ++o) {
 		for (h = 0; h < h_dim; ++h) {
-			EdV[o][h] = gamma * EdV[o][h] + (dV[o][h] * dV[o][h]) * (1 - gamma);
+			for (i = 0; i < i_dim; ++i) {
+				EdWz[h][i] = gamma * EdWz[h][i] + (dWz[h][i] * dWz[h][i]) * (1 - gamma);
+				EdWi[h][i] = gamma * EdWi[h][i] + (dWi[h][i] * dWi[h][i]) * (1 - gamma);
+				EdWf[h][i] = gamma * EdWf[h][i] + (dWf[h][i] * dWf[h][i]) * (1 - gamma);
+				EdWo[h][i] = gamma * EdWo[h][i] + (dWo[h][i] * dWo[h][i]) * (1 - gamma);
+			}
 		}
-	}
-	for (o = 0; o < o_dim; ++o) {
-		EdBpo[o] = gamma * EdBpo[o] + (dBpo[o]  * dBpo[o]) * (1 - gamma);
-	}
 
-	for (h = 0; h < h_dim; ++h) {
-		for (i = 0; i < i_dim; ++i) {
-			math_t d_z = sqrt(dEdWz[h][i] + ep) / sqrt(EdWz[h][i] + ep) * dWz[h][i];
-			math_t d_i = sqrt(dEdWi[h][i] + ep) / sqrt(EdWi[h][i] + ep) * dWi[h][i];
-			math_t d_f = sqrt(dEdWf[h][i] + ep) / sqrt(EdWf[h][i] + ep) * dWf[h][i];
-			math_t d_o = sqrt(dEdWo[h][i] + ep) / sqrt(EdWo[h][i] + ep) * dWo[h][i];
-
-			Wz[h][i] -= d_z;
-			Wi[h][i] -= d_i;
-			Wf[h][i] -= d_f;
-			Wo[h][i] -= d_o;
-
-			dEdWz[h][i] = gamma * dEdWz[h][i] + (d_z * d_z) * (1 - gamma);
-			dEdWi[h][i] = gamma * dEdWi[h][i] + (d_i * d_i) * (1 - gamma);
-			dEdWf[h][i] = gamma * dEdWf[h][i] + (d_f * d_f) * (1 - gamma);
-			dEdWo[h][i] = gamma * dEdWo[h][i] + (d_o * d_o) * (1 - gamma);
-		}
-		for (r = 0; r < h_dim; ++r) {
-			math_t d_z = sqrt(dEdRz[h][r] + ep) / sqrt(EdRz[h][r] + ep) * dRz[h][r];
-			math_t d_i = sqrt(dEdRi[h][r] + ep) / sqrt(EdRi[h][r] + ep) * dRi[h][r];
-			math_t d_f = sqrt(dEdRf[h][r] + ep) / sqrt(EdRf[h][r] + ep) * dRf[h][r];
-			math_t d_o = sqrt(dEdRo[h][r] + ep) / sqrt(EdRo[h][r] + ep) * dRo[h][r];
-
-			Rz[h][r] -= d_z;
-			Ri[h][r] -= d_i;
-			Rf[h][r] -= d_f;
-			Ro[h][r] -= d_o;
-
-			dEdRz[h][r] = gamma * dEdRz[h][r] + (d_z * d_z) * (1 - gamma);
-			dEdRi[h][r] = gamma * dEdRi[h][r] + (d_i * d_i) * (1 - gamma);
-			dEdRf[h][r] = gamma * dEdRf[h][r] + (d_f * d_f) * (1 - gamma);
-			dEdRo[h][r] = gamma * dEdRo[h][r] + (d_o * d_o) * (1 - gamma);
-		}
-		math_t d_z;
-		math_t d_i = sqrt(dEdPi[h] + ep) / sqrt(EdPi[h] + ep) * dPi[h];
-		math_t d_f = sqrt(dEdPf[h] + ep) / sqrt(EdPf[h] + ep) * dPf[h];
-		math_t d_o = sqrt(dEdPo[h] + ep) / sqrt(EdPo[h] + ep) * dPo[h];
-
-		Pi[h] -= d_i;
-		Pf[h] -= d_f;
-		Po[h] -= d_o;
-
-		dEdPi[h] = gamma * dEdPi[h] + (d_i * d_i) * (1 - gamma);
-		dEdPf[h] = gamma * dEdPf[h] + (d_f * d_f) * (1 - gamma);
-		dEdPo[h] = gamma * dEdPo[h] + (d_o * d_o) * (1 - gamma);
-
-		d_z = sqrt(dEdBz[h] + ep) / sqrt(EdBz[h] + ep) * dBz[h];
-		d_i = sqrt(dEdBi[h] + ep) / sqrt(EdBi[h] + ep) * dBi[h];
-		d_f = sqrt(dEdBf[h] + ep) / sqrt(EdBf[h] + ep) * dBf[h];
-		d_o = sqrt(dEdBo[h] + ep) / sqrt(EdBo[h] + ep) * dBo[h];
-
-		Bz[h] -= d_z;
-		Bi[h] -= d_i;
-		Bf[h] -= d_f;
-		Bo[h] -= d_o;
-
-		dEdBz[h] = gamma * dEdBz[h] + (d_z * d_z) * (1 - gamma);
-		dEdBi[h] = gamma * dEdBi[h] + (d_i * d_i) * (1 - gamma);
-		dEdBf[h] = gamma * dEdBf[h] + (d_f * d_f) * (1 - gamma);
-		dEdBo[h] = gamma * dEdBo[h] + (d_o * d_o) * (1 - gamma);
-	}
-	for (o = 0; o < o_dim; ++o) {
 		for (h = 0; h < h_dim; ++h) {
-			math_t d_o = sqrt(dEdV[o][h] + ep) / sqrt(EdV[o][h] + ep) * dV[o][h];
-			V[o][h] -= d_o;
-			dEdV[o][h] = gamma * dEdV[o][h] + (d_o * d_o) * (1 - gamma);
+			for (r = 0; r < h_dim; ++r) {
+				EdRz[h][r] = gamma * EdRz[h][r] + (dRz[h][r] * dRz[h][r]) * (1 - gamma);
+				EdRi[h][r] = gamma * EdRi[h][r] + (dRi[h][r] * dRi[h][r]) * (1 - gamma);
+				EdRf[h][r] = gamma * EdRf[h][r] + (dRf[h][r] * dRf[h][r]) * (1 - gamma);
+				EdRo[h][r] = gamma * EdRo[h][r] + (dRo[h][r] * dRo[h][r]) * (1 - gamma);
+			}
 		}
-		math_t d_o = sqrt(dEdBpo[o] + ep) / sqrt(EdBpo[o] + ep) * dBpo[o];
-		Bpo[o] -= d_o;
-		dEdBpo[o] = gamma * dEdBpo[o] + (d_o * d_o) * (1 - gamma);
-	}
 
-	BPTT_pivot += BPTT_period;
-	BPTT_end = BPTT_pivot - BPTT_step;
-}
+		for (h = 0; h < h_dim; ++h) {
+			EdPi[h] = gamma * EdPi[h] + (dPi[h] * dPi[h]) * (1 - gamma);
+			EdPf[h] = gamma * EdPf[h] + (dPf[h] * dPf[h]) * (1 - gamma);
+			EdPo[h] = gamma * EdPo[h] + (dPo[h] * dPo[h]) * (1 - gamma);
+
+			EdBz[h] = gamma * EdBz[h] + (dBz[h] * dBz[h]) * (1 - gamma);
+			EdBi[h] = gamma * EdBi[h] + (dBi[h] * dBi[h]) * (1 - gamma);
+			EdBf[h] = gamma * EdBf[h] + (dBf[h] * dBf[h]) * (1 - gamma);
+			EdBo[h] = gamma * EdBo[h] + (dBo[h] * dBo[h]) * (1 - gamma);
+		}
+
+		for (o = 0; o < o_dim; ++o) {
+			for (h = 0; h < h_dim; ++h) {
+				EdV[o][h] = gamma * EdV[o][h] + (dV[o][h] * dV[o][h]) * (1 - gamma);
+			}
+		}
+		for (o = 0; o < o_dim; ++o) {
+			EdBpo[o] = gamma * EdBpo[o] + (dBpo[o]  * dBpo[o]) * (1 - gamma);
+		}
+
+		for (h = 0; h < h_dim; ++h) {
+			for (i = 0; i < i_dim; ++i) {
+				math_t d_z = sqrt(dEdWz[h][i] + ep) / sqrt(EdWz[h][i] + ep) * dWz[h][i];
+				math_t d_i = sqrt(dEdWi[h][i] + ep) / sqrt(EdWi[h][i] + ep) * dWi[h][i];
+				math_t d_f = sqrt(dEdWf[h][i] + ep) / sqrt(EdWf[h][i] + ep) * dWf[h][i];
+				math_t d_o = sqrt(dEdWo[h][i] + ep) / sqrt(EdWo[h][i] + ep) * dWo[h][i];
+
+				Wz[h][i] -= d_z;
+				Wi[h][i] -= d_i;
+				Wf[h][i] -= d_f;
+				Wo[h][i] -= d_o;
+
+				dEdWz[h][i] = gamma * dEdWz[h][i] + (d_z * d_z) * (1 - gamma);
+				dEdWi[h][i] = gamma * dEdWi[h][i] + (d_i * d_i) * (1 - gamma);
+				dEdWf[h][i] = gamma * dEdWf[h][i] + (d_f * d_f) * (1 - gamma);
+				dEdWo[h][i] = gamma * dEdWo[h][i] + (d_o * d_o) * (1 - gamma);
+			}
+			for (r = 0; r < h_dim; ++r) {
+				math_t d_z = sqrt(dEdRz[h][r] + ep) / sqrt(EdRz[h][r] + ep) * dRz[h][r];
+				math_t d_i = sqrt(dEdRi[h][r] + ep) / sqrt(EdRi[h][r] + ep) * dRi[h][r];
+				math_t d_f = sqrt(dEdRf[h][r] + ep) / sqrt(EdRf[h][r] + ep) * dRf[h][r];
+				math_t d_o = sqrt(dEdRo[h][r] + ep) / sqrt(EdRo[h][r] + ep) * dRo[h][r];
+
+				Rz[h][r] -= d_z;
+				Ri[h][r] -= d_i;
+				Rf[h][r] -= d_f;
+				Ro[h][r] -= d_o;
+
+				dEdRz[h][r] = gamma * dEdRz[h][r] + (d_z * d_z) * (1 - gamma);
+				dEdRi[h][r] = gamma * dEdRi[h][r] + (d_i * d_i) * (1 - gamma);
+				dEdRf[h][r] = gamma * dEdRf[h][r] + (d_f * d_f) * (1 - gamma);
+				dEdRo[h][r] = gamma * dEdRo[h][r] + (d_o * d_o) * (1 - gamma);
+			}
+			math_t d_z;
+			math_t d_i = sqrt(dEdPi[h] + ep) / sqrt(EdPi[h] + ep) * dPi[h];
+			math_t d_f = sqrt(dEdPf[h] + ep) / sqrt(EdPf[h] + ep) * dPf[h];
+			math_t d_o = sqrt(dEdPo[h] + ep) / sqrt(EdPo[h] + ep) * dPo[h];
+
+			Pi[h] -= d_i;
+			Pf[h] -= d_f;
+			Po[h] -= d_o;
+
+			dEdPi[h] = gamma * dEdPi[h] + (d_i * d_i) * (1 - gamma);
+			dEdPf[h] = gamma * dEdPf[h] + (d_f * d_f) * (1 - gamma);
+			dEdPo[h] = gamma * dEdPo[h] + (d_o * d_o) * (1 - gamma);
+
+			d_z = sqrt(dEdBz[h] + ep) / sqrt(EdBz[h] + ep) * dBz[h];
+			d_i = sqrt(dEdBi[h] + ep) / sqrt(EdBi[h] + ep) * dBi[h];
+			d_f = sqrt(dEdBf[h] + ep) / sqrt(EdBf[h] + ep) * dBf[h];
+			d_o = sqrt(dEdBo[h] + ep) / sqrt(EdBo[h] + ep) * dBo[h];
+
+			Bz[h] -= d_z;
+			Bi[h] -= d_i;
+			Bf[h] -= d_f;
+			Bo[h] -= d_o;
+
+			dEdBz[h] = gamma * dEdBz[h] + (d_z * d_z) * (1 - gamma);
+			dEdBi[h] = gamma * dEdBi[h] + (d_i * d_i) * (1 - gamma);
+			dEdBf[h] = gamma * dEdBf[h] + (d_f * d_f) * (1 - gamma);
+			dEdBo[h] = gamma * dEdBo[h] + (d_o * d_o) * (1 - gamma);
+		}
+		for (o = 0; o < o_dim; ++o) {
+			for (h = 0; h < h_dim; ++h) {
+				math_t d_o = sqrt(dEdV[o][h] + ep) / sqrt(EdV[o][h] + ep) * dV[o][h];
+				V[o][h] -= d_o;
+				dEdV[o][h] = gamma * dEdV[o][h] + (d_o * d_o) * (1 - gamma);
+			}
+			math_t d_o = sqrt(dEdBpo[o] + ep) / sqrt(EdBpo[o] + ep) * dBpo[o];
+			Bpo[o] -= d_o;
+			dEdBpo[o] = gamma * dEdBpo[o] + (d_o * d_o) * (1 - gamma);
+		}
+		BPTT_pivot += BPTT_period;
+		BPTT_end = BPTT_pivot - BPTT_step;
+	}
 }
 
 int RNN_train(
@@ -991,7 +992,9 @@ int RNN_Gradient_check(
 	Matrix_t *input_matrix, *expected_output_matrix;
 	input_matrix = train_set->input_matrix_list[index_to_check];
 	expected_output_matrix = train_set->output_matrix_list[index_to_check];
+
 	int t_dim = input_matrix->m;
+
 	math_t **Wz = RNN_storage->Wz->data; math_t **Rz = RNN_storage->Rz->data;
 	math_t **Wi = RNN_storage->Wi->data; math_t **Ri = RNN_storage->Ri->data;
 	math_t **Wf = RNN_storage->Wf->data; math_t **Rf = RNN_storage->Rf->data;
@@ -1023,111 +1026,109 @@ int RNN_Gradient_check(
 	    predicted_output_matrix
 	);
 
-
 	const int BPTT_period = 150;
 	const int BPTT_step = 150;
 	int BPTT_pivot = BPTT_period - 1;
 	int BPTT_end = BPTT_pivot - BPTT_step;
 	while (BPTT_end < t_dim - 1) {
+		RNN_BPTT(
+		    RNN_storage,
+		    input_matrix,				// TxI
+		    predicted_output_matrix,	// TxO
+		    expected_output_matrix,		// TxO
+		    BPTT_pivot,
+		    BPTT_end
+		);
 
-	RNN_BPTT(
-	    RNN_storage,
-	    input_matrix,				// TxI
-	    predicted_output_matrix,	// TxO
-	    expected_output_matrix,		// TxO
-	    BPTT_pivot,
-	    BPTT_end
-	);
+		int i, m, n;
+		math_t old_model_param;
+		math_t total_loss_plus, total_loss_minus;
+		math_t estimated_gradient, calculated_gradient;
+		math_t relative_gradient_error;
 
-	int i, m, n;
-	math_t old_model_param;
-	math_t total_loss_plus, total_loss_minus;
-	math_t estimated_gradient, calculated_gradient;
-	math_t relative_gradient_error;
+		Matrix_t *testing_model_list[] = {
+			RNN_storage->Wz, RNN_storage->Wi, RNN_storage->Wf, RNN_storage->Wo,
+			RNN_storage->Rz, RNN_storage->Ri, RNN_storage->Rf, RNN_storage->Ro,
+			RNN_storage->Pi, RNN_storage->Pf, RNN_storage->Po,
+			RNN_storage->Bz, RNN_storage->Bi, RNN_storage->Bf, RNN_storage->Bo,
+			RNN_storage->V,  RNN_storage->Bpo
+		};
+		math_t **UVW[] = {
+			Wz, Wi, Wf, Wo,
+			Rz, Ri, Rf, Ro,
+			Pi, Pf, Po,
+			Bz, Bi, Bf, Bo,
+			V,  Bpo
+		};
+		math_t **dLdUVW[] = {
+			dWz, dWi, dWf, dWo,
+			dRz, dRi, dRf, dRo,
+			dPi, dPf, dPo,
+			dBz, dBi, dBf, dBo,
+			dV,  dBpo
+		};
 
-	Matrix_t *testing_model_list[] = {
-		RNN_storage->Wz, RNN_storage->Wi, RNN_storage->Wf, RNN_storage->Wo,
-		RNN_storage->Rz, RNN_storage->Ri, RNN_storage->Rf, RNN_storage->Ro,
-		RNN_storage->Pi, RNN_storage->Pf, RNN_storage->Po,
-		RNN_storage->Bz, RNN_storage->Bi, RNN_storage->Bf, RNN_storage->Bo,
-		RNN_storage->V,  RNN_storage->Bpo
-	};
-	math_t **UVW[] = {
-		Wz, Wi, Wf, Wo,
-		Rz, Ri, Rf, Ro,
-		Pi, Pf, Po,
-		Bz, Bi, Bf, Bo,
-		V,  Bpo
-	};
-	math_t **dLdUVW[] = {
-		dWz, dWi, dWf, dWo,
-		dRz, dRi, dRf, dRo,
-		dPi, dPf, dPo,
-		dBz, dBi, dBf, dBo,
-		dV,  dBpo
-	};
+		Matrix_t *testing_model;
+		math_t **testing_matrix;
+		math_t **testing_gradient_matrix;
 
-	Matrix_t *testing_model;
-	math_t **testing_matrix;
-	math_t **testing_gradient_matrix;
+		int num_parameter = sizeof(testing_model_list) / sizeof(Matrix_t *);
+		for (i = 0; i < num_parameter; ++i) {
+			testing_model = testing_model_list[i];
+			testing_matrix = UVW[i];
+			testing_gradient_matrix = dLdUVW[i];
 
-	int num_parameter = sizeof(testing_model_list) / sizeof(Matrix_t *);
-	for (i = 0; i < num_parameter; ++i) {
-		testing_model = testing_model_list[i];
-		testing_matrix = UVW[i];
-		testing_gradient_matrix = dLdUVW[i];
+			for (m = 0; m < testing_model->m; ++m) {
+				for (n = 0; n < testing_model->n; ++n) {
+					old_model_param = testing_matrix[m][n];
+					testing_matrix[m][n] = old_model_param + h;
 
-		for (m = 0; m < testing_model->m; ++m) {
-			for (n = 0; n < testing_model->n; ++n) {
-				old_model_param = testing_matrix[m][n];
-				testing_matrix[m][n] = old_model_param + h;
+					RNN_forward_propagation(
+					    RNN_storage,
+					    input_matrix,
+					    predicted_output_matrix
+					);
+					total_loss_plus = RNN_loss_calculation(
+					                      RNN_storage,
+					                      predicted_output_matrix,
+					                      expected_output_matrix);
 
-				RNN_forward_propagation(
-				    RNN_storage,
-				    input_matrix,
-				    predicted_output_matrix
-				);
-				total_loss_plus = RNN_loss_calculation(
-				                      RNN_storage,
-				                      predicted_output_matrix,
-				                      expected_output_matrix);
+					testing_matrix[m][n] = old_model_param - h;
+					RNN_forward_propagation(
+					    RNN_storage,
+					    input_matrix,
+					    predicted_output_matrix
+					);
+					total_loss_minus = RNN_loss_calculation(
+					                       RNN_storage,
+					                       predicted_output_matrix,
+					                       expected_output_matrix);
+					testing_matrix[m][n] = old_model_param;
 
-				testing_matrix[m][n] = old_model_param - h;
-				RNN_forward_propagation(
-				    RNN_storage,
-				    input_matrix,
-				    predicted_output_matrix
-				);
-				total_loss_minus = RNN_loss_calculation(
-				                       RNN_storage,
-				                       predicted_output_matrix,
-				                       expected_output_matrix);
-				testing_matrix[m][n] = old_model_param;
+					estimated_gradient =
+					    (total_loss_plus - total_loss_minus) /
+					    (2.0 * h);
+					calculated_gradient = testing_gradient_matrix[m][n];
+					relative_gradient_error =
+					    fabs(estimated_gradient - calculated_gradient) /
+					    (fabs(estimated_gradient) + fabs(calculated_gradient));
 
-				estimated_gradient =
-				    (total_loss_plus - total_loss_minus) /
-				    (2.0 * h);
-				calculated_gradient = testing_gradient_matrix[m][n];
-				relative_gradient_error =
-				    fabs(estimated_gradient - calculated_gradient) /
-				    (fabs(estimated_gradient) + fabs(calculated_gradient));
-
-				if (estimated_gradient > 1e-6 &&
-				        relative_gradient_error > error_threshold) {
-					printf("-------------Gradient check error\n");
-					printf("For matrix %d [%d][%d]\n", i, m, n);
-					printf("+h loss: %.13lf\n", total_loss_plus);
-					printf("-h loss: %.13lf\n", total_loss_minus);
-					printf("estimated_gradient: %.13lf\n", estimated_gradient);
-					printf("calculated_gradient: %.13lf\n", calculated_gradient);
-					printf("relative_gradient_error: %.13lf\n", relative_gradient_error);
-					printf("---------------------------------------\n");
-					return 1;
+					if (estimated_gradient > 1e-6 &&
+					        relative_gradient_error > error_threshold) {
+						printf("-------------Gradient check error\n");
+						printf("For matrix %d [%d][%d]\n", i, m, n);
+						printf("+h loss: %.13lf\n", total_loss_plus);
+						printf("-h loss: %.13lf\n", total_loss_minus);
+						printf("estimated_gradient: %.13lf\n", estimated_gradient);
+						printf("calculated_gradient: %.13lf\n", calculated_gradient);
+						printf("relative_gradient_error: %.13lf\n", relative_gradient_error);
+						printf("---------------------------------------\n");
+						return 1;
+					}
 				}
 			}
 		}
 	}
-}
 	return 0;
 }
 

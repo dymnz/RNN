@@ -6,16 +6,16 @@
 
 
 typedef struct {
-	int i_dim;
-	int o_dim;
-	int h_dim;
+    int i_dim;
+    int o_dim;
+    int h_dim;
 
     /* LSTM state */
     Matrix_t *Z_, *I_, *F_, *O_;        // TxH
     Matrix_t *Z, *I, *F, *O;            // TxH
     Matrix_t *C, *Y;                    // TxH
 
-    /* LSTM model */    
+    /* LSTM model */
     Matrix_t *Wz, *Wi, *Wf, *Wo;    // HxI
     Matrix_t *Rz, *Ri, *Rf, *Ro;    // HxH
     Matrix_t *Pi, *Pf, *Po;         // 1xH
@@ -24,7 +24,7 @@ typedef struct {
     Matrix_t *dWz, *dWi, *dWf, *dWo;    // HxI
     Matrix_t *dRz, *dRi, *dRf, *dRo;    // HxH
     Matrix_t *dPi, *dPf, *dPo;          // 1xH
-    Matrix_t *dBz, *dBi, *dBf, *dBo;    // 1xH  
+    Matrix_t *dBz, *dBi, *dBf, *dBo;    // 1xH
 
     /* Output model */
     Matrix_t *V;                    // OxH
@@ -36,14 +36,14 @@ typedef struct {
     Matrix_t *EdWz, *EdWi, *EdWf, *EdWo;    // HxI
     Matrix_t *EdRz, *EdRi, *EdRf, *EdRo;    // HxH
     Matrix_t *EdPi, *EdPf, *EdPo;          // 1xH
-    Matrix_t *EdBz, *EdBi, *EdBf, *EdBo;    // 1xH  
+    Matrix_t *EdBz, *EdBi, *EdBf, *EdBo;    // 1xH
     Matrix_t *EdV;                    // OxH
     Matrix_t *EdBpo;                  // 1xO
 
     Matrix_t *dEdWz, *dEdWi, *dEdWf, *dEdWo;    // HxI
     Matrix_t *dEdRz, *dEdRi, *dEdRf, *dEdRo;    // HxH
     Matrix_t *dEdPi, *dEdPf, *dEdPo;          // 1xH
-    Matrix_t *dEdBz, *dEdBi, *dEdBf, *dEdBo;    // 1xH  
+    Matrix_t *dEdBz, *dEdBi, *dEdBf, *dEdBo;    // 1xH
     Matrix_t *dEdV;                    // OxH
     Matrix_t *dEdBpo;                  // 1xO
 
@@ -52,23 +52,23 @@ typedef struct {
 } RNN_t;
 
 typedef struct {
-	Matrix_t **input_matrix_list;
-	Matrix_t **output_matrix_list;
+    Matrix_t **input_matrix_list;
+    Matrix_t **output_matrix_list;
     int input_max_m;
     int input_n;      // This should be the same accoross all input matrix
 
     int output_max_m;
     int output_n;      // This should be the same accoross all output matrix
 
-	int num_matrix;
+    int num_matrix;
 } DataSet_t;
 
 void TrainSet_init(DataSet_t *train_set, int num_matrix);
 void DataSet_destroy(DataSet_t *train_set);
 
 void RNN_init(
-    RNN_t *RNN_storage, 
-    int input_vector_len, 
+    RNN_t *RNN_storage,
+    int input_vector_len,
     int output_vector_len,
     int hidden_layer_vector_len,
     unsigned int seed
@@ -77,22 +77,24 @@ void RNN_init(
 void RNN_destroy(RNN_t *RNN_storage);
 
 void RNN_forward_propagation(
-	RNN_t *RNN_storage,
-	Matrix_t *input_matrix,
-	Matrix_t *output_matrix
+
+    RNN_t *RNN_storage,
+    Matrix_t *input_matrix,
+    Matrix_t *output_matrix
+
 );
 
 math_t RNN_loss_calculation(
     RNN_t *RNN_storage,
-    Matrix_t *predicted_output_matrix,	// TxO
-    Matrix_t *expected_output_matrix	// TxO
+    Matrix_t *predicted_output_matrix,  // TxO
+    Matrix_t *expected_output_matrix    // TxO
 );
 
 void RNN_BPTT(
-	RNN_t *RNN_storage,
-	Matrix_t *input_matrix,
-	Matrix_t *predicted_output_matrix,
-	Matrix_t *expected_output_matrix,
+    RNN_t *RNN_storage,
+    Matrix_t *input_matrix,
+    Matrix_t *predicted_output_matrix,
+    Matrix_t *expected_output_matrix,
     int BPTT_pivot,
     int BPTT_end
 );
@@ -115,7 +117,7 @@ int RNN_train(
 
 void RNN_Predict(
     RNN_t *RNN_storage,
-    Matrix_t *input_matrix,    
+    Matrix_t *input_matrix,
     Matrix_t *predicted_output_matrix
 );
 

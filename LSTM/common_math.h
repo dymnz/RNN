@@ -8,6 +8,8 @@ typedef struct
 {
 	int m;
 	int n;
+	int real_m;
+	int real_n;
 	math_t **data;
 } Matrix_t;
 
