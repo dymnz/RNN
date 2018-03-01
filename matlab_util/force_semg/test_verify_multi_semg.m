@@ -2,10 +2,10 @@ clear; close all;
 
 
 test_file_location = '../../LSTM/data/output/';
-test_file_name = 'res_ard_DS100_FORCE_SEG_first.txt';
+test_file_name = 'res_ard_DS300_FORCE_SEG_full_noREC.txt';
 
 train_file_location = '../../LSTM/data/input/';
-train_file_name = 'exp_ard_DS100_FORCE_SEG_first.txt';
+train_file_name = 'exp_ard_DS300_FORCE_SEG_full_noREC.txt';
 
 % test_file_location = '../../LSTM/data/output/';
 % test_file_name = 'res_test_2_ds100_lp_rec_fx_ol.txt';
@@ -39,11 +39,11 @@ for i = 1 : num_matrix
                     '-');                
     subplot_helper(1:length(test_force_data), test_force_data, ...
                     [2 1 2], ...
-                    {'sample' 'amplitude' 'semg'}, ...
+                    {'sample' 'amplitude' 'force'}, ...
                     '-'); 
     legend('real', 'predict');
     ylim([0 1]);
-	print(strcat('./pics/', test_file_name, num2str(i), '.png'),'-dpng')
+% 	print(strcat('./pics/', test_file_name, num2str(i), '.png'),'-dpng')
     RMS_list(i) = sqrt(mean((train_force_data - test_force_data).^2));
     guess_RMS_list(i) = sqrt(mean((train_force_data - 0.5*ones(size(train_force_data))).^2));
 end
