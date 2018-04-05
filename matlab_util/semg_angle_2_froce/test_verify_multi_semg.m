@@ -2,10 +2,10 @@ clear; close all;
 
 
 test_file_location = '../../LSTM/data/output/';
-test_file_name = 'res_SFM_DS200_FULL_1.txt';
+test_file_name = 'res_SA2F_DS200_FULL_2.txt';
 
 train_file_location = '../../LSTM/data/input/';
-train_file_name = 'exp_SFM_DS200_FULL_1.txt';
+train_file_name = 'exp_SA2F_DS200_FULL_2.txt';
 
 
 [num_matrix, test_input_matrix_list, test_output_matrix_list] = ...
