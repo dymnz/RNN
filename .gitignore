@@ -1,5 +1,6 @@
 *.exe
 *
+
 !/**/
 !*.*
 !verify_2opt
@@ -11,6 +12,9 @@ as_1/dis_dir/test1?.dis
 as_1/in_dir/test1?.in
 
 midterm/p2/test/*
+
+LSTM/data/output/*
+LSTM/data/input/*
 *.o
 
 mult_results*
