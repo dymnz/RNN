@@ -14,11 +14,17 @@ mpu_channel_index = 1:2;
 mpu_min_value = -90;
 mpu_max_value = 90;
 
+
+file_name = "S2WA_TABLE_EXT_4_DS200_RMS0_FULL";
+
+
 test_file_location = '../../LSTM/data/output/';
-test_file_name = 'res_S2WA_EXT_1_DS200_RMS60_FULL.txt';
+test_file_name = strcat('res_', file_name, '.txt');
+
+
 
 train_file_location = '../../LSTM/data/input/';
-train_file_name = 'exp_S2WA_EXT_1_DS200_RMS60_FULL.txt';
+train_file_name = strcat('exp_', file_name, '.txt');
 
 
 [num_matrix, test_input_matrix_list, test_output_matrix_list] = ...
@@ -64,6 +70,7 @@ for i = 1 : num_matrix
    RMS_list(i, :) = sqrt(mean((train_mpu_data - test_mpu_data).^2));
    guess_RMS_list(i, :) = sqrt(mean((train_mpu_data - 0*ones(size(train_mpu_data))).^2));
 end
-
-fprintf("RMSE:  %f\n", RMS_list);
+fprintf('RMSE: ');
+fprintf("%f ", RMS_list);
+fprintf('\n');
 fprintf("guess mean RMS = %f\n", guess_RMS_list);
