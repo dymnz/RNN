@@ -15,13 +15,11 @@ mpu_min_value = -90;
 mpu_max_value = 90;
 
 
-file_name = "S2WA_TABLE_EXT_4_DS200_RMS0_FULL";
+file_name = 'S2WA_TABLE_PRO_1_DS10_RMS100_FULL';
 
 
-test_file_location = '../../LSTM/data/output/';
-test_file_name = strcat('res_', file_name, '.txt');
-
-
+test_file_location = '../../LSTM/data/input/';
+test_file_name = strcat('exp_', file_name, '.txt');
 
 train_file_location = '../../LSTM/data/input/';
 train_file_name = strcat('exp_', file_name, '.txt');
