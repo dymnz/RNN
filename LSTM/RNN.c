@@ -858,7 +858,7 @@ void RNN_SGD(
 	}
 }
 
-int RNN_train(
+math_t RNN_train(
     RNN_t * RNN_storage,
     DataSet_t *train_set,
     Matrix_t *predicted_output_matrix,
@@ -874,7 +874,7 @@ int RNN_train(
 	Matrix_t *input_matrix, *expected_output_matrix;
 
 	for (e = 0; e < max_epoch; ++e) {
-		if (e > 0 && e % print_loss_interval == 0) {
+		if ((e > 0 && e % print_loss_interval == 0) || (e == max_epoch - 1)) {
 			current_total_loss = 0.0;
 			for (i = 0; i < num_train; ++i) {
 				input_matrix = train_set->input_matrix_list[i];
@@ -909,7 +909,7 @@ int RNN_train(
 			// Terminate the training process if the gradient check did not pass
 			if (gradient_check_result != 0) {
 				printf("Gradient check error at epoch: %10d\n", e);
-				return e;
+				return -1;
 			}
 		}
 
@@ -925,10 +925,11 @@ int RNN_train(
 			);
 		}
 	}
-	return e;
+
+	return current_total_loss / num_train;
 }
 
-// Cross entropy loss
+// Square loss
 math_t RNN_loss_calculation(
     RNN_t * RNN_storage,
     Matrix_t *predicted_output_matrix,	// TxO
@@ -941,7 +942,6 @@ math_t RNN_loss_calculation(
 
 	int t, o;
 	for (t = 0; t < t_dim; ++t) {
-		// expected_output_matrix is an one-hot vector
 		log_term = 0;
 		for (o = 0; o < o_dim; ++o) {
 			delta =
@@ -953,6 +953,36 @@ math_t RNN_loss_calculation(
 	}
 
 	return total_loss;
+}
+
+
+// RMSE
+math_t* RNN_RMSE(
+    RNN_t * RNN_storage,
+    Matrix_t *predicted_output_matrix,	// TxO
+    Matrix_t *expected_output_matrix	// TxO
+) {
+	int t_dim = expected_output_matrix->m;
+	int o_dim = RNN_storage->o_dim;
+
+	math_t *loss_list = (math_t *) malloc(o_dim * sizeof(math_t));
+	math_t delta;
+
+	int t, o;
+	for (t = 0; t < t_dim; ++t) {
+		for (o = 0; o < o_dim; ++o) {
+			delta =
+			    expected_output_matrix->data[t][o] -
+			    predicted_output_matrix->data[t][o];
+			loss_list[o] += delta * delta;
+		}				
+	}
+
+	for (o = 0; o < o_dim; ++o) {
+		loss_list[o] = sqrt(loss_list[o] / t_dim);
+	}
+
+	return loss_list;
 }
 
 int RNN_Gradient_check(

@@ -100,18 +100,18 @@ int RNN_model_training_example() {
 	*/
 	printf("Start training. Max epoch: %d Initital learning rate: % lf\n",
 	       max_epoch, initial_learning_rate);
-	int epoch;
+	math_t RNN_train_result;
 
-	epoch = RNN_train(
-	            RNN_storage,
-	            train_set,
-	            predicted_output_matrix,
-	            max_epoch,
-	            print_loss_interval,
-	            gradient_check_interval
-	        );
+	RNN_train_result = RNN_train(
+	                       RNN_storage,
+	                       train_set,
+	                       predicted_output_matrix,
+	                       max_epoch,
+	                       print_loss_interval,
+	                       gradient_check_interval
+	                   );
 
-	printf("Hidden: %5d\tEpoch: %5d\n", hidden_cell_num, epoch);
+	printf("Hidden: %5d\t Error: %10.10lf\n", hidden_cell_num, RNN_train_result);
 
 	/*
 	Testing file forward propagation
@@ -132,12 +132,26 @@ int RNN_model_training_example() {
 
 	FILE *pLoss = fopen(loss_file, "w");
 
-	int i;
-	math_t loss, total_loss = 0.0f;
+	printf("RMSE outputs are multiplied by 90 for test\n");
+	printf(
+	    "* ./rnn %s %s %d %d %d %d %d\n",
+	    train_file_name_arg,
+	    test_file_name_arg,
+	    hidden_cell_num,
+	    max_epoch,
+	    print_loss_interval,
+	    gradient_check_interval,
+	    rand_seed
+	);
+	printf("  * average loss at epoch: %10d = %10.10lf\n",
+	       max_epoch - 1, RNN_train_result);
+
+	int i, r;
+	math_t *loss_list;
 	for (i = 0; i < train_set->num_matrix; ++i) {
 		matrix_resize(
-		    predicted_output_matrix, 
-		    train_set->input_matrix_list[i]->m, 
+		    predicted_output_matrix,
+		    train_set->input_matrix_list[i]->m,
 		    train_set->output_n
 		);
 		RNN_Predict(
@@ -146,16 +160,24 @@ int RNN_model_training_example() {
 		    predicted_output_matrix
 		);
 
-		loss = RNN_loss_calculation(
-		           RNN_storage,
-		           predicted_output_matrix,
-		           train_set->output_matrix_list[i]);
-		fprintf(pLoss, " % lf\n", loss);
-		total_loss += loss / train_set->num_matrix;
+		loss_list = RNN_RMSE(
+		                RNN_storage,
+		                predicted_output_matrix,
+		                train_set->output_matrix_list[i]);
+
+		printf("  * RMSE: ");
+		for (r = 0; r < RNN_storage->o_dim; ++r) {
+			printf("%8.5lf\t", loss_list[r] * 90);
+			fprintf(pLoss, "%8.5lf\n", loss_list[r]);
+		}
+		printf("\n");
 		write_matrix_to_file(result_file, train_set->input_matrix_list[i], "a");
 		write_matrix_to_file(result_file, predicted_output_matrix, "a");
+
+		free(loss_list);
 	}
-	printf("average loss: % lf\n", total_loss);
+
+
 	fclose(pLoss);
 
 	/*
@@ -186,7 +208,7 @@ int RNN_model_training_example() {
 	RNN_destroy(RNN_storage);
 	matrix_free(predicted_output_matrix);
 
-	return epoch;
+	return RNN_train_result;
 }
 
 int RNN_model_import_example() {
@@ -345,6 +367,8 @@ int main(int argc, char *argv[]) {
 	print_loss_interval = atoi(argv[5]);
 	gradient_check_interval = atoi(argv[6]);
 	rand_seed = atoi(argv[7]);
+
+
 
 
 	return RNN_model_training_example();

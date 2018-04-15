@@ -88,6 +88,13 @@ math_t RNN_loss_calculation(
     Matrix_t *expected_output_matrix    // TxO
 );
 
+math_t* RNN_RMSE(
+    RNN_t *RNN_storage,
+    Matrix_t *predicted_output_matrix,  // TxO
+    Matrix_t *expected_output_matrix    // TxO
+);
+
+
 void RNN_BPTT(
     RNN_t *RNN_storage,
     Matrix_t *input_matrix,
@@ -102,7 +109,7 @@ void RNN_SGD(
     Matrix_t *predicted_output_matrix
 );
 
-int RNN_train(
+math_t RNN_train(
     RNN_t * RNN_storage,
     DataSet_t *train_set,
     Matrix_t *predicted_output_matrix,
