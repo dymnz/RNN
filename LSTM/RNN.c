@@ -28,8 +28,7 @@ void RNN_init(
     RNN_t *RNN_storage,
     int input_vector_len,
     int output_vector_len,
-    int hidden_layer_vector_len,
-    unsigned int seed
+    int hidden_layer_vector_len
 ) {
 	int i_dim = input_vector_len;
 	int o_dim = output_vector_len;
@@ -39,8 +38,6 @@ void RNN_init(
 	RNN_storage->o_dim = o_dim;
 	RNN_storage->h_dim = h_dim;
 	RNN_storage->gamma = 0.95;
-
-	srand(seed);
 
 	/* LSTM state */
 	// Size to be adjusted for different test sample size
@@ -929,9 +926,171 @@ math_t RNN_train(
 	return current_total_loss / num_train;
 }
 
+math_t RNN_find_set_loss(
+	RNN_t * RNN_storage,
+	DataSet_t *dataset,
+	Matrix_t *predicted_output_matrix
+) {
+	int i;
+	math_t total_loss = 0.0;
+
+	Matrix_t *input_matrix, *expected_output_matrix;
+
+	for (i = 0; i < dataset->num_matrix; ++i) {
+		input_matrix = dataset->input_matrix_list[i];
+		expected_output_matrix = dataset->output_matrix_list[i];
+		RNN_Predict(
+		    RNN_storage,
+		    input_matrix,
+		    predicted_output_matrix
+		);
+
+		total_loss +=
+		    RNN_loss_calculation(
+		        RNN_storage,
+		        predicted_output_matrix,
+		        expected_output_matrix) / expected_output_matrix->m;
+	}
+	return total_loss / dataset->num_matrix;
+}
+
+
+
+RNN_result_t* RNN_train_cross_valid(
+    RNN_t *RNN_storage,
+    DataSet_t *train_set,
+    DataSet_t *cross_set,
+    Matrix_t *predicted_output_matrix,
+    int max_epoch,
+    int cross_valid_patience,
+    int print_loss_interval,
+    int gradient_check_interval
+) {
+	int num_train = train_set->num_matrix;
+
+	int e, t;
+
+	RNN_result_t *result = (RNN_result_t *) malloc(sizeof(RNN_result_t));
+
+	result->RNN_best_model = (RNN_t *) malloc(sizeof(RNN_t));
+	*(result->RNN_best_model) = *RNN_storage;
+	RNN_init(
+		result->RNN_best_model, 
+		RNN_storage->i_dim,
+		RNN_storage->o_dim,
+		RNN_storage->h_dim
+	);
+
+	math_t best_cross_loss = 987654;
+	int last_cross_loss_improve_epoch = 0;
+
+	Matrix_t *input_matrix, *expected_output_matrix;
+
+
+
+	for (e = 0; e < max_epoch; ++e) {
+		// Training loss
+		if ((e > 0 && e % print_loss_interval == 0) || (e == max_epoch - 1)) {
+			math_t average_train_loss = RNN_find_set_loss(RNN_storage, train_set, predicted_output_matrix);
+			math_t average_cross_loss = RNN_find_set_loss(RNN_storage, cross_set, predicted_output_matrix);
+			printf("train loss | cross loss at epoch: %10d = %10.10lf | %10.10lf\n",
+			       e, average_train_loss, average_cross_loss);
+		}
+
+		// Graident check
+		if (e > 0 && e % gradient_check_interval == 0) {
+			int gradient_check_result =
+			    RNN_Gradient_check(
+			        RNN_storage,
+			        train_set,
+			        predicted_output_matrix,
+			        1e-4,
+			        1e-2,
+			        0
+			    );
+
+			// Terminate the training process if the gradient check did not pass
+			if (gradient_check_result != 0) {
+				math_t average_train_loss = RNN_find_set_loss(RNN_storage, train_set, predicted_output_matrix);
+				result->ending_epoch = e;
+				result->last_training_loss = average_train_loss;
+				strcpy(result->terminate_reason, "Gradient check error");
+				printf("Gradient check error at epoch: %10d\n", e);
+				return result;
+			}
+		}
+
+		// Cross validation loss
+		if (e > 0) {
+			math_t average_cross_loss = RNN_find_set_loss(RNN_storage, cross_set, predicted_output_matrix);
+			if (average_cross_loss < best_cross_loss) {
+				RNN_copy_model(RNN_storage, result->RNN_best_model);
+				best_cross_loss = average_cross_loss;
+				last_cross_loss_improve_epoch = e;				
+				result->best_epoch_cross = e;
+				result->best_cross_loss = best_cross_loss;
+			}
+
+			if (e - last_cross_loss_improve_epoch > cross_valid_patience) {
+				math_t average_train_loss = RNN_find_set_loss(RNN_storage, train_set, predicted_output_matrix);
+				result->ending_epoch = e;							
+				result->last_training_loss = average_train_loss;
+				strcpy(result->terminate_reason, "Cross validation patience gone");
+				printf("Cross validation patience gone\n");
+				return result;
+			}		
+		}
+
+		for (t = 0; t < num_train; ++t) {
+			input_matrix = train_set->input_matrix_list[t];
+			expected_output_matrix = train_set->output_matrix_list[t];
+			RNN_SGD(
+			    RNN_storage,
+			    input_matrix,
+			    expected_output_matrix,
+			    predicted_output_matrix
+			);
+		}
+	}
+
+
+	math_t average_train_loss = RNN_find_set_loss(RNN_storage, train_set, predicted_output_matrix);
+
+	result->ending_epoch = e;
+	result->last_training_loss = average_train_loss;
+	strcpy(result->terminate_reason, "Max epoch reached");
+	return result;
+}
+
+
+// Copy only model parameters
+void RNN_copy_model(RNN_t *source, RNN_t *dest) {
+	matrix_copy(source->Wz, dest->Wz);
+	matrix_copy(source->Wi, dest->Wi);
+	matrix_copy(source->Wf, dest->Wf);
+	matrix_copy(source->Wo, dest->Wo);
+
+	matrix_copy(source->Rz, dest->Rz);
+	matrix_copy(source->Ri, dest->Ri);
+	matrix_copy(source->Rf, dest->Rf);
+	matrix_copy(source->Ro, dest->Ro);
+
+	matrix_copy(source->Pi, dest->Pi);
+	matrix_copy(source->Pf, dest->Pf);
+	matrix_copy(source->Po, dest->Po);	
+
+	matrix_copy(source->Bz, dest->Bz);
+	matrix_copy(source->Bi, dest->Bi);
+	matrix_copy(source->Bf, dest->Bf);
+	matrix_copy(source->Bo, dest->Bo);
+
+	matrix_copy(source->V, dest->V);
+	matrix_copy(source->Bpo, dest->Bpo);
+}
+
 // Square loss
 math_t RNN_loss_calculation(
-    RNN_t * RNN_storage,
+    RNN_t *RNN_storage,
     Matrix_t *predicted_output_matrix,	// TxO
     Matrix_t *expected_output_matrix	// TxO
 ) {

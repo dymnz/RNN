@@ -7,10 +7,12 @@
 void IO_file_prepare(
     char train_file[],
     char test_file[],
+    char cross_file[],
     char loss_file[],
     char result_file[],
     char train_file_name[],
     char test_file_name[],
+    char cross_file_name[],
     char loss_file_name[],
     char result_file_name[]
 );

@@ -81,6 +81,17 @@ Matrix_t *matrix_create(int m, int n) {
 	return matrix;
 }
 
+void matrix_copy(Matrix_t *source, Matrix_t *dest) {		
+	int _m = source->m, _n = source->n;
+
+	matrix_free(dest);
+	dest = matrix_create(_m, _n);
+
+	int m;
+	for (m = 0; m < _m; ++m) {
+		memcpy(source->data[i], dest->data[i], _n);
+	}
+}
 
 /* TODO: If m > _m && n > _n, return ? */
 void matrix_resize(Matrix_t *matrix, int m, int n) {

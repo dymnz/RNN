@@ -112,6 +112,15 @@ Matrix_t *matrix_create(int m, int n) {
 }
 
 
+void matrix_copy(Matrix_t *source, Matrix_t *dest) {		
+	int _m = source->m, _n = source->n;
+
+	int m;
+	for (m = 0; m < _m; ++m) {
+		memcpy(dest->data[m], source->data[m], _n * sizeof(math_t));
+	}
+}
+
 void matrix_resize(Matrix_t *matrix, int m, int n) {
 	if (matrix == NULL)
 		exit(77);

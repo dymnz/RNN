@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
 #include "common_math.h"
 
 
@@ -52,6 +53,15 @@ typedef struct {
 } RNN_t;
 
 typedef struct {
+    int ending_epoch;    
+    math_t last_training_loss;
+    int best_epoch_cross;
+    math_t best_cross_loss;
+    char terminate_reason[FILE_NAME_LENGTH];
+    RNN_t *RNN_best_model;
+} RNN_result_t;
+
+typedef struct {
     Matrix_t **input_matrix_list;
     Matrix_t **output_matrix_list;
     int input_max_m;
@@ -70,11 +80,12 @@ void RNN_init(
     RNN_t *RNN_storage, 
     int input_vector_len, 
     int output_vector_len,
-    int hidden_layer_vector_len,
-    unsigned int seed
+    int hidden_layer_vector_len
 );
 
 void RNN_destroy(RNN_t *RNN_storage);
+
+void RNN_copy_model(RNN_t *source, RNN_t *dest);
 
 void RNN_forward_propagation(
     RNN_t *RNN_storage,
@@ -86,6 +97,12 @@ math_t RNN_loss_calculation(
     RNN_t *RNN_storage,
     Matrix_t *predicted_output_matrix,  // TxO
     Matrix_t *expected_output_matrix    // TxO
+);
+
+math_t RNN_find_set_loss(
+    RNN_t * RNN_storage,
+    DataSet_t *dataset,
+    Matrix_t *predicted_output_matrix
 );
 
 math_t* RNN_RMSE(
@@ -114,6 +131,18 @@ math_t RNN_train(
     DataSet_t *train_set,
     Matrix_t *predicted_output_matrix,
     int max_epoch,
+    int print_loss_interval,
+    int gradient_check_interval
+);
+
+
+RNN_result_t* RNN_train_cross_valid(
+    RNN_t * RNN_storage,
+    DataSet_t *train_set,
+    DataSet_t *cross_set,
+    Matrix_t *predicted_output_matrix,
+    int max_epoch,
+    int cross_valid_patience,
     int print_loss_interval,
     int gradient_check_interval
 );

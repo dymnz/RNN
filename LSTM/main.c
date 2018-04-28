@@ -10,19 +10,22 @@
 
 #define DEFAULT_TRAIN_FILE_NAME "debug"
 #define DEFAULT_TEST_FILE_NAME "debug"
+#define DEFAULT_CROSS_FILE_NAME "debug"
 
 unsigned int rand_seed = DEFAULT_RAND_SEED;
 char train_file_name_arg[FILE_NAME_LENGTH] =
     DEFAULT_TRAIN_FILE_NAME;
 char test_file_name_arg[FILE_NAME_LENGTH] =
     DEFAULT_TEST_FILE_NAME;
-
+char cross_file_name_arg[FILE_NAME_LENGTH] =
+    DEFAULT_CROSS_FILE_NAME;
 // HHHH / SEED
 //   11 /    8 : 0.208137
 
 int hidden_cell_num = 4;
 math_t initial_learning_rate = 0.001;
 int max_epoch = 100;
+int cross_valid_patience = 10;
 int print_loss_interval = 10;
 int gradient_check_interval = 10;
 
@@ -34,6 +37,7 @@ int RNN_model_training_example() {
 	*/
 	char train_file_name[FILE_NAME_LENGTH]  = {0};
 	char test_file_name[FILE_NAME_LENGTH] = {0};
+	char cross_file_name[FILE_NAME_LENGTH] = {0};
 	char loss_file_name[FILE_NAME_LENGTH] = {0};
 	char result_file_name[FILE_NAME_LENGTH] = {0};
 
@@ -43,6 +47,9 @@ int RNN_model_training_example() {
 	strcat(test_file_name, "exp_");
 	strcat(test_file_name, test_file_name_arg);
 
+	strcat(cross_file_name, "exp_");
+	strcat(cross_file_name, cross_file_name_arg);
+
 	strcat(loss_file_name, "loss_");
 	strcat(loss_file_name, test_file_name_arg);
 
@@ -51,34 +58,39 @@ int RNN_model_training_example() {
 
 	char train_file[FILE_NAME_LENGTH] = {0};
 	char test_file[FILE_NAME_LENGTH] = {0};
+	char cross_file[FILE_NAME_LENGTH] = {0};
 	char loss_file[FILE_NAME_LENGTH] = {0};
 	char result_file[FILE_NAME_LENGTH] = {0};
 
 	IO_file_prepare(
 	    train_file,
 	    test_file,
-	    loss_file,
+	    cross_file,
+	    loss_file,	    
 	    result_file,
 	    train_file_name,
 	    test_file_name,
+	    cross_file_name,
 	    loss_file_name,
 	    result_file_name
 	);
+
+
+	srand(rand_seed);
 
 	/*
 	Storage prepare
 	*/
 	printf("Working on training file...\n");
 	DataSet_t *train_set = read_set_from_file(train_file);
+	DataSet_t *cross_set = read_set_from_file(cross_file);
 
 	RNN_t *RNN_storage
 	    = (RNN_t *) malloc(sizeof(RNN_t));
-	RNN_init(
-	    RNN_storage,
+	RNN_init(RNN_storage,
 	    train_set->input_n,
 	    train_set->output_n,
-	    hidden_cell_num,
-	    rand_seed
+	    hidden_cell_num
 	);
 
 	printf(" - RNN paramerter - \n");
@@ -92,7 +104,7 @@ int RNN_model_training_example() {
 	Matrix_t *predicted_output_matrix;
 	printf("%d %d\n",  train_set->output_max_m, train_set->output_n);
 	predicted_output_matrix = matrix_create(
-	                              train_set->output_max_m,
+	                              max(train_set->output_max_m, cross_set->output_max_m),
 	                              train_set->output_n);
 
 	/*
@@ -100,18 +112,21 @@ int RNN_model_training_example() {
 	*/
 	printf("Start training. Max epoch: %d Initital learning rate: % lf\n",
 	       max_epoch, initial_learning_rate);
-	math_t RNN_train_result;
+	RNN_result_t *RNN_train_result;
 
-	RNN_train_result = RNN_train(
+	RNN_train_result = RNN_train_cross_valid(
 	                       RNN_storage,
 	                       train_set,
+	                       cross_set,
 	                       predicted_output_matrix,
 	                       max_epoch,
+	                       cross_valid_patience,
 	                       print_loss_interval,
 	                       gradient_check_interval
 	                   );
 
-	printf("Hidden: %5d\t Error: %10.10lf\n", hidden_cell_num, RNN_train_result);
+	printf("Hidden: %5d\t Error: %10.10lf\n", 
+		hidden_cell_num, RNN_train_result->last_training_loss);
 
 	/*
 	Testing file forward propagation
@@ -143,8 +158,13 @@ int RNN_model_training_example() {
 	    gradient_check_interval,
 	    rand_seed
 	);
-	printf("  * average loss at epoch: %10d = %10.10lf\n",
-	       max_epoch - 1, RNN_train_result);
+	printf("  * train loss at epoch: %10d = %10.10lf \n"
+		   "  * best cross loss at epoch: %10d = %10.10lf \n",
+	       RNN_train_result->ending_epoch,
+	       RNN_train_result->last_training_loss,
+	       RNN_train_result->best_epoch_cross,
+	       RNN_train_result->best_cross_loss
+	       );
 
 	int i, r;
 	math_t *loss_list;
@@ -155,7 +175,7 @@ int RNN_model_training_example() {
 		    train_set->output_n
 		);
 		RNN_Predict(
-		    RNN_storage,
+		    RNN_train_result->RNN_best_model,
 		    train_set->input_matrix_list[i],
 		    predicted_output_matrix
 		);
@@ -208,7 +228,7 @@ int RNN_model_training_example() {
 	RNN_destroy(RNN_storage);
 	matrix_free(predicted_output_matrix);
 
-	return RNN_train_result;
+	return 0;
 }
 
 int RNN_model_import_example() {
@@ -217,8 +237,12 @@ int RNN_model_import_example() {
 	/*
 	File I/O param
 	*/
+	/*
+	File I/O param
+	*/
 	char train_file_name[FILE_NAME_LENGTH]  = {0};
 	char test_file_name[FILE_NAME_LENGTH] = {0};
+	char cross_file_name[FILE_NAME_LENGTH] = {0};
 	char loss_file_name[FILE_NAME_LENGTH] = {0};
 	char result_file_name[FILE_NAME_LENGTH] = {0};
 
@@ -228,6 +252,9 @@ int RNN_model_import_example() {
 	strcat(test_file_name, "exp_");
 	strcat(test_file_name, test_file_name_arg);
 
+	strcat(test_file_name, "exp_");
+	strcat(test_file_name, cross_file_name_arg);
+
 	strcat(loss_file_name, "loss_");
 	strcat(loss_file_name, test_file_name_arg);
 
@@ -236,6 +263,7 @@ int RNN_model_import_example() {
 
 	char train_file[FILE_NAME_LENGTH] = {0};
 	char test_file[FILE_NAME_LENGTH] = {0};
+	char cross_file[FILE_NAME_LENGTH] = {0};
 	char loss_file[FILE_NAME_LENGTH] = {0};
 	char result_file[FILE_NAME_LENGTH] = {0};
 
@@ -243,12 +271,16 @@ int RNN_model_import_example() {
 	    train_file,
 	    test_file,
 	    loss_file,
+	    cross_file,
 	    result_file,
 	    train_file_name,
 	    test_file_name,
+	    cross_file_name,
 	    loss_file_name,
 	    result_file_name
 	);
+
+	srand(rand_seed);
 
 	/*
 	Storage prepare
@@ -262,8 +294,7 @@ int RNN_model_import_example() {
 	    RNN_storage,
 	    train_set->input_n,
 	    train_set->output_n,
-	    hidden_cell_num,
-	    rand_seed
+	    hidden_cell_num
 	);
 	printf(" - RNN paramerter - \n");
 	printf("Input vector length: %d\n", train_set->input_n);
@@ -335,13 +366,15 @@ int RNN_model_import_example() {
 }
 
 int main(int argc, char *argv[]) {
-	if (argc < 8) {
+	if (argc < 10) {
 		printf(
 		    "Usage: ./rnn "
 		    "train_file_name/"
 		    "test_file_name/"
+		    "cross_file_name/"
 		    "hidden_cell_num/"
 		    "max_epoch/"
+		    "cross_valid_patience/"
 		    "print_loss_interval/"
 		    "gradient_check_interval/"
 		    "rand_seed"
@@ -350,8 +383,10 @@ int main(int argc, char *argv[]) {
 		    "Example: ./rnn "
 		    "2_full_stream "
 		    "2_full_stream "
+		    "2_full_stream "
 		    "4 "
 		    "100 "
+		    "1 "
 		    "10 "
 		    "100000 "
 		    "4 "
@@ -361,14 +396,14 @@ int main(int argc, char *argv[]) {
 
 	strncpy(train_file_name_arg, argv[1], FILE_NAME_LENGTH);
 	strncpy(test_file_name_arg, argv[2], FILE_NAME_LENGTH);
+	strncpy(cross_file_name_arg, argv[3], FILE_NAME_LENGTH);
 
-	hidden_cell_num = atoi(argv[3]);
-	max_epoch = atoi(argv[4]);
-	print_loss_interval = atoi(argv[5]);
-	gradient_check_interval = atoi(argv[6]);
-	rand_seed = atoi(argv[7]);
-
-
+	hidden_cell_num = atoi(argv[4]);
+	max_epoch = atoi(argv[5]);
+	cross_valid_patience = atoi(argv[6]);
+	print_loss_interval = atoi(argv[7]);	
+	gradient_check_interval = atoi(argv[8]);
+	rand_seed = atoi(argv[9]);
 
 
 	return RNN_model_training_example();

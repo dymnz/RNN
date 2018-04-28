@@ -2,6 +2,13 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+
+#define max(a,b) \
+({ __typeof__ (a) _a = (a); \
+   __typeof__ (b) _b = (b); \
+ _a > _b ? _a : _b; })
+
 
 typedef double math_t;
 typedef struct
@@ -39,6 +46,7 @@ void matrix_random(
 );
 
 Matrix_t *matrix_create(int m, int n);
+void matrix_copy(Matrix_t *source, Matrix_t *dest);
 void matrix_free(Matrix_t *matrix);
 void matrix_resize(Matrix_t *matrix, int m, int n);
 math_t matrix_abs_avg(Matrix_t *matrix);

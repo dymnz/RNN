@@ -3,10 +3,12 @@
 void IO_file_prepare(
     char train_file[],
     char test_file[],
+    char cross_file[],
     char loss_file[],
     char result_file[],
     char train_file_name[],
     char test_file_name[],
+    char cross_file_name[],
     char loss_file_name[],
     char result_file_name[]
 ) {
@@ -16,26 +18,31 @@ void IO_file_prepare(
 
 	const char train_file_prefix[] = "";
 	const char test_file_prefix[] = "";
+	const char cross_file_prefix[] = "";
 	const char loss_file_prefix[] = "";
 	const char result_file_prefix[] = "";
 
 	strcat(train_file, input_file_prefix);
 	strcat(test_file, input_file_prefix);
+	strcat(cross_file, input_file_prefix);
 	strcat(loss_file, output_file_prefix);
 	strcat(result_file, output_file_prefix);
 
 	strcat(train_file, train_file_prefix);
 	strcat(test_file, test_file_prefix);
+	strcat(cross_file, cross_file_prefix);
 	strcat(loss_file, loss_file_prefix);
 	strcat(result_file, result_file_prefix);
 
 	strcat(train_file, train_file_name);
 	strcat(test_file, test_file_name);
+	strcat(cross_file, cross_file_name);
 	strcat(loss_file, loss_file_name);
 	strcat(result_file, result_file_name);
 
 	strcat(train_file, file_postfix);
 	strcat(test_file, file_postfix);
+	strcat(cross_file, file_postfix);
 	strcat(loss_file, file_postfix);
 	strcat(result_file, file_postfix);
 }
