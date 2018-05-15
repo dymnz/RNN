@@ -149,9 +149,10 @@ int RNN_model_training_example() {
 
 	printf("RMSE outputs are multiplied by 90 for test\n");
 	printf(
-	    "* ./rnn %s %s %d %d %d %d %d\n",
+	    "* ./rnn %s %s %s %d %d %d %d %d\n",
 	    train_file_name_arg,
 	    test_file_name_arg,
+	    cross_file_name_arg,
 	    hidden_cell_num,
 	    max_epoch,
 	    print_loss_interval,
