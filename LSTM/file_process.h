@@ -23,6 +23,12 @@ void Matrix_dump(
     Matrix_t *matrix
 );
 
+void Matrix_load(
+    char model_file_name[],
+    char file_directory[],
+    Matrix_t *matrix
+) 
+
 DataSet_t *read_set_from_file(char *file_name);
 void read_matrix_from_file(char file[], Matrix_t *matrix);
 void write_matrix_to_file(char *file_name, Matrix_t *matrix, char *file_modifier);

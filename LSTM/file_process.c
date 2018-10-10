@@ -62,6 +62,22 @@ void Matrix_dump(
 	write_matrix_to_file(model_file, matrix, "w");
 }
 
+void Matrix_load(
+    char model_file_name[],
+    char file_directory[],
+    Matrix_t *matrix
+) {
+	char model_file[FILE_NAME_LENGTH] = {0};
+	char file_postfix[] = ".txt";
+
+	strcat(model_file, file_directory);
+	strcat(model_file, model_file_name);
+	strcat(model_file, file_postfix);
+
+	read_matrix_from_file(model_file, matrix);
+}
+
+
 DataSet_t *read_set_from_file(char *file_name) {
 	FILE *pFile = fopen (file_name, "r");
 	if (!pFile) {

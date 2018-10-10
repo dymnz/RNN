@@ -66,7 +66,7 @@ int RNN_model_training_example() {
 	    train_file,
 	    test_file,
 	    cross_file,
-	    loss_file,	    
+	    loss_file,
 	    result_file,
 	    train_file_name,
 	    test_file_name,
@@ -88,10 +88,10 @@ int RNN_model_training_example() {
 	RNN_t *RNN_storage
 	    = (RNN_t *) malloc(sizeof(RNN_t));
 	RNN_init(RNN_storage,
-	    train_set->input_n,
-	    train_set->output_n,
-	    hidden_cell_num
-	);
+	         train_set->input_n,
+	         train_set->output_n,
+	         hidden_cell_num
+	        );
 
 	printf(" - RNN paramerter - \n");
 	printf("Input vector length: %d\n", train_set->input_n);
@@ -125,8 +125,8 @@ int RNN_model_training_example() {
 	                       gradient_check_interval
 	                   );
 
-	printf("Hidden: %5d\t Error: %10.10lf\n", 
-		hidden_cell_num, RNN_train_result->last_training_loss);
+	printf("Hidden: %5d\t Error: %10.10lf\n",
+	       hidden_cell_num, RNN_train_result->last_training_loss);
 
 	/*
 	Testing file forward propagation
@@ -160,12 +160,12 @@ int RNN_model_training_example() {
 	    rand_seed
 	);
 	printf("  * train loss at epoch: %10d = %10.10lf \n"
-		   "  * best cross loss at epoch: %10d = %10.10lf \n",
+	       "  * best cross loss at epoch: %10d = %10.10lf \n",
 	       RNN_train_result->ending_epoch,
 	       RNN_train_result->last_training_loss,
 	       RNN_train_result->best_epoch_cross,
 	       RNN_train_result->best_cross_loss
-	       );
+	      );
 
 	int i, r;
 	math_t *loss_list;
@@ -204,23 +204,32 @@ int RNN_model_training_example() {
 	/*
 	Dump model
 	*/
-	// char model_file_prefix[] = ". / data / model / ";
-	// printf("Model dump...\n");
-	// Matrix_dump(
-	//     "InputWeight_SEMG_2_CT5_0_BPTT4",
-	//     model_file_prefix,
-	//     RNN_storage->input_weight_matrix
-	// );
-	// Matrix_dump(
-	//     "InternalWeight_SEMG_2_CT5_0_BPTT4",
-	//     model_file_prefix,
-	//     RNN_storage->internal_weight_matrix
-	// );
-	// Matrix_dump(
-	//     "OutputWeight_SEMG_2_CT5_0_BPTT4",
-	//     model_file_prefix,
-	//     RNN_storage->output_weight_matrix
-	// );
+	char model_file_prefix[] = "./data/model/TestModel_";
+	printf("Model dump...\n");
+	/* LSTM model */
+	Matrix_dump("Wz", model_file_prefix, RNN_storage->Wz);
+	Matrix_dump("Wi", model_file_prefix, RNN_storage->Wi);
+	Matrix_dump("Wf", model_file_prefix, RNN_storage->Wf);
+	Matrix_dump("Wo", model_file_prefix, RNN_storage->Wo);
+
+	Matrix_dump("Rz", model_file_prefix, RNN_storage->Rz);
+	Matrix_dump("Ri", model_file_prefix, RNN_storage->Ri);
+	Matrix_dump("Rf", model_file_prefix, RNN_storage->Rf);
+	Matrix_dump("Ro", model_file_prefix, RNN_storage->Ro);
+
+	Matrix_dump("Pi", model_file_prefix, RNN_storage->Pi);
+	Matrix_dump("Pf", model_file_prefix, RNN_storage->Pf);
+	Matrix_dump("Po", model_file_prefix, RNN_storage->Po);
+
+	Matrix_dump("Bz", model_file_prefix, RNN_storage->Bz);
+	Matrix_dump("Bi", model_file_prefix, RNN_storage->Bi);
+	Matrix_dump("Bf", model_file_prefix, RNN_storage->Bf);
+	Matrix_dump("Bo", model_file_prefix, RNN_storage->Bo);
+
+	/* Output model */
+	Matrix_dump("V", model_file_prefix, RNN_storage->V);
+	Matrix_dump("Bpo", model_file_prefix, RNN_storage->Bpo);
+
 
 	/*
 	Clean up
@@ -312,19 +321,31 @@ int RNN_model_import_example() {
 	/*
 	Import trained model
 	*/
-	// printf("Import model...\n");
-	// read_matrix_from_file(
-	// 	". / data / model / InputWeight_SEMG_2_CT5_0_BPTT4.txt",
-	// 	RNN_storage->input_weight_matrix
-	// );
-	// read_matrix_from_file(
-	// 	". / data / model / InternalWeight_SEMG_2_CT5_0_BPTT4.txt",
-	// 	RNN_storage->internal_weight_matrix
-	// );
-	// read_matrix_from_file(
-	// 	". / data / model / OutputWeight_SEMG_2_CT5_0_BPTT4.txt",
-	// 	RNN_storage->output_weight_matrix
-	// );
+	char model_file_prefix[] = "./data/model/TestModel_";
+	printf("Import model...\n");
+	/* LSTM model */
+	Matrix_load("Wz", model_file_prefix, RNN_storage->Wz);
+	Matrix_load("Wi", model_file_prefix, RNN_storage->Wi);
+	Matrix_load("Wf", model_file_prefix, RNN_storage->Wf);
+	Matrix_load("Wo", model_file_prefix, RNN_storage->Wo);
+
+	Matrix_load("Rz", model_file_prefix, RNN_storage->Rz);
+	Matrix_load("Ri", model_file_prefix, RNN_storage->Ri);
+	Matrix_load("Rf", model_file_prefix, RNN_storage->Rf);
+	Matrix_load("Ro", model_file_prefix, RNN_storage->Ro);
+
+	Matrix_load("Pi", model_file_prefix, RNN_storage->Pi);
+	Matrix_load("Pf", model_file_prefix, RNN_storage->Pf);
+	Matrix_load("Po", model_file_prefix, RNN_storage->Po);
+
+	Matrix_load("Bz", model_file_prefix, RNN_storage->Bz);
+	Matrix_load("Bi", model_file_prefix, RNN_storage->Bi);
+	Matrix_load("Bf", model_file_prefix, RNN_storage->Bf);
+	Matrix_load("Bo", model_file_prefix, RNN_storage->Bo);
+
+	/* Output model */
+	Matrix_load("V", model_file_prefix, RNN_storage->V);
+	Matrix_load("Bpo", model_file_prefix, RNN_storage->Bpo);
 
 	/*
 	Testing file forward propagation
@@ -402,7 +423,7 @@ int main(int argc, char *argv[]) {
 	hidden_cell_num = atoi(argv[4]);
 	max_epoch = atoi(argv[5]);
 	cross_valid_patience = atoi(argv[6]);
-	print_loss_interval = atoi(argv[7]);	
+	print_loss_interval = atoi(argv[7]);
 	gradient_check_interval = atoi(argv[8]);
 	rand_seed = atoi(argv[9]);
 
