@@ -363,6 +363,248 @@ void RNN_forward_propagation(
 	}
 }
 
+// Inference requires data of time t and t-1, t_dim is fixed at 2
+void RNN_stepFP_init(
+    RNN_t *RNN_storage,
+    Matrix_t *input_matrix,	// TxI
+    Matrix_t *predicted_output_matrix	// TxO
+) {
+	int i_dim = RNN_storage->i_dim;
+	int o_dim = RNN_storage->o_dim;
+	int t_dim = 2;
+	int h_dim = RNN_storage->h_dim;
+
+	matrix_resize(RNN_storage->Z_, t_dim, h_dim);
+	matrix_resize(RNN_storage->Z, t_dim, h_dim);
+	matrix_resize(RNN_storage->I_, t_dim, h_dim);
+	matrix_resize(RNN_storage->I, t_dim, h_dim);
+	matrix_resize(RNN_storage->F_, t_dim, h_dim);
+	matrix_resize(RNN_storage->F, t_dim, h_dim);
+	matrix_resize(RNN_storage->O_, t_dim, h_dim);
+	matrix_resize(RNN_storage->O, t_dim, h_dim);
+	matrix_resize(RNN_storage->C, t_dim, h_dim);
+	matrix_resize(RNN_storage->Y, t_dim, h_dim);
+
+	math_t **X = input_matrix->data;
+	math_t **P_O = predicted_output_matrix->data;
+
+	math_t **Z_ = RNN_storage->Z_->data; 	math_t **Z = RNN_storage->Z->data;
+	math_t **I_ = RNN_storage->I_->data; 	math_t **I = RNN_storage->I->data;
+	math_t **F_ = RNN_storage->F_->data; 	math_t **F = RNN_storage->F->data;
+	math_t **O_ = RNN_storage->O_->data; 	math_t **O = RNN_storage->O->data;
+	math_t **C = RNN_storage->C->data;
+	math_t **Y = RNN_storage->Y->data;
+
+	math_t **Wz = RNN_storage->Wz->data; math_t **Rz = RNN_storage->Rz->data;
+	math_t **Wi = RNN_storage->Wi->data; math_t **Ri = RNN_storage->Ri->data;
+	math_t **Wf = RNN_storage->Wf->data; math_t **Rf = RNN_storage->Rf->data;
+	math_t **Wo = RNN_storage->Wo->data; math_t **Ro = RNN_storage->Ro->data;
+
+	math_t *Bz = RNN_storage->Bz->data[0];
+	math_t *Bi = RNN_storage->Bi->data[0]; math_t *Pi = RNN_storage->Pi->data[0];
+	math_t *Bf = RNN_storage->Bf->data[0]; math_t *Pf = RNN_storage->Pf->data[0];
+	math_t *Bo = RNN_storage->Bo->data[0]; math_t *Po = RNN_storage->Po->data[0];
+
+	math_t **V = RNN_storage->V->data;
+	math_t *Bpo = RNN_storage->Bpo->data[0];
+
+	clear_2d(Z_, t_dim, h_dim);
+	clear_2d(I_, t_dim, h_dim);
+	clear_2d(F_, t_dim, h_dim);
+	clear_2d(O_, t_dim, h_dim);
+	clear_2d(P_O, t_dim, o_dim);
+
+
+	int h, i, o, r, t;
+
+	// For t = 0
+	for (h = 0; h < h_dim; ++h) {
+		/* Block input / Input gate / Forget gate */
+		for (i = 0; i < i_dim; ++i) {
+			Z_[0][h] += Wz[h][i] * X[0][i];
+			I_[0][h] += Wi[h][i] * X[0][i];
+			F_[0][h] += Wf[h][i] * X[0][i];
+		}
+
+		Z_[0][h] += Bz[h];
+		I_[0][h] += Bi[h];
+		F_[0][h] += Bf[h];
+
+		Z[0][h] = gate_squash_func(Z_[0][h]);
+		I[0][h] = cell_state_squash_func(I_[0][h]);
+		F[0][h] = cell_state_squash_func(F_[0][h]);
+
+		/* Cell state */
+		C[0][h] = Z[0][h] * I[0][h];
+
+		/* Output gate */
+		for (i = 0; i < i_dim; ++i) {
+			O_[0][h] += Wo[h][i] * X[0][i];
+		}
+		O_[0][h] += Po[h] * C[0][h] + Bo[h];
+		O[0][h] = cell_state_squash_func(O_[0][h]);
+
+		/* Block output */
+		Y[0][h] = cell_output_squash_func(C[0][h]) * O[0][h];
+	}
+
+	/* Network output */
+	for (o = 0; o < o_dim; ++o) {
+		for (r = 0; r < h_dim; ++r) {
+			P_O[0][o] += V[o][r] * Y[0][r];
+		}
+		P_O[0][o] += Bpo[o];
+	}
+}
+
+
+void RNN_stepFP(
+    RNN_t *RNN_storage,
+    Matrix_t *input_matrix,	// TxI
+    Matrix_t *predicted_output_matrix	// TxO
+) {
+	int i_dim = RNN_storage->i_dim;
+	int o_dim = RNN_storage->o_dim;
+	int t_dim = input_matrix->m;
+	int h_dim = RNN_storage->h_dim;
+
+	matrix_resize(RNN_storage->Z_, t_dim, h_dim);
+	matrix_resize(RNN_storage->Z, t_dim, h_dim);
+	matrix_resize(RNN_storage->I_, t_dim, h_dim);
+	matrix_resize(RNN_storage->I, t_dim, h_dim);
+	matrix_resize(RNN_storage->F_, t_dim, h_dim);
+	matrix_resize(RNN_storage->F, t_dim, h_dim);
+	matrix_resize(RNN_storage->O_, t_dim, h_dim);
+	matrix_resize(RNN_storage->O, t_dim, h_dim);
+	matrix_resize(RNN_storage->C, t_dim, h_dim);
+	matrix_resize(RNN_storage->Y, t_dim, h_dim);
+
+	math_t **X = input_matrix->data;
+	math_t **P_O = predicted_output_matrix->data;
+
+	math_t **Z_ = RNN_storage->Z_->data; 	math_t **Z = RNN_storage->Z->data;
+	math_t **I_ = RNN_storage->I_->data; 	math_t **I = RNN_storage->I->data;
+	math_t **F_ = RNN_storage->F_->data; 	math_t **F = RNN_storage->F->data;
+	math_t **O_ = RNN_storage->O_->data; 	math_t **O = RNN_storage->O->data;
+	math_t **C = RNN_storage->C->data;
+	math_t **Y = RNN_storage->Y->data;
+
+	math_t **Wz = RNN_storage->Wz->data; math_t **Rz = RNN_storage->Rz->data;
+	math_t **Wi = RNN_storage->Wi->data; math_t **Ri = RNN_storage->Ri->data;
+	math_t **Wf = RNN_storage->Wf->data; math_t **Rf = RNN_storage->Rf->data;
+	math_t **Wo = RNN_storage->Wo->data; math_t **Ro = RNN_storage->Ro->data;
+
+	math_t *Bz = RNN_storage->Bz->data[0];
+	math_t *Bi = RNN_storage->Bi->data[0]; math_t *Pi = RNN_storage->Pi->data[0];
+	math_t *Bf = RNN_storage->Bf->data[0]; math_t *Pf = RNN_storage->Pf->data[0];
+	math_t *Bo = RNN_storage->Bo->data[0]; math_t *Po = RNN_storage->Po->data[0];
+
+	math_t **V = RNN_storage->V->data;
+	math_t *Bpo = RNN_storage->Bpo->data[0];
+
+	clear_2d(Z_, t_dim, h_dim);
+	clear_2d(I_, t_dim, h_dim);
+	clear_2d(F_, t_dim, h_dim);
+	clear_2d(O_, t_dim, h_dim);
+	clear_2d(P_O, t_dim, o_dim);
+
+
+	int h, i, o, r, t;
+
+	// For t = 0
+	for (h = 0; h < h_dim; ++h) {
+		/* Block input / Input gate / Forget gate */
+		for (i = 0; i < i_dim; ++i) {
+			Z_[0][h] += Wz[h][i] * X[0][i];
+			I_[0][h] += Wi[h][i] * X[0][i];
+			F_[0][h] += Wf[h][i] * X[0][i];
+		}
+
+		Z_[0][h] += Bz[h];
+		I_[0][h] += Bi[h];
+		F_[0][h] += Bf[h];
+
+		Z[0][h] = gate_squash_func(Z_[0][h]);
+		I[0][h] = cell_state_squash_func(I_[0][h]);
+		F[0][h] = cell_state_squash_func(F_[0][h]);
+
+		/* Cell state */
+		C[0][h] = Z[0][h] * I[0][h];
+
+		/* Output gate */
+		for (i = 0; i < i_dim; ++i) {
+			O_[0][h] += Wo[h][i] * X[0][i];
+		}
+		O_[0][h] += Po[h] * C[0][h] + Bo[h];
+		O[0][h] = cell_state_squash_func(O_[0][h]);
+
+		/* Block output */
+		Y[0][h] = cell_output_squash_func(C[0][h]) * O[0][h];
+	}
+
+	// For t = 1 ... t_dim
+	for (t = 1; t < t_dim; ++t) {
+		for (h = 0; h < h_dim; ++h) {
+			/* Block input / Input gate / Forget gate */
+			for (i = 0; i < i_dim; ++i) {
+				Z_[t][h] += Wz[h][i] * X[t][i];
+				I_[t][h] += Wi[h][i] * X[t][i];
+				F_[t][h] += Wf[h][i] * X[t][i];
+			}
+			for (r = 0; r < h_dim; ++r) {
+				Z_[t][h] += Rz[h][r] * Y[t - 1][r];
+				I_[t][h] += Ri[h][r] * Y[t - 1][r];
+				F_[t][h] += Rf[h][r] * Y[t - 1][r];
+			}
+
+			Z_[t][h] += Bz[h];
+			I_[t][h] += Pi[h] * C[t - 1][h] + Bi[h];
+			F_[t][h] += Pf[h] * C[t - 1][h] + Bf[h];
+
+			Z[t][h] = gate_squash_func(Z_[t][h]);
+			I[t][h] = cell_state_squash_func(I_[t][h]);
+			F[t][h] = cell_state_squash_func(F_[t][h]);
+
+			/* Cell state */
+			C[t][h] = Z[t][h] * I[t][h] + C[t - 1][h] * F[t][h];
+
+			/* Output gate */
+			for (i = 0; i < i_dim; ++i) {
+				O_[t][h] += Wo[h][i] * X[t][i];
+			}
+			for (r = 0; r < h_dim; ++r) {
+				O_[t][h] += Ro[h][r] * Y[t - 1][r];
+			}
+			O_[t][h] += Po[h] * C[t][h] + Bo[h];
+			O[t][h] = cell_state_squash_func(O_[t][h]);
+
+			/* Block output */
+			Y[t][h] = cell_output_squash_func(C[t][h]) * O[t][h];
+		}
+	}
+
+	// /* Network output */
+	// for (t = 0; t < t_dim; ++t) {
+	// 	for (o = 0; o < o_dim; ++o) {
+	// 		for (r = 0; r < h_dim; ++r) {
+	// 			P_O[t][o] += V[o][r] * Y[t][r];
+	// 		}
+	// 		P_O[t][o] += Bpo[o];
+	// 	}
+	// }
+
+	/* Network output */
+	for (t = 0; t < t_dim; ++t) {
+		for (o = 0; o < o_dim; ++o) {
+			for (r = 0; r < h_dim; ++r) {
+				P_O[t][o] += V[o][r] * Y[t][r];
+			}
+			P_O[t][o] += Bpo[o];
+			//P_O[t][o] = network_output_squash_func(P_O[t][o]);
+		}
+	}
+}
+
 void RNN_BPTT(
     RNN_t * RNN_storage,
     Matrix_t *input_matrix,				// TxI
@@ -1331,3 +1573,5 @@ math_t sigmoid(math_t value) {
 	//return 2.0 / (1 + exp(-2 * value)) - 1;
 	return 1.0 / (1 + exp(-value));
 }
+
+

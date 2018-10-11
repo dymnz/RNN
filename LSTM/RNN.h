@@ -161,6 +161,15 @@ int RNN_Gradient_check(
     math_t error_threshold,
     int index_to_check
 );
+
+void RNN_stepFP_init(
+    RNN_t *RNN_storage,
+    Matrix_t *input_matrix, // TxI
+    Matrix_t *predicted_output_matrix   // TxO
+)
+
+
+
 void RNN_Gradient_Clipping(Matrix_t *matrix, math_t threshold);
 
 math_t gate_squash_func(math_t value);

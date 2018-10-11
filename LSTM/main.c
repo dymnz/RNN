@@ -400,6 +400,163 @@ int RNN_model_import_example() {
 	return 0;
 }
 
+int RNN_model_import_example() {
+	printf("RNN_model_import_example\n");
+
+	/*
+	File I/O param
+	*/
+	char train_file_name[FILE_NAME_LENGTH]  = {0};
+	char test_file_name[FILE_NAME_LENGTH] = {0};
+	char cross_file_name[FILE_NAME_LENGTH] = {0};
+	char loss_file_name[FILE_NAME_LENGTH] = {0};
+	char result_file_name[FILE_NAME_LENGTH] = {0};
+
+	strcat(train_file_name, "exp_");
+	strcat(train_file_name, train_file_name_arg);
+
+	strcat(test_file_name, "exp_");
+	strcat(test_file_name, test_file_name_arg);
+
+	strcat(cross_file_name, "exp_");
+	strcat(cross_file_name, cross_file_name_arg);
+
+	strcat(loss_file_name, "loss_");
+	strcat(loss_file_name, test_file_name_arg);
+
+	strcat(result_file_name, "res_");
+	strcat(result_file_name, test_file_name_arg);
+
+	char train_file[FILE_NAME_LENGTH] = {0};
+	char test_file[FILE_NAME_LENGTH] = {0};
+	char cross_file[FILE_NAME_LENGTH] = {0};
+	char loss_file[FILE_NAME_LENGTH] = {0};
+	char result_file[FILE_NAME_LENGTH] = {0};
+
+	IO_file_prepare(
+	    train_file,
+	    test_file,
+	    cross_file,
+	    loss_file,
+	    result_file,
+	    train_file_name,
+	    test_file_name,
+	    cross_file_name,
+	    loss_file_name,
+	    result_file_name
+	);
+
+	srand(rand_seed);
+
+	/*
+	Storage prepare
+	*/
+	printf("Working on testing file...\n");
+	printf("reading %s\n", test_file);
+	DataSet_t *train_set = read_set_from_file(test_file);
+
+	RNN_t *RNN_storage
+	    = (RNN_t *) malloc(sizeof(RNN_t));
+	RNN_init(
+	    RNN_storage,
+	    train_set->input_n,
+	    train_set->output_n,
+	    hidden_cell_num
+	);
+	printf(" - RNN paramerter - \n");
+	printf("Input vector length: %d\n", train_set->input_n);
+	printf("Output vector length: %d\n", train_set->output_n);
+	printf("Hidden cell num: %d\n", hidden_cell_num);
+	printf("----------------\n");
+
+	// Storage for RNN_train()
+	Matrix_t *predicted_output_matrix;
+	predicted_output_matrix = matrix_create(
+	                              train_set->output_max_m,
+	                              train_set->output_n);
+
+	/*
+	Import trained model
+	*/
+	char model_file_prefix[] = "./data/model/TestModel_";
+	printf("Import model...\n");
+	/* LSTM model */
+	Matrix_load("Wz", model_file_prefix, RNN_storage->Wz);
+	Matrix_load("Wi", model_file_prefix, RNN_storage->Wi);
+	Matrix_load("Wf", model_file_prefix, RNN_storage->Wf);
+	Matrix_load("Wo", model_file_prefix, RNN_storage->Wo);
+
+	Matrix_load("Rz", model_file_prefix, RNN_storage->Rz);
+	Matrix_load("Ri", model_file_prefix, RNN_storage->Ri);
+	Matrix_load("Rf", model_file_prefix, RNN_storage->Rf);
+	Matrix_load("Ro", model_file_prefix, RNN_storage->Ro);
+
+	Matrix_load("Pi", model_file_prefix, RNN_storage->Pi);
+	Matrix_load("Pf", model_file_prefix, RNN_storage->Pf);
+	Matrix_load("Po", model_file_prefix, RNN_storage->Po);
+
+	Matrix_load("Bz", model_file_prefix, RNN_storage->Bz);
+	Matrix_load("Bi", model_file_prefix, RNN_storage->Bi);
+	Matrix_load("Bf", model_file_prefix, RNN_storage->Bf);
+	Matrix_load("Bo", model_file_prefix, RNN_storage->Bo);
+
+	/* Output model */
+	Matrix_load("V", model_file_prefix, RNN_storage->V);
+	Matrix_load("Bpo", model_file_prefix, RNN_storage->Bpo);
+
+	/*
+	Testing file forward propagation
+	*/
+	FILE *pRes = fopen(result_file, "w");
+	fprintf(pRes, " %d\n", train_set->num_matrix);
+	fclose(pRes);
+
+	FILE *pLoss = fopen(loss_file, "w");
+
+	int i, r;
+	math_t *loss_list;
+	for (i = 0; i < train_set->num_matrix; ++i) {
+		matrix_resize(
+		    predicted_output_matrix,
+		    train_set->input_matrix_list[i]->m,
+		    train_set->output_n
+		);
+		RNN_Predict(
+		    RNN_storage,
+		    train_set->input_matrix_list[i],
+		    predicted_output_matrix
+		);
+
+		loss_list = RNN_RMSE(
+		                RNN_storage,
+		                predicted_output_matrix,
+		                train_set->output_matrix_list[i]);
+
+		printf("  * RMSE: ");
+		for (r = 0; r < RNN_storage->o_dim; ++r) {
+			printf("%8.5lf\t", loss_list[r] * 90);
+			fprintf(pLoss, "%8.5lf\n", loss_list[r]);
+		}
+		printf("\n");
+		write_matrix_to_file(result_file, train_set->input_matrix_list[i], "a");
+		write_matrix_to_file(result_file, predicted_output_matrix, "a");
+
+		free(loss_list);
+	}
+
+
+	fclose(pLoss);
+
+	/*
+	Clean up
+	*/
+	DataSet_destroy(train_set);
+	RNN_destroy(RNN_storage);
+	matrix_free(predicted_output_matrix);
+
+	return 0;
+}
+
 int main(int argc, char *argv[]) {
 	if (argc < 10) {
 		printf(
