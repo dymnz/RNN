@@ -207,28 +207,29 @@ int RNN_model_training_example() {
 	char model_file_prefix[] = "./data/model/TestModel_";
 	printf("Model dump...\n");
 	/* LSTM model */
-	Matrix_dump("Wz", model_file_prefix, RNN_storage->Wz);
-	Matrix_dump("Wi", model_file_prefix, RNN_storage->Wi);
-	Matrix_dump("Wf", model_file_prefix, RNN_storage->Wf);
-	Matrix_dump("Wo", model_file_prefix, RNN_storage->Wo);
 
-	Matrix_dump("Rz", model_file_prefix, RNN_storage->Rz);
-	Matrix_dump("Ri", model_file_prefix, RNN_storage->Ri);
-	Matrix_dump("Rf", model_file_prefix, RNN_storage->Rf);
-	Matrix_dump("Ro", model_file_prefix, RNN_storage->Ro);
+	Matrix_dump("Wz", model_file_prefix, RNN_train_result->RNN_best_model->Wz);
+	Matrix_dump("Wi", model_file_prefix, RNN_train_result->RNN_best_model->Wi);
+	Matrix_dump("Wf", model_file_prefix, RNN_train_result->RNN_best_model->Wf);
+	Matrix_dump("Wo", model_file_prefix, RNN_train_result->RNN_best_model->Wo);
 
-	Matrix_dump("Pi", model_file_prefix, RNN_storage->Pi);
-	Matrix_dump("Pf", model_file_prefix, RNN_storage->Pf);
-	Matrix_dump("Po", model_file_prefix, RNN_storage->Po);
+	Matrix_dump("Rz", model_file_prefix, RNN_train_result->RNN_best_model->Rz);
+	Matrix_dump("Ri", model_file_prefix, RNN_train_result->RNN_best_model->Ri);
+	Matrix_dump("Rf", model_file_prefix, RNN_train_result->RNN_best_model->Rf);
+	Matrix_dump("Ro", model_file_prefix, RNN_train_result->RNN_best_model->Ro);
 
-	Matrix_dump("Bz", model_file_prefix, RNN_storage->Bz);
-	Matrix_dump("Bi", model_file_prefix, RNN_storage->Bi);
-	Matrix_dump("Bf", model_file_prefix, RNN_storage->Bf);
-	Matrix_dump("Bo", model_file_prefix, RNN_storage->Bo);
+	Matrix_dump("Pi", model_file_prefix, RNN_train_result->RNN_best_model->Pi);
+	Matrix_dump("Pf", model_file_prefix, RNN_train_result->RNN_best_model->Pf);
+	Matrix_dump("Po", model_file_prefix, RNN_train_result->RNN_best_model->Po);
+
+	Matrix_dump("Bz", model_file_prefix, RNN_train_result->RNN_best_model->Bz);
+	Matrix_dump("Bi", model_file_prefix, RNN_train_result->RNN_best_model->Bi);
+	Matrix_dump("Bf", model_file_prefix, RNN_train_result->RNN_best_model->Bf);
+	Matrix_dump("Bo", model_file_prefix, RNN_train_result->RNN_best_model->Bo);
 
 	/* Output model */
-	Matrix_dump("V", model_file_prefix, RNN_storage->V);
-	Matrix_dump("Bpo", model_file_prefix, RNN_storage->Bpo);
+	Matrix_dump("V", model_file_prefix, RNN_train_result->RNN_best_model->V);
+	Matrix_dump("Bpo", model_file_prefix, RNN_train_result->RNN_best_model->Bpo);
 
 
 	/*
@@ -247,9 +248,7 @@ int RNN_model_import_example() {
 	/*
 	File I/O param
 	*/
-	/*
-	File I/O param
-	*/
+
 	char train_file_name[FILE_NAME_LENGTH]  = {0};
 	char test_file_name[FILE_NAME_LENGTH] = {0};
 	char cross_file_name[FILE_NAME_LENGTH] = {0};
@@ -262,8 +261,8 @@ int RNN_model_import_example() {
 	strcat(test_file_name, "exp_");
 	strcat(test_file_name, test_file_name_arg);
 
-	strcat(test_file_name, "exp_");
-	strcat(test_file_name, cross_file_name_arg);
+	strcat(cross_file_name, "exp_");
+	strcat(cross_file_name, cross_file_name_arg);
 
 	strcat(loss_file_name, "loss_");
 	strcat(loss_file_name, test_file_name_arg);
@@ -280,8 +279,8 @@ int RNN_model_import_example() {
 	IO_file_prepare(
 	    train_file,
 	    test_file,
-	    loss_file,
 	    cross_file,
+	    loss_file,
 	    result_file,
 	    train_file_name,
 	    test_file_name,
@@ -296,6 +295,7 @@ int RNN_model_import_example() {
 	Storage prepare
 	*/
 	printf("Working on testing file...\n");
+	printf("reading %s\n", test_file);
 	DataSet_t *train_set = read_set_from_file(test_file);
 
 	RNN_t *RNN_storage
@@ -356,25 +356,38 @@ int RNN_model_import_example() {
 
 	FILE *pLoss = fopen(loss_file, "w");
 
-	int i;
-	math_t loss, total_loss = 0.0f;
+	int i, r;
+	math_t *loss_list;
 	for (i = 0; i < train_set->num_matrix; ++i) {
+		matrix_resize(
+		    predicted_output_matrix,
+		    train_set->input_matrix_list[i]->m,
+		    train_set->output_n
+		);
 		RNN_Predict(
 		    RNN_storage,
 		    train_set->input_matrix_list[i],
 		    predicted_output_matrix
 		);
 
-		loss = RNN_loss_calculation(
-		           RNN_storage,
-		           predicted_output_matrix,
-		           train_set->output_matrix_list[i]);
-		fprintf(pLoss, " % lf\n", loss);
-		total_loss += loss;
+		loss_list = RNN_RMSE(
+		                RNN_storage,
+		                predicted_output_matrix,
+		                train_set->output_matrix_list[i]);
+
+		printf("  * RMSE: ");
+		for (r = 0; r < RNN_storage->o_dim; ++r) {
+			printf("%8.5lf\t", loss_list[r] * 90);
+			fprintf(pLoss, "%8.5lf\n", loss_list[r]);
+		}
+		printf("\n");
 		write_matrix_to_file(result_file, train_set->input_matrix_list[i], "a");
 		write_matrix_to_file(result_file, predicted_output_matrix, "a");
+
+		free(loss_list);
 	}
-	printf("average loss: % lf\n", total_loss / train_set->num_matrix);
+
+
 	fclose(pLoss);
 
 	/*
@@ -401,18 +414,6 @@ int main(int argc, char *argv[]) {
 		    "gradient_check_interval/"
 		    "rand_seed"
 		    "\n");
-		printf(
-		    "Example: ./rnn "
-		    "2_full_stream "
-		    "2_full_stream "
-		    "2_full_stream "
-		    "4 "
-		    "100 "
-		    "1 "
-		    "10 "
-		    "100000 "
-		    "4 "
-		    "\n");
 		exit(60);
 	}
 
@@ -428,7 +429,6 @@ int main(int argc, char *argv[]) {
 	rand_seed = atoi(argv[9]);
 
 
-	return RNN_model_training_example();
-	//return RNN_model_import_example();
+	//return RNN_model_training_example();
+	return RNN_model_import_example();
 }
-

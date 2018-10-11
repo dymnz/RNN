@@ -27,7 +27,7 @@ void Matrix_load(
     char model_file_name[],
     char file_directory[],
     Matrix_t *matrix
-) 
+);
 
 DataSet_t *read_set_from_file(char *file_name);
 void read_matrix_from_file(char file[], Matrix_t *matrix);
