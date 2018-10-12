@@ -1,9 +1,9 @@
 CC=gcc
-CFLAGS=-Wall -DFILE_NAME_LENGTH=255
+CFLAGS=-Wall -DFILENAME_LENGTH=255 -Dpacket_size=4 -Din_packet_num=6 -Dout_packet_num=1
 LFLAGS=-lm
-DEPS = common_math.h RNN.h file_process.h
+DEPS = common_math.h RNN.h file_process.h serial.h
 TEST_OBJ = test.o
-DEPS_OBJ = common_math.o RNN.o file_process.o
+DEPS_OBJ = common_math.o RNN.o file_process.o serial.o
 RNN_OBJ = main.o
 
 all: $(DEPS_OBJ) $(RNN_OBJ)

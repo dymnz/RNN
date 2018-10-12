@@ -415,7 +415,7 @@ void RNN_stepFP_init(
 	clear_2d(P_O, t_dim, o_dim);
 
 
-	int h, i, o, r, t;
+	int h, i, o, r;
 
 	// For t = 0
 	for (h = 0; h < h_dim; ++h) {
@@ -457,7 +457,12 @@ void RNN_stepFP_init(
 	}
 }
 
-
+/* Inference requires data of time t and t-1, t_dim is fixed at 2
+ * Output is kept at time 0, as for the model. Even though the data
+ * is stored in time 1 for calculation.
+ * Model and output data is transfered from time 1 to time 0, so the
+ * next stepFP can use the data from time 0.
+ */
 void RNN_stepFP(
     RNN_t *RNN_storage,
     Matrix_t *input_matrix,	// TxI
@@ -465,19 +470,8 @@ void RNN_stepFP(
 ) {
 	int i_dim = RNN_storage->i_dim;
 	int o_dim = RNN_storage->o_dim;
-	int t_dim = input_matrix->m;
+	int t_dim = 2;
 	int h_dim = RNN_storage->h_dim;
-
-	matrix_resize(RNN_storage->Z_, t_dim, h_dim);
-	matrix_resize(RNN_storage->Z, t_dim, h_dim);
-	matrix_resize(RNN_storage->I_, t_dim, h_dim);
-	matrix_resize(RNN_storage->I, t_dim, h_dim);
-	matrix_resize(RNN_storage->F_, t_dim, h_dim);
-	matrix_resize(RNN_storage->F, t_dim, h_dim);
-	matrix_resize(RNN_storage->O_, t_dim, h_dim);
-	matrix_resize(RNN_storage->O, t_dim, h_dim);
-	matrix_resize(RNN_storage->C, t_dim, h_dim);
-	matrix_resize(RNN_storage->Y, t_dim, h_dim);
 
 	math_t **X = input_matrix->data;
 	math_t **P_O = predicted_output_matrix->data;
@@ -502,106 +496,71 @@ void RNN_stepFP(
 	math_t **V = RNN_storage->V->data;
 	math_t *Bpo = RNN_storage->Bpo->data[0];
 
+
 	clear_2d(Z_, t_dim, h_dim);
 	clear_2d(I_, t_dim, h_dim);
 	clear_2d(F_, t_dim, h_dim);
 	clear_2d(O_, t_dim, h_dim);
 	clear_2d(P_O, t_dim, o_dim);
 
+	int h, i, o, r;
 
-	int h, i, o, r, t;
-
-	// For t = 0
+	// For t = 1
 	for (h = 0; h < h_dim; ++h) {
 		/* Block input / Input gate / Forget gate */
 		for (i = 0; i < i_dim; ++i) {
-			Z_[0][h] += Wz[h][i] * X[0][i];
-			I_[0][h] += Wi[h][i] * X[0][i];
-			F_[0][h] += Wf[h][i] * X[0][i];
+			Z_[1][h] += Wz[h][i] * X[0][i];
+			I_[1][h] += Wi[h][i] * X[0][i];
+			F_[1][h] += Wf[h][i] * X[0][i];
+		}
+		for (r = 0; r < h_dim; ++r) {
+			Z_[1][h] += Rz[h][r] * Y[0][r];
+			I_[1][h] += Ri[h][r] * Y[0][r];
+			F_[1][h] += Rf[h][r] * Y[0][r];
 		}
 
-		Z_[0][h] += Bz[h];
-		I_[0][h] += Bi[h];
-		F_[0][h] += Bf[h];
+		Z_[1][h] += Bz[h];
+		I_[1][h] += Pi[h] * C[0][h] + Bi[h];
+		F_[1][h] += Pf[h] * C[0][h] + Bf[h];
 
-		Z[0][h] = gate_squash_func(Z_[0][h]);
-		I[0][h] = cell_state_squash_func(I_[0][h]);
-		F[0][h] = cell_state_squash_func(F_[0][h]);
+		Z[1][h] = gate_squash_func(Z_[1][h]);
+		I[1][h] = cell_state_squash_func(I_[1][h]);
+		F[1][h] = cell_state_squash_func(F_[1][h]);
 
 		/* Cell state */
-		C[0][h] = Z[0][h] * I[0][h];
+		C[1][h] = Z[1][h] * I[1][h] + C[0][h] * F[1][h];
 
 		/* Output gate */
 		for (i = 0; i < i_dim; ++i) {
-			O_[0][h] += Wo[h][i] * X[0][i];
+			O_[1][h] += Wo[h][i] * X[0][i];
 		}
-		O_[0][h] += Po[h] * C[0][h] + Bo[h];
-		O[0][h] = cell_state_squash_func(O_[0][h]);
+		for (r = 0; r < h_dim; ++r) {
+			O_[1][h] += Ro[h][r] * Y[0][r];
+		}
+		O_[1][h] += Po[h] * C[1][h] + Bo[h];
+		O[1][h] = cell_state_squash_func(O_[1][h]);
 
 		/* Block output */
-		Y[0][h] = cell_output_squash_func(C[0][h]) * O[0][h];
+		Y[1][h] = cell_output_squash_func(C[1][h]) * O[1][h];
 	}
-
-	// For t = 1 ... t_dim
-	for (t = 1; t < t_dim; ++t) {
-		for (h = 0; h < h_dim; ++h) {
-			/* Block input / Input gate / Forget gate */
-			for (i = 0; i < i_dim; ++i) {
-				Z_[t][h] += Wz[h][i] * X[t][i];
-				I_[t][h] += Wi[h][i] * X[t][i];
-				F_[t][h] += Wf[h][i] * X[t][i];
-			}
-			for (r = 0; r < h_dim; ++r) {
-				Z_[t][h] += Rz[h][r] * Y[t - 1][r];
-				I_[t][h] += Ri[h][r] * Y[t - 1][r];
-				F_[t][h] += Rf[h][r] * Y[t - 1][r];
-			}
-
-			Z_[t][h] += Bz[h];
-			I_[t][h] += Pi[h] * C[t - 1][h] + Bi[h];
-			F_[t][h] += Pf[h] * C[t - 1][h] + Bf[h];
-
-			Z[t][h] = gate_squash_func(Z_[t][h]);
-			I[t][h] = cell_state_squash_func(I_[t][h]);
-			F[t][h] = cell_state_squash_func(F_[t][h]);
-
-			/* Cell state */
-			C[t][h] = Z[t][h] * I[t][h] + C[t - 1][h] * F[t][h];
-
-			/* Output gate */
-			for (i = 0; i < i_dim; ++i) {
-				O_[t][h] += Wo[h][i] * X[t][i];
-			}
-			for (r = 0; r < h_dim; ++r) {
-				O_[t][h] += Ro[h][r] * Y[t - 1][r];
-			}
-			O_[t][h] += Po[h] * C[t][h] + Bo[h];
-			O[t][h] = cell_state_squash_func(O_[t][h]);
-
-			/* Block output */
-			Y[t][h] = cell_output_squash_func(C[t][h]) * O[t][h];
-		}
-	}
-
-	// /* Network output */
-	// for (t = 0; t < t_dim; ++t) {
-	// 	for (o = 0; o < o_dim; ++o) {
-	// 		for (r = 0; r < h_dim; ++r) {
-	// 			P_O[t][o] += V[o][r] * Y[t][r];
-	// 		}
-	// 		P_O[t][o] += Bpo[o];
-	// 	}
-	// }
 
 	/* Network output */
-	for (t = 0; t < t_dim; ++t) {
-		for (o = 0; o < o_dim; ++o) {
-			for (r = 0; r < h_dim; ++r) {
-				P_O[t][o] += V[o][r] * Y[t][r];
-			}
-			P_O[t][o] += Bpo[o];
-			//P_O[t][o] = network_output_squash_func(P_O[t][o]);
+	for (o = 0; o < o_dim; ++o) {
+		for (r = 0; r < h_dim; ++r) {
+			P_O[1][o] += V[o][r] * Y[1][r];
 		}
+		P_O[1][o] += Bpo[o];
+	}
+
+	/* Move C & Y state data from time 1 to time 0 */
+	for (h = 0; h < h_dim; ++h) {
+		C[0][h] = C[1][h];
+		Y[0][h] = Y[1][h];
+	}
+
+	/* Move P_O output from time 1 to time 0 */
+	for (o = 0; o < o_dim; ++o) {
+		P_O[0][o] = P_O[1][o];
 	}
 }
 
@@ -1169,9 +1128,9 @@ math_t RNN_train(
 }
 
 math_t RNN_find_set_loss(
-	RNN_t * RNN_storage,
-	DataSet_t *dataset,
-	Matrix_t *predicted_output_matrix
+    RNN_t * RNN_storage,
+    DataSet_t *dataset,
+    Matrix_t *predicted_output_matrix
 ) {
 	int i;
 	math_t total_loss = 0.0;
@@ -1217,10 +1176,10 @@ RNN_result_t* RNN_train_cross_valid(
 	result->RNN_best_model = (RNN_t *) malloc(sizeof(RNN_t));
 	*(result->RNN_best_model) = *RNN_storage;
 	RNN_init(
-		result->RNN_best_model, 
-		RNN_storage->i_dim,
-		RNN_storage->o_dim,
-		RNN_storage->h_dim
+	    result->RNN_best_model,
+	    RNN_storage->i_dim,
+	    RNN_storage->o_dim,
+	    RNN_storage->h_dim
 	);
 
 	math_t best_cross_loss = 987654;
@@ -1268,19 +1227,19 @@ RNN_result_t* RNN_train_cross_valid(
 			if (average_cross_loss < best_cross_loss) {
 				RNN_copy_model(RNN_storage, result->RNN_best_model);
 				best_cross_loss = average_cross_loss;
-				last_cross_loss_improve_epoch = e;				
+				last_cross_loss_improve_epoch = e;
 				result->best_epoch_cross = e;
 				result->best_cross_loss = best_cross_loss;
 			}
 
 			if (e - last_cross_loss_improve_epoch > cross_valid_patience) {
 				math_t average_train_loss = RNN_find_set_loss(RNN_storage, train_set, predicted_output_matrix);
-				result->ending_epoch = e;							
+				result->ending_epoch = e;
 				result->last_training_loss = average_train_loss;
 				strcpy(result->terminate_reason, "Cross validation patience gone");
 				printf("Cross validation patience gone\n");
 				return result;
-			}		
+			}
 		}
 
 		for (t = 0; t < num_train; ++t) {
@@ -1319,7 +1278,7 @@ void RNN_copy_model(RNN_t *source, RNN_t *dest) {
 
 	matrix_copy(source->Pi, dest->Pi);
 	matrix_copy(source->Pf, dest->Pf);
-	matrix_copy(source->Po, dest->Po);	
+	matrix_copy(source->Po, dest->Po);
 
 	matrix_copy(source->Bz, dest->Bz);
 	matrix_copy(source->Bi, dest->Bi);
@@ -1376,7 +1335,7 @@ math_t* RNN_RMSE(
 			    expected_output_matrix->data[t][o] -
 			    predicted_output_matrix->data[t][o];
 			loss_list[o] += delta * delta;
-		}				
+		}
 	}
 
 	for (o = 0; o < o_dim; ++o) {

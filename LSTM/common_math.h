@@ -11,6 +11,7 @@
 
 
 typedef double math_t;
+
 typedef struct
 {
 	int m;

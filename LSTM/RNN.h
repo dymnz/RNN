@@ -57,7 +57,7 @@ typedef struct {
     math_t last_training_loss;
     int best_epoch_cross;
     math_t best_cross_loss;
-    char terminate_reason[FILE_NAME_LENGTH];
+    char terminate_reason[FILENAME_LENGTH];
     RNN_t *RNN_best_model;
 } RNN_result_t;
 
@@ -166,7 +166,13 @@ void RNN_stepFP_init(
     RNN_t *RNN_storage,
     Matrix_t *input_matrix, // TxI
     Matrix_t *predicted_output_matrix   // TxO
-)
+);
+
+void RNN_stepFP(
+    RNN_t *RNN_storage,
+    Matrix_t *input_matrix, // TxI
+    Matrix_t *predicted_output_matrix   // TxO
+);
 
 
 

@@ -52,7 +52,7 @@ void Matrix_dump(
     char file_directory[],
     Matrix_t *matrix
 ) {
-	char model_file[FILE_NAME_LENGTH] = {0};
+	char model_file[FILENAME_LENGTH] = {0};
 	char file_postfix[] = ".txt";
 
 	strcat(model_file, file_directory);
@@ -67,7 +67,7 @@ void Matrix_load(
     char file_directory[],
     Matrix_t *matrix
 ) {
-	char model_file[FILE_NAME_LENGTH] = {0};
+	char model_file[FILENAME_LENGTH] = {0};
 	char file_postfix[] = ".txt";
 
 	strcat(model_file, file_directory);

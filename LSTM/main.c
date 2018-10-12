@@ -5,22 +5,23 @@
 #include "common_math.h"
 #include "RNN.h"
 #include "file_process.h"
+#include "serial.h"
 
 #define DEFAULT_RAND_SEED 5
 
-#define DEFAULT_TRAIN_FILE_NAME "debug"
-#define DEFAULT_TEST_FILE_NAME "debug"
-#define DEFAULT_CROSS_FILE_NAME "debug"
+#define DEFAULT_TRAIN_filename "debug"
+#define DEFAULT_TEST_filename "debug"
+#define DEFAULT_CROSS_filename "debug"
 
 unsigned int rand_seed = DEFAULT_RAND_SEED;
-char train_file_name_arg[FILE_NAME_LENGTH] =
-    DEFAULT_TRAIN_FILE_NAME;
-char test_file_name_arg[FILE_NAME_LENGTH] =
-    DEFAULT_TEST_FILE_NAME;
-char cross_file_name_arg[FILE_NAME_LENGTH] =
-    DEFAULT_CROSS_FILE_NAME;
-// HHHH / SEED
-//   11 /    8 : 0.208137
+char train_filename_arg[FILENAME_LENGTH] =
+    DEFAULT_TRAIN_filename;
+char test_filename_arg[FILENAME_LENGTH] =
+    DEFAULT_TEST_filename;
+char cross_filename_arg[FILENAME_LENGTH] =
+    DEFAULT_CROSS_filename;
+char serial_portname_arg[FILENAME_LENGTH] =
+    DEFAULT_CROSS_filename;
 
 int hidden_cell_num = 4;
 math_t initial_learning_rate = 0.001;
@@ -35,32 +36,32 @@ int RNN_model_training_example() {
 	/*
 	File I/O param
 	*/
-	char train_file_name[FILE_NAME_LENGTH]  = {0};
-	char test_file_name[FILE_NAME_LENGTH] = {0};
-	char cross_file_name[FILE_NAME_LENGTH] = {0};
-	char loss_file_name[FILE_NAME_LENGTH] = {0};
-	char result_file_name[FILE_NAME_LENGTH] = {0};
+	char train_filename[FILENAME_LENGTH]  = {0};
+	char test_filename[FILENAME_LENGTH] = {0};
+	char cross_filename[FILENAME_LENGTH] = {0};
+	char loss_filename[FILENAME_LENGTH] = {0};
+	char result_filename[FILENAME_LENGTH] = {0};
 
-	strcat(train_file_name, "exp_");
-	strcat(train_file_name, train_file_name_arg);
+	strcat(train_filename, "exp_");
+	strcat(train_filename, train_filename_arg);
 
-	strcat(test_file_name, "exp_");
-	strcat(test_file_name, test_file_name_arg);
+	strcat(test_filename, "exp_");
+	strcat(test_filename, test_filename_arg);
 
-	strcat(cross_file_name, "exp_");
-	strcat(cross_file_name, cross_file_name_arg);
+	strcat(cross_filename, "exp_");
+	strcat(cross_filename, cross_filename_arg);
 
-	strcat(loss_file_name, "loss_");
-	strcat(loss_file_name, test_file_name_arg);
+	strcat(loss_filename, "loss_");
+	strcat(loss_filename, test_filename_arg);
 
-	strcat(result_file_name, "res_");
-	strcat(result_file_name, test_file_name_arg);
+	strcat(result_filename, "res_");
+	strcat(result_filename, test_filename_arg);
 
-	char train_file[FILE_NAME_LENGTH] = {0};
-	char test_file[FILE_NAME_LENGTH] = {0};
-	char cross_file[FILE_NAME_LENGTH] = {0};
-	char loss_file[FILE_NAME_LENGTH] = {0};
-	char result_file[FILE_NAME_LENGTH] = {0};
+	char train_file[FILENAME_LENGTH] = {0};
+	char test_file[FILENAME_LENGTH] = {0};
+	char cross_file[FILENAME_LENGTH] = {0};
+	char loss_file[FILENAME_LENGTH] = {0};
+	char result_file[FILENAME_LENGTH] = {0};
 
 	IO_file_prepare(
 	    train_file,
@@ -68,11 +69,11 @@ int RNN_model_training_example() {
 	    cross_file,
 	    loss_file,
 	    result_file,
-	    train_file_name,
-	    test_file_name,
-	    cross_file_name,
-	    loss_file_name,
-	    result_file_name
+	    train_filename,
+	    test_filename,
+	    cross_filename,
+	    loss_filename,
+	    result_filename
 	);
 
 
@@ -150,9 +151,9 @@ int RNN_model_training_example() {
 	printf("RMSE outputs are multiplied by 90 for test\n");
 	printf(
 	    "* ./rnn %s %s %s %d %d %d %d %d\n",
-	    train_file_name_arg,
-	    test_file_name_arg,
-	    cross_file_name_arg,
+	    train_filename_arg,
+	    test_filename_arg,
+	    cross_filename_arg,
 	    hidden_cell_num,
 	    max_epoch,
 	    print_loss_interval,
@@ -249,32 +250,32 @@ int RNN_model_import_example() {
 	File I/O param
 	*/
 
-	char train_file_name[FILE_NAME_LENGTH]  = {0};
-	char test_file_name[FILE_NAME_LENGTH] = {0};
-	char cross_file_name[FILE_NAME_LENGTH] = {0};
-	char loss_file_name[FILE_NAME_LENGTH] = {0};
-	char result_file_name[FILE_NAME_LENGTH] = {0};
+	char train_filename[FILENAME_LENGTH]  = {0};
+	char test_filename[FILENAME_LENGTH] = {0};
+	char cross_filename[FILENAME_LENGTH] = {0};
+	char loss_filename[FILENAME_LENGTH] = {0};
+	char result_filename[FILENAME_LENGTH] = {0};
 
-	strcat(train_file_name, "exp_");
-	strcat(train_file_name, train_file_name_arg);
+	strcat(train_filename, "exp_");
+	strcat(train_filename, train_filename_arg);
 
-	strcat(test_file_name, "exp_");
-	strcat(test_file_name, test_file_name_arg);
+	strcat(test_filename, "exp_");
+	strcat(test_filename, test_filename_arg);
 
-	strcat(cross_file_name, "exp_");
-	strcat(cross_file_name, cross_file_name_arg);
+	strcat(cross_filename, "exp_");
+	strcat(cross_filename, cross_filename_arg);
 
-	strcat(loss_file_name, "loss_");
-	strcat(loss_file_name, test_file_name_arg);
+	strcat(loss_filename, "loss_");
+	strcat(loss_filename, test_filename_arg);
 
-	strcat(result_file_name, "res_");
-	strcat(result_file_name, test_file_name_arg);
+	strcat(result_filename, "res_");
+	strcat(result_filename, test_filename_arg);
 
-	char train_file[FILE_NAME_LENGTH] = {0};
-	char test_file[FILE_NAME_LENGTH] = {0};
-	char cross_file[FILE_NAME_LENGTH] = {0};
-	char loss_file[FILE_NAME_LENGTH] = {0};
-	char result_file[FILE_NAME_LENGTH] = {0};
+	char train_file[FILENAME_LENGTH] = {0};
+	char test_file[FILENAME_LENGTH] = {0};
+	char cross_file[FILENAME_LENGTH] = {0};
+	char loss_file[FILENAME_LENGTH] = {0};
+	char result_file[FILENAME_LENGTH] = {0};
 
 	IO_file_prepare(
 	    train_file,
@@ -282,11 +283,11 @@ int RNN_model_import_example() {
 	    cross_file,
 	    loss_file,
 	    result_file,
-	    train_file_name,
-	    test_file_name,
-	    cross_file_name,
-	    loss_file_name,
-	    result_file_name
+	    train_filename,
+	    test_filename,
+	    cross_filename,
+	    loss_filename,
+	    result_filename
 	);
 
 	srand(rand_seed);
@@ -377,7 +378,7 @@ int RNN_model_import_example() {
 
 		printf("  * RMSE: ");
 		for (r = 0; r < RNN_storage->o_dim; ++r) {
-			printf("%8.5lf\t", loss_list[r] * 90);
+			printf("%8.5lf\t", loss_list[r] * 140);
 			fprintf(pLoss, "%8.5lf\n", loss_list[r]);
 		}
 		printf("\n");
@@ -400,38 +401,46 @@ int RNN_model_import_example() {
 	return 0;
 }
 
-int RNN_model_import_example() {
+int RNN_model_serial_stepFP_example() {
 	printf("RNN_model_import_example\n");
+
+
+	int serial_id = serial_init(serial_portname_arg);
+
+	if (serial_id < 0) {
+		printf("%s port open Error\n", serial_portname_arg);
+		return -1;
+	}
 
 	/*
 	File I/O param
 	*/
-	char train_file_name[FILE_NAME_LENGTH]  = {0};
-	char test_file_name[FILE_NAME_LENGTH] = {0};
-	char cross_file_name[FILE_NAME_LENGTH] = {0};
-	char loss_file_name[FILE_NAME_LENGTH] = {0};
-	char result_file_name[FILE_NAME_LENGTH] = {0};
+	char train_filename[FILENAME_LENGTH]  = {0};
+	char test_filename[FILENAME_LENGTH] = {0};
+	char cross_filename[FILENAME_LENGTH] = {0};
+	char loss_filename[FILENAME_LENGTH] = {0};
+	char result_filename[FILENAME_LENGTH] = {0};
 
-	strcat(train_file_name, "exp_");
-	strcat(train_file_name, train_file_name_arg);
+	strcat(train_filename, "exp_");
+	strcat(train_filename, train_filename_arg);
 
-	strcat(test_file_name, "exp_");
-	strcat(test_file_name, test_file_name_arg);
+	strcat(test_filename, "exp_");
+	strcat(test_filename, test_filename_arg);
 
-	strcat(cross_file_name, "exp_");
-	strcat(cross_file_name, cross_file_name_arg);
+	strcat(cross_filename, "exp_");
+	strcat(cross_filename, cross_filename_arg);
 
-	strcat(loss_file_name, "loss_");
-	strcat(loss_file_name, test_file_name_arg);
+	strcat(loss_filename, "loss_");
+	strcat(loss_filename, test_filename_arg);
 
-	strcat(result_file_name, "res_");
-	strcat(result_file_name, test_file_name_arg);
+	strcat(result_filename, "res_");
+	strcat(result_filename, test_filename_arg);
 
-	char train_file[FILE_NAME_LENGTH] = {0};
-	char test_file[FILE_NAME_LENGTH] = {0};
-	char cross_file[FILE_NAME_LENGTH] = {0};
-	char loss_file[FILE_NAME_LENGTH] = {0};
-	char result_file[FILE_NAME_LENGTH] = {0};
+	char train_file[FILENAME_LENGTH] = {0};
+	char test_file[FILENAME_LENGTH] = {0};
+	char cross_file[FILENAME_LENGTH] = {0};
+	char loss_file[FILENAME_LENGTH] = {0};
+	char result_file[FILENAME_LENGTH] = {0};
 
 	IO_file_prepare(
 	    train_file,
@@ -439,11 +448,11 @@ int RNN_model_import_example() {
 	    cross_file,
 	    loss_file,
 	    result_file,
-	    train_file_name,
-	    test_file_name,
-	    cross_file_name,
-	    loss_file_name,
-	    result_file_name
+	    train_filename,
+	    test_filename,
+	    cross_filename,
+	    loss_filename,
+	    result_filename
 	);
 
 	srand(rand_seed);
@@ -472,8 +481,13 @@ int RNN_model_import_example() {
 	// Storage for RNN_train()
 	Matrix_t *predicted_output_matrix;
 	predicted_output_matrix = matrix_create(
-	                              train_set->output_max_m,
+	                              2,
 	                              train_set->output_n);
+
+	Matrix_t * step_input_matrix;
+	step_input_matrix = matrix_create(
+	                        2,
+	                        train_set->input_n);
 
 	/*
 	Import trained model
@@ -507,45 +521,54 @@ int RNN_model_import_example() {
 	/*
 	Testing file forward propagation
 	*/
-	FILE *pRes = fopen(result_file, "w");
-	fprintf(pRes, " %d\n", train_set->num_matrix);
-	fclose(pRes);
+	union float_packet temp_packet;
+	union float_packet packet_array[in_packet_num];
 
-	FILE *pLoss = fopen(loss_file, "w");
-
-	int i, r;
-	math_t *loss_list;
-	for (i = 0; i < train_set->num_matrix; ++i) {
-		matrix_resize(
-		    predicted_output_matrix,
-		    train_set->input_matrix_list[i]->m,
-		    train_set->output_n
-		);
-		RNN_Predict(
-		    RNN_storage,
-		    train_set->input_matrix_list[i],
-		    predicted_output_matrix
-		);
-
-		loss_list = RNN_RMSE(
-		                RNN_storage,
-		                predicted_output_matrix,
-		                train_set->output_matrix_list[i]);
-
-		printf("  * RMSE: ");
-		for (r = 0; r < RNN_storage->o_dim; ++r) {
-			printf("%8.5lf\t", loss_list[r] * 90);
-			fprintf(pLoss, "%8.5lf\n", loss_list[r]);
+	int rdlen, wlen, ch;
+	int init_complete = 0;
+	do {
+		rdlen = read(serial_id, &packet_array, in_packet_num * packet_size);	// Read one byte
+		if (rdlen != in_packet_num * packet_size) {
+			printf("rdlen != packet_num * packet_size\n");
+			return -1;
 		}
-		printf("\n");
-		write_matrix_to_file(result_file, train_set->input_matrix_list[i], "a");
-		write_matrix_to_file(result_file, predicted_output_matrix, "a");
 
-		free(loss_list);
-	}
+		for (ch = 0; ch < step_input_matrix->n; ++ch)
+			step_input_matrix->data[0][ch] = packet_array[ch].float_value;
 
 
-	fclose(pLoss);
+		if (!init_complete) {
+			RNN_stepFP_init(
+			    RNN_storage,
+			    step_input_matrix,
+			    predicted_output_matrix
+			);
+			init_complete = 1;
+		}
+		else {
+			RNN_stepFP(
+			    RNN_storage,
+			    step_input_matrix,
+			    predicted_output_matrix
+			);
+		}
+
+
+		temp_packet.float_value = predicted_output_matrix->data[0][0];
+
+		//printf("%f\n", temp_packet.float_value);
+		///*
+		wlen = write(serial_id,
+		             temp_packet.byte_array,
+		             out_packet_num * packet_size);
+		//*/
+
+		if (wlen != out_packet_num * packet_size) {
+			printf("Error from write: %d, %d\n", wlen, errno);
+			return -1;
+		}
+	} while (1);
+
 
 	/*
 	Clean up
@@ -553,6 +576,7 @@ int RNN_model_import_example() {
 	DataSet_destroy(train_set);
 	RNN_destroy(RNN_storage);
 	matrix_free(predicted_output_matrix);
+	matrix_free(step_input_matrix);
 
 	return 0;
 }
@@ -561,9 +585,9 @@ int main(int argc, char *argv[]) {
 	if (argc < 10) {
 		printf(
 		    "Usage: ./rnn "
-		    "train_file_name/"
-		    "test_file_name/"
-		    "cross_file_name/"
+		    "train_filename/"
+		    "test_filename/"
+		    "cross_filename/"
 		    "hidden_cell_num/"
 		    "max_epoch/"
 		    "cross_valid_patience/"
@@ -574,9 +598,9 @@ int main(int argc, char *argv[]) {
 		exit(60);
 	}
 
-	strncpy(train_file_name_arg, argv[1], FILE_NAME_LENGTH);
-	strncpy(test_file_name_arg, argv[2], FILE_NAME_LENGTH);
-	strncpy(cross_file_name_arg, argv[3], FILE_NAME_LENGTH);
+	strncpy(train_filename_arg, argv[1], FILENAME_LENGTH);
+	strncpy(test_filename_arg, argv[2], FILENAME_LENGTH);
+	strncpy(cross_filename_arg, argv[3], FILENAME_LENGTH);
 
 	hidden_cell_num = atoi(argv[4]);
 	max_epoch = atoi(argv[5]);
@@ -586,6 +610,11 @@ int main(int argc, char *argv[]) {
 	rand_seed = atoi(argv[9]);
 
 
+
+
 	//return RNN_model_training_example();
-	return RNN_model_import_example();
+	//return RNN_model_import_example();
+
+	strncpy(serial_portname_arg, argv[10], FILENAME_LENGTH);
+	return RNN_model_serial_stepFP_example();
 }
