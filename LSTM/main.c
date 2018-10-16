@@ -141,7 +141,6 @@ int RNN_model_training_example() {
 	                              train_set->output_max_m,
 	                              train_set->output_n);
 
-
 	FILE *pRes = fopen(result_file, "w");
 	fprintf(pRes, " %d\n", train_set->num_matrix);
 	fclose(pRes);
@@ -205,37 +204,41 @@ int RNN_model_training_example() {
 	/*
 	Dump model
 	*/
-	char model_file_prefix[] = "./data/model/TestModel_";
-	printf("Model dump...\n");
+	char model_file_path[FILENAME_LENGTH] = "./data/model/TM_";
+
+	strcat(model_file_path, train_filename_arg);
+	strcat(model_file_path, "_");
+	printf("Dump model...\n");
 	/* LSTM model */
 
-	Matrix_dump("Wz", model_file_prefix, RNN_train_result->RNN_best_model->Wz);
-	Matrix_dump("Wi", model_file_prefix, RNN_train_result->RNN_best_model->Wi);
-	Matrix_dump("Wf", model_file_prefix, RNN_train_result->RNN_best_model->Wf);
-	Matrix_dump("Wo", model_file_prefix, RNN_train_result->RNN_best_model->Wo);
+	Matrix_dump("Wz", model_file_path, RNN_train_result->RNN_best_model->Wz);
+	Matrix_dump("Wi", model_file_path, RNN_train_result->RNN_best_model->Wi);
+	Matrix_dump("Wf", model_file_path, RNN_train_result->RNN_best_model->Wf);
+	Matrix_dump("Wo", model_file_path, RNN_train_result->RNN_best_model->Wo);
 
-	Matrix_dump("Rz", model_file_prefix, RNN_train_result->RNN_best_model->Rz);
-	Matrix_dump("Ri", model_file_prefix, RNN_train_result->RNN_best_model->Ri);
-	Matrix_dump("Rf", model_file_prefix, RNN_train_result->RNN_best_model->Rf);
-	Matrix_dump("Ro", model_file_prefix, RNN_train_result->RNN_best_model->Ro);
+	Matrix_dump("Rz", model_file_path, RNN_train_result->RNN_best_model->Rz);
+	Matrix_dump("Ri", model_file_path, RNN_train_result->RNN_best_model->Ri);
+	Matrix_dump("Rf", model_file_path, RNN_train_result->RNN_best_model->Rf);
+	Matrix_dump("Ro", model_file_path, RNN_train_result->RNN_best_model->Ro);
 
-	Matrix_dump("Pi", model_file_prefix, RNN_train_result->RNN_best_model->Pi);
-	Matrix_dump("Pf", model_file_prefix, RNN_train_result->RNN_best_model->Pf);
-	Matrix_dump("Po", model_file_prefix, RNN_train_result->RNN_best_model->Po);
+	Matrix_dump("Pi", model_file_path, RNN_train_result->RNN_best_model->Pi);
+	Matrix_dump("Pf", model_file_path, RNN_train_result->RNN_best_model->Pf);
+	Matrix_dump("Po", model_file_path, RNN_train_result->RNN_best_model->Po);
 
-	Matrix_dump("Bz", model_file_prefix, RNN_train_result->RNN_best_model->Bz);
-	Matrix_dump("Bi", model_file_prefix, RNN_train_result->RNN_best_model->Bi);
-	Matrix_dump("Bf", model_file_prefix, RNN_train_result->RNN_best_model->Bf);
-	Matrix_dump("Bo", model_file_prefix, RNN_train_result->RNN_best_model->Bo);
+	Matrix_dump("Bz", model_file_path, RNN_train_result->RNN_best_model->Bz);
+	Matrix_dump("Bi", model_file_path, RNN_train_result->RNN_best_model->Bi);
+	Matrix_dump("Bf", model_file_path, RNN_train_result->RNN_best_model->Bf);
+	Matrix_dump("Bo", model_file_path, RNN_train_result->RNN_best_model->Bo);
 
 	/* Output model */
-	Matrix_dump("V", model_file_prefix, RNN_train_result->RNN_best_model->V);
-	Matrix_dump("Bpo", model_file_prefix, RNN_train_result->RNN_best_model->Bpo);
+	Matrix_dump("V", model_file_path, RNN_train_result->RNN_best_model->V);
+	Matrix_dump("Bpo", model_file_path, RNN_train_result->RNN_best_model->Bpo);
 
 
 	/*
 	Clean up
 	*/
+	printf("Clean up...\n");
 	DataSet_destroy(train_set);
 	RNN_destroy(RNN_storage);
 	matrix_free(predicted_output_matrix);
@@ -322,31 +325,35 @@ int RNN_model_import_example() {
 	/*
 	Import trained model
 	*/
-	char model_file_prefix[] = "./data/model/TestModel_";
+	char model_file_path[FILENAME_LENGTH] = "./data/model/TM_";
+
+	strcat(model_file_path, train_filename_arg);
+	strcat(model_file_path, "_");
+
 	printf("Import model...\n");
 	/* LSTM model */
-	Matrix_load("Wz", model_file_prefix, RNN_storage->Wz);
-	Matrix_load("Wi", model_file_prefix, RNN_storage->Wi);
-	Matrix_load("Wf", model_file_prefix, RNN_storage->Wf);
-	Matrix_load("Wo", model_file_prefix, RNN_storage->Wo);
+	Matrix_load("Wz", model_file_path, RNN_storage->Wz);
+	Matrix_load("Wi", model_file_path, RNN_storage->Wi);
+	Matrix_load("Wf", model_file_path, RNN_storage->Wf);
+	Matrix_load("Wo", model_file_path, RNN_storage->Wo);
 
-	Matrix_load("Rz", model_file_prefix, RNN_storage->Rz);
-	Matrix_load("Ri", model_file_prefix, RNN_storage->Ri);
-	Matrix_load("Rf", model_file_prefix, RNN_storage->Rf);
-	Matrix_load("Ro", model_file_prefix, RNN_storage->Ro);
+	Matrix_load("Rz", model_file_path, RNN_storage->Rz);
+	Matrix_load("Ri", model_file_path, RNN_storage->Ri);
+	Matrix_load("Rf", model_file_path, RNN_storage->Rf);
+	Matrix_load("Ro", model_file_path, RNN_storage->Ro);
 
-	Matrix_load("Pi", model_file_prefix, RNN_storage->Pi);
-	Matrix_load("Pf", model_file_prefix, RNN_storage->Pf);
-	Matrix_load("Po", model_file_prefix, RNN_storage->Po);
+	Matrix_load("Pi", model_file_path, RNN_storage->Pi);
+	Matrix_load("Pf", model_file_path, RNN_storage->Pf);
+	Matrix_load("Po", model_file_path, RNN_storage->Po);
 
-	Matrix_load("Bz", model_file_prefix, RNN_storage->Bz);
-	Matrix_load("Bi", model_file_prefix, RNN_storage->Bi);
-	Matrix_load("Bf", model_file_prefix, RNN_storage->Bf);
-	Matrix_load("Bo", model_file_prefix, RNN_storage->Bo);
+	Matrix_load("Bz", model_file_path, RNN_storage->Bz);
+	Matrix_load("Bi", model_file_path, RNN_storage->Bi);
+	Matrix_load("Bf", model_file_path, RNN_storage->Bf);
+	Matrix_load("Bo", model_file_path, RNN_storage->Bo);
 
 	/* Output model */
-	Matrix_load("V", model_file_prefix, RNN_storage->V);
-	Matrix_load("Bpo", model_file_prefix, RNN_storage->Bpo);
+	Matrix_load("V", model_file_path, RNN_storage->V);
+	Matrix_load("Bpo", model_file_path, RNN_storage->Bpo);
 
 	/*
 	Testing file forward propagation
@@ -394,6 +401,7 @@ int RNN_model_import_example() {
 	/*
 	Clean up
 	*/
+	printf("Clean up...\n");
 	DataSet_destroy(train_set);
 	RNN_destroy(RNN_storage);
 	matrix_free(predicted_output_matrix);
@@ -492,35 +500,41 @@ int RNN_model_serial_stepFP_example() {
 	/*
 	Import trained model
 	*/
-	char model_file_prefix[] = "./data/model/TestModel_";
+	char model_file_path[FILENAME_LENGTH] = "./data/model/TM_";
+
+	strcat(model_file_path, train_filename_arg);
+	strcat(model_file_path, "_");
+
 	printf("Import model...\n");
 	/* LSTM model */
-	Matrix_load("Wz", model_file_prefix, RNN_storage->Wz);
-	Matrix_load("Wi", model_file_prefix, RNN_storage->Wi);
-	Matrix_load("Wf", model_file_prefix, RNN_storage->Wf);
-	Matrix_load("Wo", model_file_prefix, RNN_storage->Wo);
+	Matrix_load("Wz", model_file_path, RNN_storage->Wz);
+	Matrix_load("Wi", model_file_path, RNN_storage->Wi);
+	Matrix_load("Wf", model_file_path, RNN_storage->Wf);
+	Matrix_load("Wo", model_file_path, RNN_storage->Wo);
 
-	Matrix_load("Rz", model_file_prefix, RNN_storage->Rz);
-	Matrix_load("Ri", model_file_prefix, RNN_storage->Ri);
-	Matrix_load("Rf", model_file_prefix, RNN_storage->Rf);
-	Matrix_load("Ro", model_file_prefix, RNN_storage->Ro);
+	Matrix_load("Rz", model_file_path, RNN_storage->Rz);
+	Matrix_load("Ri", model_file_path, RNN_storage->Ri);
+	Matrix_load("Rf", model_file_path, RNN_storage->Rf);
+	Matrix_load("Ro", model_file_path, RNN_storage->Ro);
 
-	Matrix_load("Pi", model_file_prefix, RNN_storage->Pi);
-	Matrix_load("Pf", model_file_prefix, RNN_storage->Pf);
-	Matrix_load("Po", model_file_prefix, RNN_storage->Po);
+	Matrix_load("Pi", model_file_path, RNN_storage->Pi);
+	Matrix_load("Pf", model_file_path, RNN_storage->Pf);
+	Matrix_load("Po", model_file_path, RNN_storage->Po);
 
-	Matrix_load("Bz", model_file_prefix, RNN_storage->Bz);
-	Matrix_load("Bi", model_file_prefix, RNN_storage->Bi);
-	Matrix_load("Bf", model_file_prefix, RNN_storage->Bf);
-	Matrix_load("Bo", model_file_prefix, RNN_storage->Bo);
+	Matrix_load("Bz", model_file_path, RNN_storage->Bz);
+	Matrix_load("Bi", model_file_path, RNN_storage->Bi);
+	Matrix_load("Bf", model_file_path, RNN_storage->Bf);
+	Matrix_load("Bo", model_file_path, RNN_storage->Bo);
 
 	/* Output model */
-	Matrix_load("V", model_file_prefix, RNN_storage->V);
-	Matrix_load("Bpo", model_file_prefix, RNN_storage->Bpo);
+	Matrix_load("V", model_file_path, RNN_storage->V);
+	Matrix_load("Bpo", model_file_path, RNN_storage->Bpo);
 
 	/*
 	Testing file forward propagation
 	*/
+	printf("Serial inference...\n");
+
 	union float_packet temp_packet;
 	union float_packet packet_array[in_packet_num];
 
@@ -573,6 +587,7 @@ int RNN_model_serial_stepFP_example() {
 	/*
 	Clean up
 	*/
+	printf("Clean up...\n");
 	DataSet_destroy(train_set);
 	RNN_destroy(RNN_storage);
 	matrix_free(predicted_output_matrix);
